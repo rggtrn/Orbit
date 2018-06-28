@@ -10,7 +10,9 @@ PirañaVivo corre en Linux y Mac. En primer instancia, es necesario tener una ve
 `$ git clone https://github.com/astellato/ofxSyphon`
 
 `$ git clone https://github.com/bangnoise/ofxHapPlayer`
+
 `$ cd addons/ofxHapPlayer`
+
 `$ git checkout OpenFrameworks-0.9`
 
 Una vez realizado esto, es posible compilar con Xcode o make, dependiendo de la arquitectura. Para compilar en Linux es necesario eliminar la línea ofxSyphon del archivo addons.make.
