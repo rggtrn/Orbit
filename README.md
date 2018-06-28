@@ -1,7 +1,7 @@
 
-# PirañaVivo
+# PiranhaVivo
 
-PirañaVivo es una aplicación basada en OpenFrameworks para mezclar videos que utilizan el códec Hap en vivo. PV se controla por medio del protocolo OSC y persigue la ligereza y la eficiencia como premisa. Está basado en [CineVivo](https://github.com/essteban/CineVivo). Para ejecutarlo es necesario utilizar un programa o dispositivo externo que pueda enviar mensajes OSC. 
+PiranhaVivo es un proyecto que sirve para mezclar videos en vivo. PV se controla por medio del protocolo OSC y persigue la ligereza y la eficiencia como premisas. Está basado en [CineVivo](https://github.com/essteban/CineVivo). Para ejecutarlo es necesario utilizar un programa o dispositivo externo que pueda enviar mensajes OSC. 
 
 ## Instalación
 
