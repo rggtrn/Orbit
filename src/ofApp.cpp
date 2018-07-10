@@ -10,9 +10,8 @@ void ofApp::setup(){
       ;
 #if (defined(__APPLE__) && defined(__MACH__))
     client.setup();
-    syphonON = false;
 #endif
-    
+    syphonON = false;
     player.setPixelFormat(OF_PIXELS_RGBA);
     player.setLoopState(OF_LOOP_NORMAL);
     
@@ -111,18 +110,15 @@ void ofApp::draw(){
     
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
-    
+#if (defined(__APPLE__) && defined(__MACH__))
+    client.draw(0, 0);
+#endif
     for(int i = 0; i < LIM; i++){
 	ofPushMatrix();
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate(vX[i],vY[i]);
         videoLC[i].draw(0, 0);
- #if (defined(__APPLE__) && defined(__MACH__))
-            if(syphonON == true){
-	      client.draw();
-            }
-#endif 	
 	ofPopMatrix();
     }
     
