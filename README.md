@@ -3,6 +3,7 @@
 
 PiranhaVivo es un proyecto que sirve para mezclar videos en vivo. PV se controla por medio del protocolo OSC y persigue la ligereza y la eficiencia como premisas. Está basado en [CineVivo](https://github.com/essteban/CineVivo). Para ejecutarlo es necesario utilizar un programa o dispositivo externo que pueda enviar mensajes OSC. 
 
+Para instalar el códec Hap: (https://github.com/Vidvox/hap-qt-codec/releases/)
 ## Instalación
 
 PirañaVivo corre en Linux y Mac. En primer instancia, es necesario tener una versión compilada de OpenFrameworks. Para compilar PV es necesario agregar ofxSyphon (sólamente para mac) y una rama específica de la extensión ofxHapPlayer:
@@ -13,7 +14,7 @@ PirañaVivo corre en Linux y Mac. En primer instancia, es necesario tener una ve
 
 `$ cd addons/ofxHapPlayer`
 
-`$ git checkout OpenFrameworks-0.9`
+`$ git checkout libavformat-OF-0.9`
 
 Una vez realizado esto, es posible compilar con Xcode o make, dependiendo de la arquitectura. Para compilar en Linux es necesario eliminar la línea ofxSyphon del archivo addons.make.
 
