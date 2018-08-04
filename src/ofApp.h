@@ -9,6 +9,7 @@
 #include "ofxXmlSettings.h"
 
 #define LIM 10
+//#define LIM2 8
 
 class ofApp : public ofBaseApp{
     
@@ -30,6 +31,11 @@ public:
     void gotMessage(ofMessage msg);
     
     ofxHapPlayer videoLC[LIM]; // para volver al estado anterior
+    //mirrors videoLC[LIM2]; // para volver al estado anterior
+    float position;
+    ofTexture screenImage;
+    bool feedback;
+    
     ofxHapPlayer player;
     void load(std::string movie);
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -39,6 +45,10 @@ public:
     ofxXmlSettings XML;
     ofxOscReceiver reciever;
     ofxOscSender sender;
+    
+    int retroX;
+    int retroY;
+    
     int portIn;
     int portOut;
     

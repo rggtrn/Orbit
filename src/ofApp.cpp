@@ -3,10 +3,10 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    ofSetVerticalSync(true);
+    //ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(800, 600);
-    ofSetFrameRate(60)
+    ofSetFrameRate(30)
       ;
 #if (defined(__APPLE__) && defined(__MACH__))
     client.setup();
@@ -26,18 +26,29 @@ void ofApp::setup(){
     for(int i = 0; i < LIM; i++){
         vX[i] = 0;
         vY[i] = 0;
+        vW[i] = 0;
+        vH[i] = 0;
         vSpeed[i] = 1;
         vOpacity[i] = 255;
         vScaleX[i] = 1;
         vScaleY[i] = 1;
     }
-    
+    ofSetVerticalSync(true);
+    ofBackground(255,255,255);
+    position = 0;
+    screenImage.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    retroX = 40;
+    retroY = 40;
+    feedback = 0;
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     
     player.update();
+    
+    position = 500 + 250 * sin(ofGetElapsedTimef()*4);
+    screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
     
     while (reciever.hasWaitingMessages()){
         
@@ -50,10 +61,17 @@ void ofApp::update(){
             videoLC[n].setPixelFormat(OF_PIXELS_RGBA);
             videoLC[n].setLoopState(OF_LOOP_NORMAL);
             videoLC[n].load(temp);
-            vW[n] = videoLC[n].getWidth();
-            vH[n] = videoLC[n].getHeight();
+            //vW[m.getArgAsInt(0)] = videoLC[n].getWidth();
+            //H[m.getArgAsInt(0)] = videoLC[n].getHeight();
+            //vScaleX[m.getArgAsInt(0)] = (ofGetWidth()*1.0)/960;
+            //vScaleY[m.getArgAsInt(0)] = (ofGetHeight()*1.0)/560;
             videoLC[n].play();
 
+            vW[m.getArgAsInt(0)] = videoLC[n].getWidth();
+            vH[m.getArgAsInt(0)] = videoLC[n].getHeight();
+            vScaleX[m.getArgAsInt(0)] = (ofGetWidth()*1.0)/960;
+            vScaleY[m.getArgAsInt(0)] = (ofGetHeight()*1.0)/540;
+            
         }
         
         if (m.getAddress() == "/free"  &&  m.getNumArgs() == 1){
@@ -88,6 +106,15 @@ void ofApp::update(){
 	  vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
 	  vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
         }
+        
+        if (m.getAddress() == "/feedback" && m.getNumArgs() == 3){
+            //vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
+            //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
+            retroX = m.getArgAsFloat(0);
+            retroY = m.getArgAsFloat(1);
+        }
+        
+        /// Para lograr hacer espejeo de las cosas
 
 	#if (defined(__APPLE__) && defined(__MACH__))
 	if (m.getAddress() == "/syphon" && m.getArgAsInt(1) == 1){
@@ -110,6 +137,11 @@ void ofApp::draw(){
     
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
+    
+    //ofSetColor(255,255,255); Hace falta agregar  un if
+    
+    screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
+    
 #if (defined(__APPLE__) && defined(__MACH__))
     client.draw(0, 0);
 #endif
@@ -121,6 +153,9 @@ void ofApp::draw(){
         videoLC[i].draw(0, 0);
 	ofPopMatrix();
     }
+    
+    screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
+
     
 }
 
