@@ -10,8 +10,8 @@ void ofApp::setup(){
       ;
 #if (defined(__APPLE__) && defined(__MACH__))
     client.setup();
-#endif
     syphonON = false;
+#endif
     player.setPixelFormat(OF_PIXELS_RGBA);
     player.setLoopState(OF_LOOP_NORMAL);
     
@@ -42,7 +42,6 @@ void ofApp::setup(){
     feedback = 0;
 }
 
-//--------------------------------------------------------------
 void ofApp::update(){
     
     player.update();
