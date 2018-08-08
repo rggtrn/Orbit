@@ -35,6 +35,8 @@ public:
     float position;
     ofTexture screenImage;
     bool feedback;
+
+    ofPlanePrimitive plane;
     
     ofxHapPlayer player;
     void load(std::string movie);
