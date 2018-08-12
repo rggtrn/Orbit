@@ -7,9 +7,10 @@
 #include "ofxHapPlayer.h"
 #include "ofxOsc.h"
 #include "ofxXmlSettings.h"
+#include "ofxAssimpModelLoader.h"
+
 
 #define LIM 10
-//#define LIM2 8
 
 class ofApp : public ofBaseApp{
     
@@ -62,5 +63,23 @@ public:
     float vScaleY[LIM];
     int vW [LIM];
     int vH [LIM];
+    float vRotX [LIM];
+    float vRotY [LIM];
+    float vRotZ [LIM];
+    
+    ofLight light;
+    ofTrueTypeFont font; // standard font
+    string texto; 
+    string nombre;
+
+    ofxAssimpModelLoader models3D[LIM];
+    bool model3DOn[LIM];
+
+    ofLight pointLight;
+    ofLight pointLight2;
+    ofLight pointLight3;
+    
+    void drawWithModel();
+    void drawWithMesh();
 
 };

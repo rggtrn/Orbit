@@ -1,3 +1,5 @@
+ofxAssimpModelLoader
 ofxHapPlayer
 ofxOsc
+ofxSyphon
 ofxXmlSettings

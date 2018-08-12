@@ -9,19 +9,24 @@ void ofApp::setup(){
     ofSetWindowShape(1280, 800);
     ofSetFrameRate(30);
     
+    //font.load("Batang.ttf", 160, true, true, true);
+
+    texto = "";
+    nombre = "";
+    
 #if (defined(__APPLE__) && defined(__MACH__))
     client.setup();
     syphonON = false;
 #endif
     player.setPixelFormat(OF_PIXELS_RGBA);
     player.setLoopState(OF_LOOP_NORMAL);
-
+    
     XML.load ("xml/OSCConf.xml");
     portOut = XML.getValue("PORT:NAME:OUT",5613);
     sender.setup("127.0.0.1",portOut);
-    //OSC in
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
+        
     for(int i = 0; i < LIM; i++){
         vX[i] = 0;
         vY[i] = 0;
@@ -31,7 +36,11 @@ void ofApp::setup(){
         vOpacity[i] = 255;
         vScaleX[i] = 1;
         vScaleY[i] = 1;
+        vRotX[i] = 0;
+        vRotY[i] = 0;
+        vRotZ[i] = 0;
     }
+    
     ofSetVerticalSync(true);
     ofBackground(255,255,255);
     position = 0;
@@ -40,19 +49,49 @@ void ofApp::setup(){
     retroY = 40;
     feedback = 0;
 
+    //model.loadModel("3d/cubo.obj");
+    //model.setPosition(ofGetWidth()*.5, ofGetHeight() * 0.75, 0);
+
+    ofSetSmoothLighting(true);
+    pointLight.setDiffuseColor( ofFloatColor(1.f, 1.f, 1.f) );
+    pointLight.setSpecularColor( ofFloatColor(1.f, 1.f, 1.f));
+    
+    //pointLight2.setDiffuseColor( ofFloatColor( 238.f/255.f, 57.f/255.f, 135.f/255.f ));
+    //pointLight2.setSpecularColor(ofFloatColor(.8f, .8f, .9f));
+    
+    //pointLight3.setDiffuseColor( ofFloatColor(19.f/255.f,94.f/255.f,77.f/255.f) );
+    //pointLight3.setSpecularColor( ofFloatColor(18.f/255.f,150.f/255.f,135.f/255.f) );
+    
 }
 
 void ofApp::update(){
+    
+    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
+    //pointLight2.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.15)*(ofGetWidth()*.3),
+    //                       ofGetHeight()*.5 + sin(ofGetElapsedTimef()*.7)*(ofGetHeight()), -300);
+    
+    //pointLight3.setPosition(
+    //                        cos(ofGetElapsedTimef()*1.5) * ofGetWidth()*.5,
+    //                        sin(ofGetElapsedTimef()*1.5f) * ofGetWidth()*.5,
+    //                        cos(ofGetElapsedTimef()*.2) * ofGetWidth()
+    //                        );
     
     player.update();
     
     position = 500 + 250 * sin(ofGetElapsedTimef()*4);
     screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
     
+    //// para las formas
+    
     while (reciever.hasWaitingMessages()){
         
         ofxOscMessage m;
         reciever.getNextMessage(&m);
+        
+        /// mensajes que vienen del history
+        
+
+        /// mensajes OSC para dibujar
         
         if (m.getAddress() == "/load"  &&  m.getNumArgs() ==2){
             string temp = "videos/" + m.getArgAsString(1) + ".mov";
@@ -61,6 +100,7 @@ void ofApp::update(){
             videoLC[n].setLoopState(OF_LOOP_NORMAL);
             videoLC[n].load(temp);
             videoLC[n].play();
+            model3DOn[n] = false;
 	    //vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             //vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
             vScaleX[n] = (ofGetWidth()*1.0)/960;
@@ -77,6 +117,7 @@ void ofApp::update(){
             vSpeed[m.getArgAsInt(0)] = 1;
             vOpacity[m.getArgAsInt(0)] = 255;
             //videoLC[m.getArgAsInt(0)].draw(0,0);
+            models3D[m.getArgAsInt(0)].clear();
             vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
         }
@@ -109,12 +150,39 @@ void ofApp::update(){
             retroX = m.getArgAsFloat(0);
             retroY = m.getArgAsFloat(1);
         }
-
-	//	if (m.getAddress() == "invert" && m.getNumArgs() == 1){
-	//  videoLC[m.getArgAsInt(0)].invert();
-	//}
         
-        /// Para lograr hacer espejeo de las cosas
+        if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
+            vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+            vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+            vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+        }
+        
+        if (m.getAddress() == "/load3d"  &&  m.getNumArgs() == 2){
+            videoLC[m.getArgAsInt(0)].close();
+            vX[m.getArgAsInt(0)] = 0;
+            vY[m.getArgAsInt(0)] = 0;
+            vScaleX[m.getArgAsInt(0)] = 1;
+            vScaleY[m.getArgAsInt(0)] = 1;
+            vRotX[m.getArgAsInt(0)] = 0;
+            vRotY[m.getArgAsInt(0)] = 0;
+            vRotZ[m.getArgAsInt(0)] = 0;
+            vSpeed[m.getArgAsInt(0)] = 1;
+            vOpacity[m.getArgAsInt(0)] = 255;
+            string temp = "3d/" + m.getArgAsString(1);
+            model3DOn[m.getArgAsInt(0)] = true;
+            models3D[m.getArgAsInt(0)].loadModel(temp,false);
+            models3D[m.getArgAsInt(0)].setPosition(ofGetWidth()*0.5,ofGetHeight()*0.5, -400);
+            models3D[m.getArgAsInt(0)].setLoopStateForAllAnimations(OF_LOOP_NORMAL);
+            models3D[m.getArgAsInt(0)].playAllAnimations();
+        }
+        
+        if (m.getAddress() == "/message"  &&  m.getNumArgs() == 2){
+            //serverTyping = "";
+            //serverTyping =
+            texto= m.getArgAsString(1);
+            nombre = m.getArgAsString(0);
+            
+        }
 
 	#if (defined(__APPLE__) && defined(__MACH__))
 	if (m.getAddress() == "/syphon" && m.getArgAsInt(1) == 1){
@@ -138,7 +206,10 @@ void ofApp::draw(){
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
     
-    //ofSetColor(255,255,255); Hace falta agregar  un if
+    //ofEnableLighting();
+    //pointLight.enable();
+    //pointLight2.enable();
+    //pointLight3.enable();
     
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
 
@@ -146,18 +217,45 @@ void ofApp::draw(){
     client.draw(0, 0);
 #endif
     
+    
     for(int i = 0; i < LIM; i++){
 	ofPushMatrix();
+    
+        ofDrawBitmapString(nombre, 100, 100); // '11' is a static character size of height.
+        ofDrawBitmapString(texto, 100, 120); // '11' is a static character size of height.
+        
+        ofRotateX(vRotX[i]);
+        ofRotateY(vRotY[i]);
+        ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate(vX[i],vY[i]);
         videoLC[i].draw(0, 0);
-	ofPopMatrix();
+        
+        if(model3DOn[i] == true){
+            ofSetColor(255);
+            ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+            ofEnableDepthTest();
+            light.enable();
+            ofEnableSeparateSpecularLight();
+            models3D[i].drawFaces();
+            ofDisableDepthTest();
+            ofDisableBlendMode();
+            ofDisableSeparateSpecularLight();
+        };
+        
+        if(model3DOn[i] == false){
+            models3D[i].clear();
+        }
+        
+        ofPopMatrix();
+        
     }
     
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
     
 }
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
