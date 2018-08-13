@@ -8,15 +8,18 @@ void ofApp::setup(){
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
     ofSetFrameRate(30);
-    
-    //font.load("Batang.ttf", 160, true, true, true);
 
-    texto = "";
-    nombre = "";
+    //font.load("fonts/DejaVuSansMono.ttf", 11, true, true, true);
+    //fontSize = 14;
+    font.load("fonts/Batang.ttf", 12, true, true, true);
+    //fontname.load("fonts/Batang.ttf", 14, true, true, true);
+    textON = 0;
+    texto = "PiranhaVivo";
+    nombre = "PiranhaVivo";
     
 #if (defined(__APPLE__) && defined(__MACH__))
     client.setup();
-    syphonON = false;
+    syphonON = 0;
 #endif
     player.setPixelFormat(OF_PIXELS_RGBA);
     player.setLoopState(OF_LOOP_NORMAL);
@@ -90,7 +93,6 @@ void ofApp::update(){
         
         /// mensajes que vienen del history
         
-
         /// mensajes OSC para dibujar
         
         if (m.getAddress() == "/load"  &&  m.getNumArgs() ==2){
@@ -179,17 +181,28 @@ void ofApp::update(){
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 2){
             //serverTyping = "";
             //serverTyping =
-            texto= m.getArgAsString(1);
-            nombre = m.getArgAsString(0);
+            texto = m.getArgAsString(0);
+            //nombre = m.getArgAsString(1);
             
         }
 
+	if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
+            //serverTyping = "";
+            //serverTyping =
+            texto = m.getArgAsString(0);
+            //nombre = m.getArgAsString(0);
+            
+        }
+
+	if (m.getAddress() == "/textON" && m.getNumArgs() == 1){
+	  textON = m.getArgAsInt(0);
+        }
+
+	/// para cuan
+	
 	#if (defined(__APPLE__) && defined(__MACH__))
-	if (m.getAddress() == "/syphon" && m.getArgAsInt(1) == 1){
-                    syphonON = true;
-	}
-	if (m.getAddress() == "/syphon" && m.getArgAsInt(1) == 0){
-                    syphonON = false;
+	if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
+	  syphonON = m.getArgAsInt(0);
 	}	
 #endif
 	// No funciona con el Hap
@@ -206,31 +219,68 @@ void ofApp::draw(){
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
     
-    //ofEnableLighting();
-    //pointLight.enable();
+    ofEnableLighting();
+    pointLight.enable();
     //pointLight2.enable();
     //pointLight3.enable();
     
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
 
 #if (defined(__APPLE__) && defined(__MACH__))
+
+    if(syphonON == 1){
     client.draw(0, 0);
+    };
+
+    if(syphonON == 0){
+      client.clear(); /// checar si esto es cierto
+    };
+    
 #endif
     
-    
     for(int i = 0; i < LIM; i++){
-	ofPushMatrix();
-    
-        ofDrawBitmapString(nombre, 100, 100); // '11' is a static character size of height.
-        ofDrawBitmapString(texto, 100, 120); // '11' is a static character size of height.
-        
-        ofRotateX(vRotX[i]);
-        ofRotateY(vRotY[i]);
-        ofRotateZ(vRotZ[i]);
+
+      ofPushMatrix();
+
+	//// tamaño del texto
+
+	ofRectangle rect = font.getStringBoundingBox(texto, 0,0);
+	
+	ofDrawBitmapString("value: " + ofToString(fontScale), 10, 10);
+
+	if (rect.width < ofGetWidth()){
+
+	  fontScale = 1;
+	  correccion = 0;
+       
+	}
+
+	if(rect.width > ofGetWidth()){
+
+	  fontScale = (ofGetWidth()/rect.width);
+	  correccion = 0.4;
+	}
+	  
+	if(textON == 1){
+	  
+	  //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
+	  ofScale(fontScale, 1, 1);
+	  //font.drawStringCentered(nombre, ofGetWidth()*0.5, ofGetHeight()*0.5);
+	  font.drawStringCentered(nombre+"\n"+texto, (ofGetWidth()*0.5), ofGetHeight()*0.5);
+	};
+
+	if(textON == 0){
+	  font.drawStringCentered("", (ofGetWidth()*fontScale)+correccion, ofGetHeight()*0.5);
+	}
+	
+        ofRotateXRad(vRotX[i]);
+        ofRotateYRad(vRotY[i]);
+        ofRotateZRad(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate(vX[i],vY[i]);
-        videoLC[i].draw(0, 0);
+
+	videoLC[i].draw(0, 0);
         
         if(model3DOn[i] == true){
             ofSetColor(255);

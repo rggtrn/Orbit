@@ -1,5 +1,5 @@
 ofxAssimpModelLoader
 ofxHapPlayer
 ofxOsc
-ofxSyphon
 ofxXmlSettings
+ofxCenteredTrueTypeFont

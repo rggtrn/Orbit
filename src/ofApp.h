@@ -8,7 +8,7 @@
 #include "ofxOsc.h"
 #include "ofxXmlSettings.h"
 #include "ofxAssimpModelLoader.h"
-
+#include "ofxCenteredTrueTypeFont.h"
 
 #define LIM 10
 
@@ -37,6 +37,8 @@ public:
     ofTexture screenImage;
     bool feedback;
 
+    float correccion = 0;
+    
     ofPlanePrimitive plane;
     
     ofxHapPlayer player;
@@ -68,13 +70,17 @@ public:
     float vRotZ [LIM];
     
     ofLight light;
-    ofTrueTypeFont font; // standard font
+    ofxCenteredTrueTypeFont font; // standard font
     string texto; 
     string nombre;
-
+    string text;
+    float fontScale;
+    
     ofxAssimpModelLoader models3D[LIM];
     bool model3DOn[LIM];
-
+    int textON;
+    int fontSize;
+    
     ofLight pointLight;
     ofLight pointLight2;
     ofLight pointLight3;
