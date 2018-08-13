@@ -9,9 +9,11 @@ void ofApp::setup(){
     ofSetWindowShape(1280, 800);
     ofSetFrameRate(30);
 
-    //font.load("fonts/DejaVuSansMono.ttf", 11, true, true, true);
+    //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
     //fontSize = 14;
-    font.load("fonts/Batang.ttf", 12, true, true, true);
+    font2.load("fonts/Batang.ttf", 20, true, true, true);
+    font.load("fonts/Batang.ttf", 14, true, true, true);
+    font.setLineHeight(15);
     //fontname.load("fonts/Batang.ttf", 14, true, true, true);
     textON = 0;
     texto = "PiranhaVivo";
@@ -182,7 +184,7 @@ void ofApp::update(){
             //serverTyping = "";
             //serverTyping =
             texto = m.getArgAsString(0);
-            //nombre = m.getArgAsString(1);
+            nombre = m.getArgAsString(1);
             
         }
 
@@ -190,7 +192,7 @@ void ofApp::update(){
             //serverTyping = "";
             //serverTyping =
             texto = m.getArgAsString(0);
-            //nombre = m.getArgAsString(0);
+            //nombre = m.getArgAsString(1);
             
         }
 
@@ -198,8 +200,18 @@ void ofApp::update(){
 	  textON = m.getArgAsInt(0);
         }
 
-	/// para cuan
-	
+        if (m.getAddress() == "/feedbackX" && m.getNumArgs() == 1){
+            //vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
+            //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
+            retroX = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/feedbackY" && m.getNumArgs() == 1){
+            //vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
+            //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
+            retroY = m.getArgAsFloat(0);
+        }
+
 	#if (defined(__APPLE__) && defined(__MACH__))
 	if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
 	  syphonON = m.getArgAsInt(0);
@@ -231,51 +243,30 @@ void ofApp::draw(){
     if(syphonON == 1){
     client.draw(0, 0);
     };
-
-    if(syphonON == 0){
-      client.clear(); /// checar si esto es cierto
-    };
     
 #endif
     
     for(int i = 0; i < LIM; i++){
 
       ofPushMatrix();
-
-	//// tamaño del texto
-
-	ofRectangle rect = font.getStringBoundingBox(texto, 0,0);
-	
-	ofDrawBitmapString("value: " + ofToString(fontScale), 10, 10);
-
-	if (rect.width < ofGetWidth()){
-
-	  fontScale = 1;
-	  correccion = 0;
-       
-	}
-
-	if(rect.width > ofGetWidth()){
-
-	  fontScale = (ofGetWidth()/rect.width);
-	  correccion = 0.4;
-	}
 	  
 	if(textON == 1){
 	  
 	  //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
-	  ofScale(fontScale, 1, 1);
-	  //font.drawStringCentered(nombre, ofGetWidth()*0.5, ofGetHeight()*0.5);
-	  font.drawStringCentered(nombre+"\n"+texto, (ofGetWidth()*0.5), ofGetHeight()*0.5);
+	  ofScale(1, 1, 1);
+    text = wrapString(texto, 200);
+
+	  font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
+	  font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
 	};
 
 	if(textON == 0){
-	  font.drawStringCentered("", (ofGetWidth()*fontScale)+correccion, ofGetHeight()*0.5);
+	  font.drawStringCentered("", (ofGetWidth()*fontScale), ofGetHeight()*0.5);
 	}
 	
-        ofRotateXRad(vRotX[i]);
-        ofRotateYRad(vRotY[i]);
-        ofRotateZRad(vRotZ[i]);
+        ofRotateX(vRotX[i]);
+        ofRotateY(vRotY[i]);
+        ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate(vX[i],vY[i]);

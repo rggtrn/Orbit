@@ -71,6 +71,8 @@ public:
     
     ofLight light;
     ofxCenteredTrueTypeFont font; // standard font
+    ofxCenteredTrueTypeFont font2; // standard font
+
     string texto; 
     string nombre;
     string text;
@@ -87,5 +89,30 @@ public:
     
     void drawWithModel();
     void drawWithMesh();
+    
+    string wrapString(string text, int width) {
+        
+        string typeWrapped = "";
+        string tempString = "";
+        vector <string> words = ofSplitString(text, " ");
+        
+        for(int i=0; i<words.size(); i++) {
+            
+            string wrd = words[i];
+            cout << wrd << endl;
+            
+            tempString += wrd + " ";
+            int stringwidth = font.stringWidth(tempString);
+            if(stringwidth >= width) {
+                tempString = "";
+                typeWrapped += "\n";
+            }
+            
+            typeWrapped += wrd + " ";
+        }
+        
+        return typeWrapped;
+        
+    }
 
 };
