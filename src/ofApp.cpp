@@ -7,13 +7,13 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
 
     //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
     //fontSize = 14;
-    font2.load("fonts/Batang.ttf", 20, true, true, true);
-    font.load("fonts/Batang.ttf", 14, true, true, true);
-    font.setLineHeight(15);
+    font2.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
+    font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
+    font.setLineHeight(17);
     //fontname.load("fonts/Batang.ttf", 14, true, true, true);
     textON = 0;
     texto = "PiranhaVivo";
