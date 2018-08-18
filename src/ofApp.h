@@ -36,8 +36,6 @@ public:
     float position;
     ofTexture screenImage;
     bool feedback;
-
-    float correccion = 0;
     
     //ofDrawCircle circulos;
     
@@ -68,6 +66,8 @@ public:
     float vRotX [LIM];
     float vRotY [LIM];
     float vRotZ [LIM];
+    int canonGenerator;
+    ofPath path[LIM];
     
     ofLight light;
     ofxCenteredTrueTypeFont font; // standard font

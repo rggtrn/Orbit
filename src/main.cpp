@@ -8,7 +8,10 @@ int main( ){
 //    #if (defined(__APPLE__) && defined(__MACH__))
 
     ofSetupOpenGL(1024,768,OF_WINDOW); // GL context esto es lo unico que estaba activado antes.
-    
+    ofAppGlutWindow window;
+
+    window.setGlutDisplayString("rgba double samples>=4");
+
 //    #endif
 
 //    #if (defined(__LINUX__) && defined(__MACH__))

@@ -8,7 +8,7 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
 
     //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
     //fontSize = 14;
@@ -25,7 +25,7 @@ void ofApp::setup(){
     syphonON = 0;
 #endif
     player.setPixelFormat(OF_PIXELS_RGBA);
-    player.setLoopState(OF_LOOP_NONE);
+    player.setLoopState(OF_LOOP_NORMAL);
     
     XML.load ("xml/OSCConf.xml");
     portOut = XML.getValue("PORT:NAME:OUT",5613);
@@ -45,6 +45,7 @@ void ofApp::setup(){
         vRotX[i] = 0;
         vRotY[i] = 0;
         vRotZ[i] = 0;
+	path[i];
     }
     
     ofSetVerticalSync(true);
@@ -54,6 +55,7 @@ void ofApp::setup(){
     retroX = 40;
     retroY = 40;
     feedback = 0;
+    canonGenerator = 0;
 
     //model.loadModel("3d/cubo.obj");
     //model.setPosition(ofGetWidth()*.5, ofGetHeight() * 0.75, 0);
@@ -140,6 +142,11 @@ void ofApp::update(){
         if (m.getAddress() == "/pos" && m.getNumArgs() == 3){
             vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             vY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+
+	    if(canonGenerator == 1){
+	    //videoLC[m.getArgAsInt(0)].close();
+	    videoLC[m.getArgAsInt(0)].play();	      
+	    }
         }
         
         if (m.getAddress() == "/size" && m.getNumArgs() == 3){
@@ -196,9 +203,14 @@ void ofApp::update(){
             //nombre = m.getArgAsString(1);
             
         }
-
+ 
 	if (m.getAddress() == "/textON" && m.getNumArgs() == 1){
 	  textON = m.getArgAsInt(0);
+        }
+
+	
+	if (m.getAddress() == "/canonGeneratorON" && m.getNumArgs() == 1){
+	  canonGenerator = m.getArgAsInt(0);
         }
 
         if (m.getAddress() == "/feedbackX" && m.getNumArgs() == 1){
@@ -212,15 +224,7 @@ void ofApp::update(){
             //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
             retroY = m.getArgAsFloat(0);
         }
-        
-        //for(int i = 0; i < LIM; i++){
-
-            if(m.getAddress() == "/event2" && m.getNumArgs() ==1){
-                /// posición a partir de eventos
-                vX[1] = m.getArgAsInt(0)*4;
-        }
-        
-            
+                    
       //  }
 
 	#if (defined(__APPLE__) && defined(__MACH__))
@@ -260,20 +264,12 @@ void ofApp::draw(){
     for(int i = 0; i < LIM; i++){
 
       ofPushMatrix();
-   
-        ofNoFill();
-        ofDrawCircle(ofGetWidth()/2, ofGetHeight()/2, 80);
-        ofDrawCircle(ofGetWidth()/3, ofGetHeight()/3, 80);
-        ofDrawCircle(ofGetWidth()/4, ofGetHeight()/4, 80);
-        ofDrawCircle(ofGetWidth()/5, ofGetHeight()/5, 80);
-
-        ofFill();
 	
         if(textON == 1){
 	  
 	  //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
 	  ofScale(1, 1, 1);
-    text = wrapString(texto, 200);
+	  text = wrapString(texto, 200);
 
 	  font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
 	  font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
@@ -307,6 +303,19 @@ void ofApp::draw(){
         if(model3DOn[i] == false){
             models3D[i].clear();
         }
+
+	if(canonGenerator == 1){
+
+	  videoLC[i].setLoopState(OF_LOOP_NONE);
+	  //ofNoFill();
+	  //ofSetColor(255);
+	  //path[i].hasOutline();
+	  //path[i].setCircleResolution(80);
+	  //path[i].circle(0, 0, 40);
+	  //path[i].setStrokeWidth(10);
+	  //path[i].draw();	
+
+      }
         
         ofPopMatrix();
         
