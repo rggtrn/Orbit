@@ -252,6 +252,7 @@ void ofApp::draw(){
     //pointLight3.enable();
     
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
+    //screenImage.draw(ofGetMouseX(), ofGetMouseY(), ofGetWidth()-80, ofGetHeight()-80);
 
 #if (defined(__APPLE__) && defined(__MACH__))
 
@@ -307,6 +308,8 @@ void ofApp::draw(){
 	if(canonGenerator == 1){
 
 	  videoLC[i].setLoopState(OF_LOOP_NONE);
+        //retroX = mouseX();
+        //retroY = mouseY();
 	  //ofNoFill();
 	  //ofSetColor(255);
 	  //path[i].hasOutline();
