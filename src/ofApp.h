@@ -39,7 +39,7 @@ public:
 
     float correccion = 0;
     
-    ofPlanePrimitive plane;
+    //ofDrawCircle circulos;
     
     ofxHapPlayer player;
     void load(std::string movie);

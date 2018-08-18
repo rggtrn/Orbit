@@ -2,7 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-   
+
+    ofSetCircleResolution(50);
     ofBackground(0, 0, 0); 
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
@@ -24,7 +25,7 @@ void ofApp::setup(){
     syphonON = 0;
 #endif
     player.setPixelFormat(OF_PIXELS_RGBA);
-    player.setLoopState(OF_LOOP_NORMAL);
+    player.setLoopState(OF_LOOP_NONE);
     
     XML.load ("xml/OSCConf.xml");
     portOut = XML.getValue("PORT:NAME:OUT",5613);
@@ -211,6 +212,16 @@ void ofApp::update(){
             //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
             retroY = m.getArgAsFloat(0);
         }
+        
+        //for(int i = 0; i < LIM; i++){
+
+            if(m.getAddress() == "/event2" && m.getNumArgs() ==1){
+                /// posición a partir de eventos
+                vX[1] = m.getArgAsInt(0)*4;
+        }
+        
+            
+      //  }
 
 	#if (defined(__APPLE__) && defined(__MACH__))
 	if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
@@ -240,17 +251,25 @@ void ofApp::draw(){
 
 #if (defined(__APPLE__) && defined(__MACH__))
 
-    if(syphonON == 1){
+    //if(syphonON == 1){
     client.draw(0, 0);
-    };
+   // };
     
 #endif
     
     for(int i = 0; i < LIM; i++){
 
       ofPushMatrix();
-	  
-	if(textON == 1){
+   
+        ofNoFill();
+        ofDrawCircle(ofGetWidth()/2, ofGetHeight()/2, 80);
+        ofDrawCircle(ofGetWidth()/3, ofGetHeight()/3, 80);
+        ofDrawCircle(ofGetWidth()/4, ofGetHeight()/4, 80);
+        ofDrawCircle(ofGetWidth()/5, ofGetHeight()/5, 80);
+
+        ofFill();
+	
+        if(textON == 1){
 	  
 	  //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
 	  ofScale(1, 1, 1);
