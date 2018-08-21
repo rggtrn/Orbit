@@ -6,6 +6,7 @@
 #endif
 #include "ofxHapPlayer.h"
 #include "ofxOsc.h"
+#include "ofxPostGlitch.h"
 #include "ofxXmlSettings.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxCenteredTrueTypeFont.h"
@@ -69,6 +70,12 @@ public:
     int canonGenerator;
     ofPath path[LIM];
     
+    float textRotX;
+    float textRotY;
+    float textRotZ;
+    
+    bool bDrawLenna;
+    
     ofLight light;
     ofxCenteredTrueTypeFont font; // standard font
     ofxCenteredTrueTypeFont font2; // standard font
@@ -89,6 +96,14 @@ public:
     
     void drawWithModel();
     void drawWithMesh();
+    
+    /// Para el postglitch
+    
+    ofFbo            myFbo;
+    ofEasyCam        camera;
+    ofTexture        texture;
+    /*Addon instance*/
+    ofxPostGlitch    myGlitch;
     
     string wrapString(string text, int width) {
         

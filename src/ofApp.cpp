@@ -8,13 +8,27 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
+    bDrawLenna = false;
+
+
+    camera.setDistance(400);
+    
+    /// fbo
+    
+    myFbo.allocate(512, 512);
+    myGlitch.setup(&myFbo);
+    
+    myFbo.begin();
+    ofClear(0,0,0,255);
+    myFbo.end();
 
     //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
     //fontSize = 14;
-    font2.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
-    font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
+    font2.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
+    font.load("fonts/DejaVuSansMono.ttf", 16, true, true, true);
     font.setLineHeight(17);
+    font.setGlobalDpi(2000);
     //fontname.load("fonts/Batang.ttf", 14, true, true, true);
     textON = 0;
     texto = "PiranhaVivo";
@@ -86,6 +100,35 @@ void ofApp::update(){
     
     player.update();
     
+    /// Fbo
+    /*
+    myFbo.begin();
+    ofClear(0, 0, 0,255);
+    if (!bDrawLenna){
+        camera.begin();
+        
+        for (int i = 0;i < 100;i++){
+            if        (i % 5 == 0)ofSetColor(50 , 255, 100);
+            else if (i % 9 == 0)ofSetColor(255, 50, 100);
+            else                ofSetColor(255, 255, 255);
+            
+            ofPushMatrix();
+            ofRotate(ofGetFrameNum(), 1.0, 1.0, 1.0);
+            ofTranslate((ofNoise(i/2.4)-0.5)*1000,
+                        (ofNoise(i/5.6)-0.5)*1000,
+                        (ofNoise(i/8.2)-0.5)*1000);
+            ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*100+ofRandom(3));
+            ofPopMatrix();
+        }
+        
+        camera.end();
+    }else{
+        ofSetColor(255);
+        //lenna.draw(0, 0);
+    }
+    myFbo.end();
+*/
+    
     position = 500 + 250 * sin(ofGetElapsedTimef()*4);
     screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
     
@@ -103,6 +146,7 @@ void ofApp::update(){
         if (m.getAddress() == "/load"  &&  m.getNumArgs() ==2){
             string temp = "videos/" + m.getArgAsString(1) + ".mov";
             int n = m.getArgAsInt(0);
+            //myFbo.begin();
             videoLC[n].setPixelFormat(OF_PIXELS_RGBA);
             videoLC[n].setLoopState(OF_LOOP_NORMAL);
             videoLC[n].load(temp);
@@ -114,6 +158,7 @@ void ofApp::update(){
             vScaleY[n] = (ofGetHeight()*1.0)/560;
 	    //vScaleX[n] = (ofGetWidth()*1.0)/vW[m.getArgAsInt(0)];
             //vScaleY[n] = (ofGetHeight()*1.0)/vH[m.getArgAsInt(0)];
+            //myFbo.end();
             
         }
         
@@ -132,7 +177,7 @@ void ofApp::update(){
         if (m.getAddress() == "/speed" && m.getNumArgs() == 2){
             int n = m.getArgAsInt(0);
             //vSpeed[m.getArgAsInt(0)] = m.getArgAsFloat(1);
-            videoLC[n].setSpeed(m.getArgAsInt(1));
+            videoLC[n].setSpeed(m.getArgAsFloat(1));
         }
         
         if (m.getAddress() == "/opacity" && m.getNumArgs() == 2){
@@ -167,6 +212,12 @@ void ofApp::update(){
             vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
             vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+        }
+        
+        if (m.getAddress() == "/textRot" && m.getNumArgs() == 3){
+            textRotX = m.getArgAsFloat(0);
+            textRotY = m.getArgAsFloat(1);
+            textRotZ = m.getArgAsFloat(2);
         }
         
         if (m.getAddress() == "/load3d"  &&  m.getNumArgs() == 2){
@@ -242,12 +293,12 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
+
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
     
-    ofEnableLighting();
-    pointLight.enable();
+    //ofEnableLighting();
+    //pointLight.enable();
     //pointLight2.enable();
     //pointLight3.enable();
     
@@ -265,20 +316,29 @@ void ofApp::draw(){
     for(int i = 0; i < LIM; i++){
 
       ofPushMatrix();
-	
+        
+        myGlitch.generateFx();
+        //myFbo.draw(512, 0);
+        myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE            , true);
+        
         if(textON == 1){
-	  
-	  //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
-	  ofScale(1, 1, 1);
-	  text = wrapString(texto, 200);
-
-	  font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
-	  font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
-	};
-
-	if(textON == 0){
-	  font.drawStringCentered("", (ofGetWidth()*fontScale), ofGetHeight()*0.5);
-	}
+            //ofSetRectMode(OF_RECTMODE_CENTER);
+            textRotX = 0;
+            textRotY = 0;
+            textRotZ = 0;
+            //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
+            text = wrapString(texto, 200);
+            ofRotateX(textRotX);
+            ofRotateY(textRotY);
+            ofRotateZ(textRotZ);
+            font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
+            font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
+            
+        };
+        
+        if(textON == 0){
+            font.drawStringCentered("", (ofGetWidth()*fontScale), ofGetHeight()*0.5);
+        }
 	
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
@@ -286,8 +346,11 @@ void ofApp::draw(){
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate(vX[i],vY[i]);
-
-	videoLC[i].draw(0, 0);
+        
+        myFbo.begin();
+        videoLC[i].draw(0, 0);
+        myFbo.end();
+        myFbo.draw(0, 0);
         
         if(model3DOn[i] == true){
             ofSetColor(255);
@@ -298,7 +361,7 @@ void ofApp::draw(){
             models3D[i].drawFaces();
             ofDisableDepthTest();
             ofDisableBlendMode();
-            ofDisableSeparateSpecularLight();
+            //ofDisableSeparateSpecularLight();
         };
         
         if(model3DOn[i] == false){
