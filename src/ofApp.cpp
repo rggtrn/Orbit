@@ -8,13 +8,13 @@ void ofApp::setup(){
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     bDrawLenna = false;
 
-
-    camera.setDistance(400);
-    
+    camera.setDistance(460);
     /// fbo
+    
+    /* Queda clausurado hasta que descubra qué demonios pasa
     
     myFbo.allocate(512, 512);
     myGlitch.setup(&myFbo);
@@ -22,13 +22,15 @@ void ofApp::setup(){
     myFbo.begin();
     ofClear(0,0,0,255);
     myFbo.end();
+     
+     */
 
     //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
     //fontSize = 14;
     font2.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 16, true, true, true);
     font.setLineHeight(17);
-    font.setGlobalDpi(2000);
+    //font.setGlobalDpi(2000);
     //fontname.load("fonts/Batang.ttf", 14, true, true, true);
     textON = 0;
     texto = "PiranhaVivo";
@@ -38,6 +40,7 @@ void ofApp::setup(){
     client.setup();
     syphonON = 0;
 #endif
+    
     player.setPixelFormat(OF_PIXELS_RGBA);
     player.setLoopState(OF_LOOP_NORMAL);
     
@@ -99,35 +102,6 @@ void ofApp::update(){
     //                        );
     
     player.update();
-    
-    /// Fbo
-    /*
-    myFbo.begin();
-    ofClear(0, 0, 0,255);
-    if (!bDrawLenna){
-        camera.begin();
-        
-        for (int i = 0;i < 100;i++){
-            if        (i % 5 == 0)ofSetColor(50 , 255, 100);
-            else if (i % 9 == 0)ofSetColor(255, 50, 100);
-            else                ofSetColor(255, 255, 255);
-            
-            ofPushMatrix();
-            ofRotate(ofGetFrameNum(), 1.0, 1.0, 1.0);
-            ofTranslate((ofNoise(i/2.4)-0.5)*1000,
-                        (ofNoise(i/5.6)-0.5)*1000,
-                        (ofNoise(i/8.2)-0.5)*1000);
-            ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*100+ofRandom(3));
-            ofPopMatrix();
-        }
-        
-        camera.end();
-    }else{
-        ofSetColor(255);
-        //lenna.draw(0, 0);
-    }
-    myFbo.end();
-*/
     
     position = 500 + 250 * sin(ofGetElapsedTimef()*4);
     screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
@@ -296,9 +270,10 @@ void ofApp::draw(){
 
     ofBackground(0, 0, 0);
     ofEnableAlphaBlending();
-    
-    //ofEnableLighting();
-    //pointLight.enable();
+    ofSetRectMode(OF_RECTMODE_CORNER);
+
+    ofEnableLighting();
+    pointLight.enable();
     //pointLight2.enable();
     //pointLight3.enable();
     
@@ -313,47 +288,71 @@ void ofApp::draw(){
     
 #endif
     
+    // falta resolver el rotate. Podría el texto ir en un if más arriba y dentro de una pista
+    
     for(int i = 0; i < LIM; i++){
 
       ofPushMatrix();
         
-        myGlitch.generateFx();
-        //myFbo.draw(512, 0);
-        myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE            , true);
+        //camera.setTarget(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+        
+        //font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
+
         
         if(textON == 1){
-            //ofSetRectMode(OF_RECTMODE_CENTER);
-            textRotX = 0;
-            textRotY = 0;
-            textRotZ = 0;
+            
+            ofSetRectMode(OF_RECTMODE_CENTER);
+            font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
             //ofTranslate(ofGetWidth()*(0.125*fontScale), ofGetHeight()*0.125);
             text = wrapString(texto, 200);
-            ofRotateX(textRotX);
-            ofRotateY(textRotY);
-            ofRotateZ(textRotZ);
-            font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
+           // ofRectangle bounds = font.getStringBoundingBox(text, 0, 0);
+            //ofTranslate((ofGetWidth()/2) - bounds.width/8, (ofGetHeight()/2) - bounds.height / 8, 0);
+            //ofTranslate((ofGetWidth()/2), (ofGetHeight()/2), 0);
+            //ofRotateZ(sin(ofGetElapsedTimef())*30);
+            //font.drawStringCentered(text, -bounds.width/8, bounds.height/8);
             font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
+            //ofTranslate(0, 0, 0);
             
         };
         
         if(textON == 0){
-            font.drawStringCentered("", (ofGetWidth()*fontScale), ofGetHeight()*0.5);
+            font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
         }
-	
+        
+        /*clausurado en lo que descubro cómo funciona
+        
+         myGlitch.generateFx();
+        //myFbo.draw(512, 0);
+        myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE            , true);
+        
+         ofRectangle bounds = verdana30.getStringBoundingBox(rotZ, 0, 0);
+         
+         ofTranslate(110 + bounds.width/2, 500 + bounds.height / 2, 0);
+         ofRotateZ(ofGetElapsedTimef() * -30.0);
+         
+         */
+        
+        ofSetRectMode(OF_RECTMODE_CENTER);
+
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
+
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
-        ofTranslate(vX[i],vY[i]);
-        
-        myFbo.begin();
+        //ofTranslate((vX[i])+(ofGetWidth()/4),vY[i]+(ofGetHeight()/4), 0);
+        ofTranslate((vX[i])+480,vY[i]+280, 0);
+
+        //myFbo.begin();
+        camera.begin();
         videoLC[i].draw(0, 0);
-        myFbo.end();
-        myFbo.draw(0, 0);
+        camera.end();
+        //myFbo.end();
+        //myFbo.draw(0, 0);
         
         if(model3DOn[i] == true){
             ofSetColor(255);
+            ofSetRectMode(OF_RECTMODE_CORNER);
             ofEnableBlendMode(OF_BLENDMODE_ALPHA);
             ofEnableDepthTest();
             light.enable();
@@ -388,7 +387,8 @@ void ofApp::draw(){
     }
     
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
-    
+    //camera.end();
+
 }
 
 
