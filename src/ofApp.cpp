@@ -9,9 +9,14 @@ void ofApp::setup(){
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1280, 800);
     ofSetFrameRate(30);
-    bDrawLenna = false;
 
-    camera.setDistance(460);
+    ofHideCursor();
+
+    camera.setDistance(500);
+
+    //camera.enableInertia();
+    //camera.setPosition(ofGetWidth()/4,ofGetHeight()/4, 1000);  
+
     /// fbo
     
     /* Queda clausurado hasta que descubra qué demonios pasa
@@ -272,8 +277,8 @@ void ofApp::draw(){
     ofEnableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
 
-    ofEnableLighting();
-    pointLight.enable();
+    //ofEnableLighting();
+    //pointLight.enable();
     //pointLight2.enable();
     //pointLight3.enable();
     
@@ -287,17 +292,6 @@ void ofApp::draw(){
    // };
     
 #endif
-    
-    // falta resolver el rotate. Podría el texto ir en un if más arriba y dentro de una pista
-    
-    for(int i = 0; i < LIM; i++){
-
-      ofPushMatrix();
-        
-        //camera.setTarget(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
-        
-        //font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
-
         
         if(textON == 1){
             
@@ -318,6 +312,19 @@ void ofApp::draw(){
         if(textON == 0){
             font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
         }
+
+    
+    // falta resolver el rotate. Podría el texto ir en un if más arriba y dentro de una pista
+
+	//camera.begin();
+    
+    for(int i = 0; i < LIM; i++){
+      
+      ofPushMatrix();
+        
+        //camera.setTarget(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+        
+        //font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
         
         /*clausurado en lo que descubro cómo funciona
         
@@ -331,20 +338,22 @@ void ofApp::draw(){
          ofRotateZ(ofGetElapsedTimef() * -30.0);
          
          */
-        
+
+        camera.begin();
+	
         ofSetRectMode(OF_RECTMODE_CENTER);
 
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
-
+	
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
         //ofTranslate((vX[i])+(ofGetWidth()/4),vY[i]+(ofGetHeight()/4), 0);
-        ofTranslate((vX[i])+480,vY[i]+280, 0);
+        ofTranslate((vX[i]),vY[i], 0);
 
+	//camera.begin();
         //myFbo.begin();
-        camera.begin();
         videoLC[i].draw(0, 0);
         camera.end();
         //myFbo.end();
@@ -383,7 +392,8 @@ void ofApp::draw(){
       }
         
         ofPopMatrix();
-        
+
+	//	camera.end();
     }
     
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());

@@ -3,5 +3,5 @@ ofxCenteredTrueTypeFont
 ofxHapPlayer
 ofxOsc
 ofxPostGlitch
-ofxSyphon
 ofxXmlSettings
+ofxPostGlitch
