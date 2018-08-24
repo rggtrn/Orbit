@@ -30,8 +30,6 @@ void ofApp::setup(){
      
      */
 
-    //font.load("fonts/DejaVuSansMono.ttf", 12, true, true, true);
-    //fontSize = 14;
     font2.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 16, true, true, true);
     font.setLineHeight(17);
