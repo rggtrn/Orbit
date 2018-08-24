@@ -12,7 +12,7 @@ void ofApp::setup(){
 
     ofHideCursor();
 
-    camera.setDistance(500);
+    camera.setDistance(1000);
 
     //camera.enableInertia();
     //camera.setPosition(ofGetWidth()/4,ofGetHeight()/4, 1000);  
