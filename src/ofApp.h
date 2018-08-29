@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "ofMain.h"
@@ -49,9 +50,11 @@ public:
     ofxXmlSettings XML;
     ofxOscReceiver reciever;
     ofxOscSender sender;
-    
+
+    float retroVel;
     int retroX;
     int retroY;
+    int retroON;
     
     int portIn;
     int portOut;
@@ -69,10 +72,44 @@ public:
     float vRotZ [LIM];
     int canonGenerator;
     ofPath path[LIM];
+    //ofFbo fbo[LIM];
+    //ofPlanePrimitive plane[LIM];
+    //ofTexture *texturas[LIM];
+    //ofShader *shaderes[LIM];
+
+    ofShader shader;
+    ofFbo fbo;
+    ofPlanePrimitive plane;    
+    ofxPostGlitch myGlitch;
+    float fbox;
+    float fboy;
+    float fboz;
+    float fboscaleX;
+    float fboscaleY;
+
+    ofFbo fboText;
+    //ofBoxPrimitive plane;    
+    // fx
+
+    bool convergence;
+    bool glow;
+    bool shaker;
+    bool cutslider;
+    bool twist;
+    bool outline;
+    bool noise;
+    bool slitscan;
+    bool swell;
+    bool invert;
+
+    /// glitch
+    
+    //ofxPostGlitch myGlitch;
     
     float textRotX;
     float textRotY;
     float textRotZ;
+    int ofxglitch;
     
     bool bDrawLenna;
     
@@ -91,19 +128,10 @@ public:
     int fontSize;
     
     ofLight pointLight;
-    ofLight pointLight2;
-    ofLight pointLight3;
-    
-    void drawWithModel();
-    void drawWithMesh();
     
     /// Para el postglitch
     
-    ofFbo            myFbo;
-    ofEasyCam        camera;
-    ofTexture        texture;
-    /*Addon instance*/
-    ofxPostGlitch    myGlitch;
+    ofEasyCam camera;
     
     string wrapString(string text, int width) {
         
