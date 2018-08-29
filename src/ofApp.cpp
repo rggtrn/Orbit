@@ -1,9 +1,7 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-// Pendiente: extraer texturas, reproducir en planos, crear fbos y habilitar efectos por "canal".
-// Después: trabajar en luces. 
-// Pendiente más a largo plazo: correr todo desde openFrameworks. Un modo para editar desde ahí. Un monitor de video. 
+// Monitor
 
 void ofApp::setup(){
 
@@ -23,8 +21,8 @@ void ofApp::setup(){
 
   // texto
   
-  font2.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
-  font.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
+  font2.load("fonts/DejaVuSansMono.ttf", 28, true, true, true);
+  font.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
   font.setLineHeight(17);
   //fontname.load("fonts/Batang.ttf", 14, true, true, true);
   textON = 0;
@@ -67,6 +65,14 @@ void ofApp::setup(){
   slitscan = false;
   swell = false;
   invert = false;
+
+  highcontrast = false;
+  blueraise = false;
+  redraise = false;
+  greenraise = false;
+  blueinvert = false;
+  redinvert = false;
+  greeninvert = false;
   
   // OSC
   
@@ -93,7 +99,7 @@ void ofApp::setup(){
     path[i];
   }
 
-  /// retro alimentación y otras cosas
+  /// retro alimentación
 
   retroON = 0; 
   position = 0;
@@ -101,8 +107,8 @@ void ofApp::setup(){
   retroX = 40;
   retroY = 40;
   feedback = 0;
-  canonGenerator = 0;
   retroVel = 4;
+  canonGenerator = 0;
 
   /// Luces
   
@@ -114,14 +120,9 @@ void ofApp::setup(){
 
 void ofApp::update(){
 
-  /// prueba fbo
-  
-  //ofBackground(0, 0, 0);
-  //ofEnableAlphaBlending();
-
   /// luces
   
-  pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
+  pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 300);
 
   // reproductor hap
   
@@ -147,7 +148,6 @@ void ofApp::update(){
             videoLC[n].load(temp);
             videoLC[n].play();
             model3DOn[n] = false;
-	    /// Ir hacia acá en lo que descubro cómo funciona. Igual para abajo
 	    //vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             //vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
             vScaleX[n] = (ofGetWidth()*1.0)/960;
@@ -214,19 +214,13 @@ void ofApp::update(){
         }
                 
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 2){
-            //serverTyping = "";
-            //serverTyping =
             texto = m.getArgAsString(0);
             nombre = m.getArgAsString(1);
             
         }
 
 	if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
-            //serverTyping = "";
-            //serverTyping =
             texto = m.getArgAsString(0);
-            //nombre = m.getArgAsString(1);
-            
         }
  
 	if (m.getAddress() == "/textON" && m.getNumArgs() == 1){
@@ -257,10 +251,8 @@ void ofApp::update(){
 	  player.load(temp);
 	  player.play();
 	  ofxglitch = m.getArgAsInt(0);
-	  //fbo.allocate(player.getWidth(), player.getHeight(), GL_RGBA);
 	  fboscaleX = ofGetWidth() / 960;
 	  fboscaleY = ofGetHeight() / 560;
-	  //plane.set(960, 560, 0, 0);
 	}
 
 	if (m.getAddress() == "/glitch" && m.getNumArgs() == 2){
@@ -276,6 +268,13 @@ void ofApp::update(){
 	    slitscan = false;
 	    swell = false;
 	    invert = false;
+	    highcontrast = false;
+	    blueraise = false;
+	    redraise = false;
+	    greenraise = false;
+	    blueinvert = false;
+	    redinvert = false;
+	    greeninvert = false;
 	  }
 	  
 	  if(m.getArgAsInt(1) == 1){
@@ -330,12 +329,8 @@ void ofApp::update(){
     fbo.begin();
 
     //ofBackground(0);
-    //ofClear(0);
     ofClear(0);
-    /* combinación ganadora del alpha. a la chompu mac le cuesta trabajo
-    ofBackground(0);
-    ofClear(0);
-    */
+
     if (shader2){
       shader2->begin();
     }
@@ -346,6 +341,7 @@ void ofApp::update(){
     
     if(ofxglitch == 1){
       ofTranslate(960/2, 560/2, -400);
+      ofRotateX(180);
       plane.draw();
     }
     
@@ -376,21 +372,23 @@ void ofApp::draw(){
    
   // luces
   
-  ofEnableLighting();
-  pointLight.enable();
+  //ofEnableLighting();
+  //pointLight.enable();
 
   // Syphon, solamente en mac
   
 #if (defined(__APPLE__) && defined(__MACH__))
 
   if(syphonON == 1){
-  client.draw(0, 0); /// buscar el free o release de syphon
+  client.draw(0, 0); 
   };  
   
 #endif
 
   // Glitch
+
   myGlitch.generateFx();
+  
   myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
   myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
   myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
@@ -402,13 +400,13 @@ void ofApp::draw(){
   myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
   myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
   
-  myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, false);
-  myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, false);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
+  myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
   
   for(int i = 0; i < LIM; i++){
     
@@ -417,6 +415,9 @@ void ofApp::draw(){
     ofSetRectMode(OF_RECTMODE_CENTER);  
 
     if(ofxglitch == 1){
+      ofRotateX(0);
+      ofRotateY(0);
+      ofRotateZ(0);
       ofTranslate(fbox, fboy, fboz);
       ofScale(fboscaleX, fboscaleY);
       fbo.draw(0, 0); 
@@ -429,27 +430,32 @@ void ofApp::draw(){
     ofScale(vScaleX[i],vScaleY[i]);
     ofTranslate((vX[i]),vY[i], 0);
     videoLC[i].draw(0, 0);
+
+    if(textON == 1){
+      //ofSetRectMode(OF_RECTMODE_CENTER);
+      ofRotateX(10);
+      ofRotateY(20);
+      ofRotateZ(10);
+      //ofTranslate(0, 200);
+      font2.drawStringCentered(nombre, -400, 200);
+      text = wrapString(texto, 200);
+      font.drawStringCentered(text, 0, 200);
+    };
+  
+    if(textON == 0){
+      font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
+    }
+    
     camera.end();
     
     if(canonGenerator == 1){
-      videoLC[i].setLoopState(OF_LOOP_NONE); /// trabajar en esto para el muy futuro
+      videoLC[i].setLoopState(OF_LOOP_NONE);
       }
     
     ofPopMatrix();
     
   }
 
-  if(textON == 1){
-    ofSetRectMode(OF_RECTMODE_CENTER);
-    font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
-    text = wrapString(texto, 200);
-    font.drawStringCentered(text, ofGetWidth()*0.5, ofGetHeight()*0.5);
-  };
-  
-    if(textON == 0){
-      font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
-    }
-  
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
     
 }

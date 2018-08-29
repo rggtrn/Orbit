@@ -102,7 +102,13 @@ public:
     bool swell;
     bool invert;
 
-    /// glitch
+    bool highcontrast;
+    bool blueraise;
+    bool redraise;
+    bool greenraise;
+    bool blueinvert;
+    bool redinvert;
+    bool greeninvert;
     
     //ofxPostGlitch myGlitch;
     

@@ -4,4 +4,3 @@ ofxHapPlayer
 ofxOsc
 ofxPostGlitch
 ofxXmlSettings
-ofxPostGlitch
