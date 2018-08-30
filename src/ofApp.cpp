@@ -17,17 +17,17 @@ void ofApp::setup(){
 
   // camara
   
-  camera.setDistance(1000);
+  camera.setDistance(1500);
 
   // texto
   
   font2.load("fonts/DejaVuSansMono.ttf", 28, true, true, true);
-  font.load("fonts/DejaVuSansMono.ttf", 24, true, true, true);
-  font.setLineHeight(17);
+  font.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
+  //font.setLineHeight(17);
   //fontname.load("fonts/Batang.ttf", 14, true, true, true);
   textON = 0;
-  texto = "PiranhaVivo";
-  nombre = "PiranhaVivo";
+  texto = "";
+  nombre = "";
 
   // Syphon
   
@@ -152,6 +152,9 @@ void ofApp::update(){
             //vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
             vScaleX[n] = (ofGetWidth()*1.0)/960;
             vScaleY[n] = (ofGetHeight()*1.0)/560;
+            vRotX[n] = 0;
+            vRotY[n] = 0;
+            vRotZ[n] = 0;
 	    //vScaleX[n] = (ofGetWidth()*1.0)/vW[m.getArgAsInt(0)];
             //vScaleY[n] = (ofGetHeight()*1.0)/vH[m.getArgAsInt(0)];
         }
@@ -411,6 +414,7 @@ void ofApp::draw(){
   for(int i = 0; i < LIM; i++){
     
     ofPushMatrix();
+      
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);  
 
@@ -423,6 +427,21 @@ void ofApp::draw(){
       fbo.draw(0, 0); 
     }
    
+      if(textON == 1){
+          ofSetRectMode(OF_RECTMODE_CENTER);
+          ofScale(1, 1);
+          ofTranslate(0, 0, 500);
+          text = wrapString(texto, 200);
+          ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
+          //font2.drawString(nombre, rect.height-100, 0);
+          ofTranslate(0, 0, 0);
+          font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+          float distancia;
+          distancia = ofMap(rect.height, 26, 1234, 1100, 1234*1.5);
+          camera.setDistance(distancia);
+
+      };
+      
     ofRotateX(vRotX[i]);
     ofRotateY(vRotY[i]);
     ofRotateZ(vRotZ[i]);
@@ -431,21 +450,6 @@ void ofApp::draw(){
     ofTranslate((vX[i]),vY[i], 0);
     videoLC[i].draw(0, 0);
 
-    if(textON == 1){
-      //ofSetRectMode(OF_RECTMODE_CENTER);
-      ofRotateX(10);
-      ofRotateY(20);
-      ofRotateZ(10);
-      //ofTranslate(0, 200);
-      font2.drawStringCentered(nombre, -400, 200);
-      text = wrapString(texto, 200);
-      font.drawStringCentered(text, 0, 200);
-    };
-  
-    if(textON == 0){
-      font.drawStringCentered("", (ofGetWidth()*0.5), ofGetHeight()*0.5);
-    }
-    
     camera.end();
     
     if(canonGenerator == 1){
