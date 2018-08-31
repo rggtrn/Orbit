@@ -87,6 +87,9 @@ public:
     float fboscaleX;
     float fboscaleY;
     float fboSpeed;
+    float lightON;
+    float namesON;
+    float fixText;
 
     ofFbo fboText;
     //ofBoxPrimitive plane;    
