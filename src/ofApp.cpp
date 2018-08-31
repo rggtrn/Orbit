@@ -3,6 +3,18 @@
 
 //--------------------------------------------------------------
 
+void ofApp::setupGlitch(){
+    
+    ofSetCircleResolution(50);
+    ofBackground(0, 0, 0);
+    ofSetVerticalSync(true);
+    ofSetWindowTitle("PiranhaVivo");
+    ofSetWindowShape(1360, 768);
+    ofSetFrameRate(60);
+    ofHideCursor();
+
+}
+
 void ofApp::setup(){
     
     // iniciales
@@ -10,10 +22,10 @@ void ofApp::setup(){
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
-    ofSetWindowTitle("PiranhaVivo");
-    ofSetWindowShape(1280, 800);
+    ofSetWindowTitle("PiranhaVivoPreview");
+    ofSetWindowShape(1360, 768); /// resolución final
     ofSetFrameRate(60);
-    ofHideCursor();
+    //ofHideCursor();
     
     // camara
     
@@ -47,8 +59,9 @@ void ofApp::setup(){
     
     // glitch
     
-    plane.set(960*2, 560*2);
-    fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
+    //plane.set(960*2, 560*2);
+    //fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     myGlitch.setup(&fbo);
     ofxglitch = 0;
     fbox = 0;
@@ -238,16 +251,14 @@ void ofApp::update(){
             canonGenerator = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/fboSpeed" && m.getNumArgs() == 1){
-            fboSpeed = m.getArgAsFloat(0);
-        }
-        
 #if (defined(__APPLE__) && defined(__MACH__))
         if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
             syphonON = m.getArgAsInt(0);
         }
 #endif
         
+        /*
+         
         if (m.getAddress() == "/posFbo" && m.getNumArgs() == 3){
             ofBackground(0);
             ofClear(0);
@@ -265,6 +276,11 @@ void ofApp::update(){
             fboscaleX = ofGetWidth() / 960;
             fboscaleY = ofGetHeight() / 560;
         }
+         
+         if (m.getAddress() == "/fboSpeed" && m.getNumArgs() == 1){
+         fboSpeed = m.getArgAsFloat(0);
+         }
+        */
         
         if (m.getAddress() == "/glitch" && m.getNumArgs() == 2){
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
@@ -286,40 +302,53 @@ void ofApp::update(){
                 redinvert = false;
                 greeninvert = false;
             }
+            
             if(m.getArgAsInt(1) == 1){
                 convergence = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 2){
                 glow = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 3){
                 shaker = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 4){
                 cutslider = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 5){
                 twist = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 6){
                 outline = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 7){
                 noise = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 8){
                 slitscan = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 9){
                 swell = m.getArgAsBool(0);
             }
+            
             if(m.getArgAsInt(1) == 10){
                 invert = m.getArgAsBool(0);
             }
+            
         }
     }
     
     /// fbo Glitch
+    
+    /* fbo en otra ventana
     
     ofTexture *texture = player.getTexture();
     ofShader *shader2 = player.getShader();
@@ -352,6 +381,8 @@ void ofApp::update(){
     }
     
     fbo.end();
+     
+     */
     
 }
 
@@ -366,6 +397,9 @@ void ofApp::draw(){
     
     // retroalmientación
     
+    fbo.begin();
+    ofClear(0);
+
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     
     // luces
@@ -385,34 +419,13 @@ void ofApp::draw(){
     
 #endif
     
-    // Glitch
-    
-    myGlitch.generateFx();
-    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
-    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
-    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
-    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
-    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
-    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
-    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
-    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
-    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
-    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
-    
     for(int i = 0; i < LIM; i++){
         
         ofPushMatrix();
         
         if(textON == 1 && fixText == 1){
             ofSetRectMode(OF_RECTMODE_CENTER);
-            ofTranslate(0, 0, 0);
+            ofTranslate(0, 0, 200);
             ofScale(1, 1);
             ofRotateX(textRotX);
             ofRotateY(textRotY);
@@ -445,7 +458,7 @@ void ofApp::draw(){
         
         if(textON == 1 && fixText == 0){
             ofSetRectMode(OF_RECTMODE_CENTER);
-            ofTranslate(0, 0, 0);
+            ofTranslate(0, 0, 200);
             ofScale(1, 1);
             ofRotateX(textRotX);
             ofRotateY(textRotY);
@@ -482,6 +495,37 @@ void ofApp::draw(){
     
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
     
+    fbo.end();
+    
+    fbo.draw(0, 0);
+    
+}
+
+void ofApp::drawGlitch(ofEventArgs & args){
+    
+    // Glitch
+    
+    myGlitch.generateFx();
+    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
+    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
+    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
+    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
+    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
+    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
+    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
+    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
+    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
+    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
+    
+    fbo.draw(0, 0);
+
 }
 
 

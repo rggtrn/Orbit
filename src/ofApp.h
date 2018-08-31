@@ -32,17 +32,15 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
+    void setupGlitch();
+    void drawGlitch(ofEventArgs & args);
     
     ofxHapPlayer videoLC[LIM]; // para volver al estado anterior
-    //mirrors videoLC[LIM2]; // para volver al estado anterior
     float position;
     ofTexture screenImage;
     bool feedback;
-    
-    //ofDrawCircle circulos;
-    
     ofxHapPlayer player;
-    void load(std::string movie);
+    
 #if (defined(__APPLE__) && defined(__MACH__))
     ofxSyphonClient client;
     bool syphonON;
