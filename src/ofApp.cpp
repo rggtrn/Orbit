@@ -10,7 +10,7 @@ void ofApp::setupGlitch(){
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
     ofSetWindowShape(1360, 768);
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofHideCursor();
 
 }
@@ -22,14 +22,18 @@ void ofApp::setup(){
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
-    ofSetWindowTitle("PiranhaVivoPreview");
+    ofSetWindowTitle("Preview");
     ofSetWindowShape(1360, 768); /// resolución final
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     //ofHideCursor();
     
     // camara
     
     camera.setDistance(1500);
+    autoOrbit = 0;
+    orbitX = 0;
+    orbitY = 0;
+    distanceLockON = 1;
     
     // texto
     
@@ -51,12 +55,6 @@ void ofApp::setup(){
     syphonON = 0;
 #endif
     
-    // Reproductor Hap
-    
-    player.setPixelFormat(OF_PIXELS_RGBA);
-    player.setLoopState(OF_LOOP_NORMAL);
-    player.load("videos/rggtrn00.mov");
-    
     // glitch
     
     //plane.set(960*2, 560*2);
@@ -70,7 +68,6 @@ void ofApp::setup(){
     fboscaleX = 1;
     fboscaleY = 1;
     fboSpeed=1;
-    
     convergence = false;
     glow = false;
     shaker = false;
@@ -102,6 +99,7 @@ void ofApp::setup(){
     for(int i = 0; i < LIM; i++){
         vX[i] = 0;
         vY[i] = 0;
+        vZ[i] = 0;
         vW[i] = 0;
         vH[i] = 0;
         vSpeed[i] = 1;
@@ -139,10 +137,6 @@ void ofApp::update(){
     /// luces
     
     pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 300);
-    
-    // reproductor hap
-    
-    player.update();
     
     // retroalmientación
     
@@ -199,12 +193,15 @@ void ofApp::update(){
             vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
         }
         
-        if (m.getAddress() == "/pos" && m.getNumArgs() == 3){ /// posZ
+        if (m.getAddress() == "/pos" && m.getNumArgs() == 4){ /// posZ
             vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             vY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+            vZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
+            
             if(canonGenerator == 1){
                 videoLC[m.getArgAsInt(0)].play();
             }
+            
         }
         
         if (m.getAddress() == "/size" && m.getNumArgs() == 3){
@@ -215,8 +212,6 @@ void ofApp::update(){
         }
         
         if (m.getAddress() == "/feedback" && m.getNumArgs() == 2){
-            //vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
-            //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
             retroX = m.getArgAsFloat(0);
             retroY = m.getArgAsFloat(1);
         }
@@ -247,6 +242,17 @@ void ofApp::update(){
             fixText = m.getArgAsInt(1);
         }
         
+        if (m.getAddress() == "/distanceLockON" && m.getNumArgs() == 1){
+            textON = m.getArgAsInt(0);
+            fixText = m.getArgAsInt(1);
+        }
+        
+        if (m.getAddress() == "/autoOrbit" && m.getNumArgs() == 3){
+            autoOrbit = m.getArgAsInt(0);
+            orbitX = m.getArgAsInt(1);
+            orbitY = m.getArgAsInt(2);
+        }
+        
         if (m.getAddress() == "/canonGeneratorON" && m.getNumArgs() == 1){
             canonGenerator = m.getArgAsInt(0);
         }
@@ -257,32 +263,8 @@ void ofApp::update(){
         }
 #endif
         
-        /*
-         
-        if (m.getAddress() == "/posFbo" && m.getNumArgs() == 3){
-            ofBackground(0);
-            ofClear(0);
-            fbox = m.getArgAsFloat(0);
-            fboy = m.getArgAsFloat(1);
-            fboz = m.getArgAsFloat(2);
-        }
-        
-        if (m.getAddress() == "/loadFbo" && m.getNumArgs() == 2){
-            string temp = "videos/" + m.getArgAsString(1) + ".mov";
-            player.load(temp);
-            player.play();
-            player.setSpeed(fboSpeed);
-            ofxglitch = m.getArgAsInt(0);
-            fboscaleX = ofGetWidth() / 960;
-            fboscaleY = ofGetHeight() / 560;
-        }
-         
-         if (m.getAddress() == "/fboSpeed" && m.getNumArgs() == 1){
-         fboSpeed = m.getArgAsFloat(0);
-         }
-        */
-        
         if (m.getAddress() == "/glitch" && m.getNumArgs() == 2){
+            
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
                 convergence = false;
                 glow = false;
@@ -344,45 +326,8 @@ void ofApp::update(){
             }
             
         }
+    
     }
-    
-    /// fbo Glitch
-    
-    /* fbo en otra ventana
-    
-    ofTexture *texture = player.getTexture();
-    ofShader *shader2 = player.getShader();
-    
-    fbo.begin();
-    
-    //ofBackground(0);
-    ofClear(0);
-    
-    if (shader2){
-        shader2->begin();
-    }
-    
-    texture->bind();
-    
-    ofPushMatrix();
-    
-    if(ofxglitch == 1){
-        ofTranslate(960/2, 560/2, -400);
-        ofRotateX(180);
-        plane.draw();
-    }
-    
-    ofPopMatrix();
-    
-    texture->unbind();
-    
-    if (shader2){
-        shader2->end();
-    }
-    
-    fbo.end();
-     
-     */
     
 }
 
@@ -430,31 +375,25 @@ void ofApp::draw(){
             ofRotateX(textRotX);
             ofRotateY(textRotY);
             ofRotateZ(textRotZ);
+            
             if(namesON == 1){
                 font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
             }
+            
             text = wrapString(texto, 200);
             ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
+            
+            if(distanceLockON == 1){
             float distancia;
             distancia = ofMap(rect.height, 0, 1000, 100, -400);
             ofTranslate(0, 0, distancia);
+            }
+            
             font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
         };
         
         camera.begin();
         ofSetRectMode(OF_RECTMODE_CENTER);
-        
-        /*
-         if(ofxglitch == 1){
-         ofRotateX(fbox);
-         ofRotateY(fboy);
-         ofRotateZ(fboz);
-         ofTranslate(fbox, fboy, fboz);
-         ofScale(fboscaleX, fboscaleY);
-         fbo.draw(0, 0);
-         }
-         
-         */
         
         if(textON == 1 && fixText == 0){
             ofSetRectMode(OF_RECTMODE_CENTER);
@@ -463,16 +402,25 @@ void ofApp::draw(){
             ofRotateX(textRotX);
             ofRotateY(textRotY);
             ofRotateZ(textRotZ);
+            
             if(namesON == 1){
                 font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
             }
+            
             text = wrapString(texto, 200);
             ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
             font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-            //camera.orbit(ofGetElapsedTimef()*250, ofGetElapsedTimef()*150, 500, ofVec3f(rect.x, rect.y, 250));
+            
+            if(autoOrbit == 1){
+            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+            }
+            
+            if(distanceLockON == 1){
             float distancia;
             distancia = ofMap(rect.height, 26, 1234, 500, 1234*1.25);
             camera.setDistance(distancia);
+            }
+        
         };
         
         ofRotateX(vRotX[i]);
@@ -480,7 +428,7 @@ void ofApp::draw(){
         ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
         ofScale(vScaleX[i],vScaleY[i]);
-        ofTranslate((vX[i]),vY[i], 0);
+        ofTranslate((vX[i]),vY[i], vZ[i]-200);
         videoLC[i].draw(0, 0);
         
         camera.end();

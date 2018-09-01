@@ -35,7 +35,10 @@ public:
     void setupGlitch();
     void drawGlitch(ofEventArgs & args);
     
-    ofxHapPlayer videoLC[LIM]; // para volver al estado anterior
+    ofxHapPlayer videoLC[LIM];
+    
+    // retroalimentación
+    
     float position;
     ofTexture screenImage;
     bool feedback;
@@ -61,6 +64,7 @@ public:
     int vOpacity[LIM];
     int vX[LIM];
     int vY[LIM];
+    int vZ[LIM];
     float vScaleX[LIM];
     float vScaleY[LIM];
     int vW [LIM];
@@ -70,15 +74,12 @@ public:
     float vRotZ [LIM];
     int canonGenerator;
     ofPath path[LIM];
-    //ofFbo fbo[LIM];
-    //ofPlanePrimitive plane[LIM];
-    //ofTexture *texturas[LIM];
-    //ofShader *shaderes[LIM];
 
     ofShader shader;
     ofFbo fbo;
     ofPlanePrimitive plane;    
     ofxPostGlitch myGlitch;
+    
     float fbox;
     float fboy;
     float fboz;
@@ -88,10 +89,12 @@ public:
     float lightON;
     float namesON;
     float fixText;
-
+    float autoOrbit;
+    float orbitX;
+    float orbitY;
+    int distanceLockON;
+    
     ofFbo fboText;
-    //ofBoxPrimitive plane;    
-    // fx
 
     bool convergence;
     bool glow;
@@ -112,18 +115,14 @@ public:
     bool redinvert;
     bool greeninvert;
     
-    //ofxPostGlitch myGlitch;
-    
     float textRotX;
     float textRotY;
     float textRotZ;
     int ofxglitch;
-    
-    bool bDrawLenna;
-    
+        
     ofLight light;
-    ofxCenteredTrueTypeFont font; // standard font
-    ofxCenteredTrueTypeFont font2; // standard font
+    ofxCenteredTrueTypeFont font;
+    ofxCenteredTrueTypeFont font2;
 
     string texto; 
     string nombre;
@@ -136,8 +135,6 @@ public:
     int fontSize;
     
     ofLight pointLight;
-    
-    /// Para el postglitch
     
     ofEasyCam camera;
     
