@@ -93,6 +93,7 @@ public:
     float orbitX;
     float orbitY;
     int distanceLockON;
+    int malandroModeON;
     
     ofFbo fboText;
 
@@ -119,6 +120,7 @@ public:
     float textRotY;
     float textRotZ;
     int ofxglitch;
+    float tempo;
         
     ofLight light;
     ofxCenteredTrueTypeFont font;

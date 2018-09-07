@@ -9,8 +9,8 @@ void ofApp::setupGlitch(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
-    ofSetWindowShape(1360, 768);
-    ofSetFrameRate(30);
+    ofSetWindowShape(1024, 768);
+    ofSetFrameRate(60);
     ofHideCursor();
 
 }
@@ -23,9 +23,10 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
     ofSetWindowTitle("Preview");
-    ofSetWindowShape(1360, 768); /// resolución final
-    ofSetFrameRate(30);
+    ofSetWindowShape(1024, 768); /// resolución final
+    ofSetFrameRate(60);
     //ofHideCursor();
+    tempo = 1;
     
     // camara
     
@@ -36,8 +37,11 @@ void ofApp::setup(){
     distanceLockON = 1;
     
     // texto
+
+    //font2.load("fonts/CloisterBlack.ttf", 28, true, true, true);
+    //font.load("fonts/CloisterBlack.ttf", 20, true, true, true);
     
-    font2.load("fonts/DejaVuSansMono.ttf", 28, true, true, true);
+    font2.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
     textON = 0;
     texto = "";
@@ -182,11 +186,15 @@ void ofApp::update(){
         
         if (m.getAddress() == "/speed" && m.getNumArgs() == 2){
             int n = m.getArgAsInt(0);
-            videoLC[n].setSpeed(m.getArgAsFloat(1));
+            videoLC[n].setSpeed(m.getArgAsFloat(1)*tempo);
         }
         
         if (m.getAddress() == "/lightON" && m.getNumArgs() == 1){
             lightON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
+            tempo = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/opacity" && m.getNumArgs() == 2){
@@ -216,6 +224,14 @@ void ofApp::update(){
             retroY = m.getArgAsFloat(1);
         }
         
+        if (m.getAddress() == "/feedbackX" && m.getNumArgs() == 1){
+            retroX = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/feedbackY" && m.getNumArgs() == 1){
+            retroY = m.getArgAsFloat(0);
+        }
+        
         if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
             vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
@@ -236,6 +252,11 @@ void ofApp::update(){
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
             texto = m.getArgAsString(0);
         }
+        
+        if (m.getAddress() == "/namesON"  &&  m.getNumArgs() == 1){
+            namesON = m.getArgAsInt(0);
+        }
+        
         
         if (m.getAddress() == "/textON" && m.getNumArgs() == 2){
             textON = m.getArgAsInt(0);
@@ -263,6 +284,47 @@ void ofApp::update(){
         }
 #endif
         
+        if (m.getAddress() == "/glitchColor" && m.getNumArgs() == 2){
+            
+            if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
+                highcontrast = false;
+                blueraise = false;
+                redraise = false;
+                greenraise = false;
+                blueinvert = false;
+                redinvert = false;
+                greeninvert = false;
+            }
+            
+            if(m.getArgAsInt(1) == 1){
+                highcontrast = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 2){
+                blueraise = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 3){
+                redraise = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 4){
+                greenraise = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 5){
+                blueinvert = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 6){
+                redinvert = m.getArgAsBool(0);
+            }
+            
+            if(m.getArgAsInt(1) == 1){
+                greeninvert = m.getArgAsBool(0);
+            }
+        }
+        
         if (m.getAddress() == "/glitch" && m.getNumArgs() == 2){
             
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
@@ -276,13 +338,7 @@ void ofApp::update(){
                 slitscan = false;
                 swell = false;
                 invert = false;
-                highcontrast = false;
-                blueraise = false;
-                redraise = false;
-                greenraise = false;
-                blueinvert = false;
-                redinvert = false;
-                greeninvert = false;
+
             }
             
             if(m.getArgAsInt(1) == 1){
@@ -341,10 +397,10 @@ void ofApp::draw(){
     ofSetRectMode(OF_RECTMODE_CORNER);
     
     // retroalmientación
-    
+ 
     fbo.begin();
     ofClear(0);
-
+    
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     
     // luces
@@ -367,8 +423,10 @@ void ofApp::draw(){
     for(int i = 0; i < LIM; i++){
         
         ofPushMatrix();
-        
+        ///texto fuera de cámara
+
         if(textON == 1 && fixText == 1){
+            
             ofSetRectMode(OF_RECTMODE_CENTER);
             ofTranslate(0, 0, 200);
             ofScale(1, 1);
@@ -376,12 +434,16 @@ void ofApp::draw(){
             ofRotateY(textRotY);
             ofRotateZ(textRotZ);
             
-            if(namesON == 1){
-                font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
-            }
-            
             text = wrapString(texto, 200);
             ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
+            
+            if(namesON == 1){
+                float distancia;
+                float distancia2;
+                distancia = ofMap(rect.height, 25, 1000, 55, 625);
+                distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
+                font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
+            }
             
             if(distanceLockON == 1){
             float distancia;
@@ -395,7 +457,10 @@ void ofApp::draw(){
         camera.begin();
         ofSetRectMode(OF_RECTMODE_CENTER);
         
+        /// texto en cámara
+        
         if(textON == 1 && fixText == 0){
+            
             ofSetRectMode(OF_RECTMODE_CENTER);
             ofTranslate(0, 0, 200);
             ofScale(1, 1);
@@ -403,13 +468,17 @@ void ofApp::draw(){
             ofRotateY(textRotY);
             ofRotateZ(textRotZ);
             
-            if(namesON == 1){
-                font2.drawStringCentered(nombre, ofGetWidth()*0.125, ofGetHeight()*0.125);
-            }
-            
             text = wrapString(texto, 200);
             ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
             font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+            
+            if(namesON == 1){
+                float distancia;
+                float distancia2;
+                distancia = ofMap(rect.height, 25, 1000, 55, 625);
+                distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
+                font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
+                }
             
             if(autoOrbit == 1){
             camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
@@ -447,6 +516,8 @@ void ofApp::draw(){
     
     fbo.draw(0, 0);
     
+
+
 }
 
 void ofApp::drawGlitch(ofEventArgs & args){
