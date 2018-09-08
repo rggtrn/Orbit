@@ -140,7 +140,7 @@ void ofApp::update(){
     
     /// luces
     
-    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 300);
+    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 200);
     
     // retroalmientación
     
@@ -384,20 +384,7 @@ void ofApp::update(){
         }
     
     }
-    
-}
 
-//--------------------------------------------------------------
-void ofApp::draw(){
-    
-    // iniciales
-    
-    ofBackground(0, 0, 0);
-    ofEnableAlphaBlending();
-    ofSetRectMode(OF_RECTMODE_CORNER);
-    
-    // retroalmientación
- 
     fbo.begin();
     ofClear(0);
     
@@ -406,8 +393,8 @@ void ofApp::draw(){
     // luces
     
     if(lightON == 1){
-        ofEnableLighting();
-        pointLight.enable();
+      ofEnableLighting();
+      pointLight.enable();
     }
     
     // syphon
@@ -415,13 +402,13 @@ void ofApp::draw(){
 #if (defined(__APPLE__) && defined(__MACH__))
     
     if(syphonON == 1){
-        client.draw(0, 0);
+      client.draw(0, 0);
     };
     
 #endif
     
     for(int i = 0; i < LIM; i++){
-        
+      
         ofPushMatrix();
         ///texto fuera de cámara
 
@@ -512,12 +499,8 @@ void ofApp::draw(){
     
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
     
-    fbo.end();
+    fbo.end();  
     
-    fbo.draw(0, 0);
-    
-
-
 }
 
 void ofApp::drawGlitch(ofEventArgs & args){
@@ -547,6 +530,21 @@ void ofApp::drawGlitch(ofEventArgs & args){
 
 }
 
+
+//--------------------------------------------------------------
+void ofApp::draw(){
+    
+    // iniciales
+  
+  ofBackground(0, 0, 0);
+  ofEnableAlphaBlending();
+  ofSetRectMode(OF_RECTMODE_CORNER);
+  
+  //ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 10, 10);
+  
+  fbo.draw(0, 0);
+
+}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
