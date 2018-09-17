@@ -1,13 +1,17 @@
 
-# PiranhaVivo
+# PiranhaVivo / Orbit
 
-PiranhaVivo es un proyecto que sirve para mezclar videos en vivo. PV se controla por medio del protocolo OSC y persigue la ligereza y la eficiencia como premisas. Está basado en [CineVivo](https://github.com/essteban/CineVivo). Para ejecutarlo es necesario utilizar un programa o dispositivo externo que pueda enviar mensajes OSC. 
+PV / Orbit es un proyecto que sirve para mezclar videos en vivo. PV se controla por medio del protocolo OSC y persigue la ligereza y la eficiencia como premisas. Para ejecutarlo es necesario utilizar un programa o dispositivo externo que pueda enviar mensajes OSC. De entre los desarrollos que insipiran a PV / Orbit están [CineVivo](https://github.com/essteban/CineVivo) y Fluxus. 
 
-Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
+## PV / Orbit en acción
+
+[RGGTRN - moombahcode++geom](https://vimeo.com/289901460)
 
 ## Instalación
 
-PirañaVivo corre en Linux y Mac. En primer instancia, es necesario tener una versión compilada de OpenFrameworks. Para compilar PV es necesario agregar ofxSyphon (sólamente para mac) y una rama específica de la extensión ofxHapPlayer:
+Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
+
+PV / Orbit corre en Linux y Mac. En primer instancia, es necesario tener una versión compilada de OpenFrameworks. Para compilar PV es necesario agregar ofxSyphon (sólamente para mac) y una rama específica de la extensión ofxHapPlayer:
 
 `$ git clone https://github.com/astellato/ofxSyphon`
 
