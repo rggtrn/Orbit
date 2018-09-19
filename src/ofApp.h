@@ -74,6 +74,8 @@ public:
     float vRotZ [LIM];
     int canonGenerator;
     ofPath path[LIM];
+    
+    int feedbackON;         
 
     ofShader shader;
     ofFbo fbo;

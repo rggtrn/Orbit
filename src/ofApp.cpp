@@ -9,7 +9,7 @@ void ofApp::setupGlitch(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
     ofSetWindowTitle("PiranhaVivo");
-    ofSetWindowShape(1024, 768);
+    ofSetWindowShape(1024, 768); /// La resolución de la pantalla final
     ofSetFrameRate(60);
     ofHideCursor();
 
@@ -23,7 +23,7 @@ void ofApp::setup(){
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
     ofSetWindowTitle("Preview");
-    ofSetWindowShape(1024, 768); /// resolución final
+    ofSetWindowShape(1024, 768); /// La resolución de la pantalla final
     ofSetFrameRate(60);
     //ofHideCursor();
     tempo = 1;
@@ -89,6 +89,7 @@ void ofApp::setup(){
     blueinvert = false;
     redinvert = false;
     greeninvert = false;
+
     
     // OSC
     
@@ -126,6 +127,7 @@ void ofApp::setup(){
     feedback = 0;
     retroVel = 4;
     canonGenerator = 0;
+    feedbackON = 1;
     
     /// Luces
     
@@ -278,6 +280,10 @@ void ofApp::update(){
             canonGenerator = m.getArgAsInt(0);
         }
         
+        if (m.getAddress() == "/feedbackON" && m.getNumArgs() == 1){
+            feedbackON = m.getArgAsInt(0);
+        }
+        
 #if (defined(__APPLE__) && defined(__MACH__))
         if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
             syphonON = m.getArgAsInt(0);
@@ -388,7 +394,9 @@ void ofApp::update(){
     fbo.begin();
     ofClear(0);
     
+    if(feedbackON == 1){
     screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
+    }
     
     // luces
     
@@ -476,6 +484,10 @@ void ofApp::update(){
             distancia = ofMap(rect.height, 26, 1234, 500, 1234*1.25);
             camera.setDistance(distancia);
             }
+            
+            if(distanceLockON == 0){
+                camera.setDistance(100);
+            }
         
         };
         
@@ -497,7 +509,9 @@ void ofApp::update(){
         
     }
     
+    if(feedbackON == 1){
     screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
+    }
     
     fbo.end();  
     
