@@ -89,6 +89,10 @@ void ofApp::setup(){
     blueinvert = false;
     redinvert = false;
     greeninvert = false;
+    
+    /// información
+    
+    timeElapsedON=0;
 
     
     // OSC
@@ -127,7 +131,7 @@ void ofApp::setup(){
     feedback = 0;
     retroVel = 4;
     canonGenerator = 0;
-    feedbackON = 1;
+    feedbackON = 0; /// activarla de vez en cuando chin
     
     /// Luces
     
@@ -390,19 +394,88 @@ void ofApp::update(){
         }
     
     }
+    
+    drawScene();
+    
+}
 
+//--------------------------------------------------------------
+void ofApp::draw(){
+    
+    // iniciales
+    ofClear(0);
+
+    ofBackground(0, 0, 0);
+    ofEnableAlphaBlending();
+    ofSetRectMode(OF_RECTMODE_CORNER);
+   
+    //ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
+
+    //ofBackground(0, 0, 0);
+    
+    //ofScale(0.5, 0.5);
+    //ofTranslate(200, 200);
+    
+    fbo.draw(0, 0);
+    
+}
+
+void ofApp::drawGlitch(ofEventArgs & args){
+    
+    // Glitch
+    
+    ofBackground(0, 0, 0);
+    ofEnableAlphaBlending();
+    ofSetRectMode(OF_RECTMODE_CORNER);
+    
+    ofClear(0);
+
+    myGlitch.generateFx();
+    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
+    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
+    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
+    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
+    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
+    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
+    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
+    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
+    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
+    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
+    
+    fbo.draw(0, 0);
+
+}
+
+
+
+
+//--------------------------------------------------------------
+
+void ofApp::drawScene(){
+    
     fbo.begin();
     ofClear(0);
     
-    if(feedbackON == 1){
-    screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
+    if(timeElapsedON==1){
+    ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
     }
     
+    if(feedbackON == 1){
+        screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
+    }
+
     // luces
     
     if(lightON == 1){
-      ofEnableLighting();
-      pointLight.enable();
+        ofEnableLighting();
+        pointLight.enable();
     }
     
     // syphon
@@ -410,16 +483,16 @@ void ofApp::update(){
 #if (defined(__APPLE__) && defined(__MACH__))
     
     if(syphonON == 1){
-      client.draw(0, 0);
+        client.draw(0, 0);
     };
     
 #endif
     
     for(int i = 0; i < LIM; i++){
-      
+        
         ofPushMatrix();
         ///texto fuera de cámara
-
+        
         if(textON == 1 && fixText == 1){
             
             ofSetRectMode(OF_RECTMODE_CENTER);
@@ -441,9 +514,9 @@ void ofApp::update(){
             }
             
             if(distanceLockON == 1){
-            float distancia;
-            distancia = ofMap(rect.height, 0, 1000, 100, -400);
-            ofTranslate(0, 0, distancia);
+                float distancia;
+                distancia = ofMap(rect.height, 0, 1000, 100, -400);
+                ofTranslate(0, 0, distancia);
             }
             
             font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
@@ -473,22 +546,22 @@ void ofApp::update(){
                 distancia = ofMap(rect.height, 25, 1000, 55, 625);
                 distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
                 font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
-                }
+            }
             
             if(autoOrbit == 1){
-            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+                camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
             }
             
             if(distanceLockON == 1){
-            float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 500, 1234*1.25);
-            camera.setDistance(distancia);
+                float distancia;
+                distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
+                camera.setDistance(distancia);
             }
             
             if(distanceLockON == 0){
                 camera.setDistance(100);
             }
-        
+            
         };
         
         ofRotateX(vRotX[i]);
@@ -510,54 +583,11 @@ void ofApp::update(){
     }
     
     if(feedbackON == 1){
-    screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
+        screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
     }
     
-    fbo.end();  
+    fbo.end();
     
-}
-
-void ofApp::drawGlitch(ofEventArgs & args){
-    
-    // Glitch
-    
-    myGlitch.generateFx();
-    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
-    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
-    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
-    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
-    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
-    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
-    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
-    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
-    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
-    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
-    
-    fbo.draw(0, 0);
-
-}
-
-
-//--------------------------------------------------------------
-void ofApp::draw(){
-    
-    // iniciales
-  
-  ofBackground(0, 0, 0);
-  ofEnableAlphaBlending();
-  ofSetRectMode(OF_RECTMODE_CORNER);
-  
-  //ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 10, 10);
-  
-  fbo.draw(0, 0);
-
 }
 
 //--------------------------------------------------------------

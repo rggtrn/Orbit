@@ -34,6 +34,7 @@ public:
     void gotMessage(ofMessage msg);
     void setupGlitch();
     void drawGlitch(ofEventArgs & args);
+    void drawScene();
     
     ofxHapPlayer videoLC[LIM];
     
@@ -77,7 +78,7 @@ public:
     
     int feedbackON;         
 
-    ofShader shader;
+    ofShader shaderFish;
     ofFbo fbo;
     ofPlanePrimitive plane;    
     ofxPostGlitch myGlitch;
@@ -96,6 +97,7 @@ public:
     float orbitY;
     int distanceLockON;
     int malandroModeON;
+    float timeElapsedON;
     
     ofFbo fboText;
 
