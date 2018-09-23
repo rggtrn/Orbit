@@ -1,20 +1,6 @@
 
 #include "ofApp.h"
 
-//--------------------------------------------------------------
-
-void ofApp::setupGlitch(){
-    
-    ofSetCircleResolution(50);
-    ofBackground(0, 0, 0);
-    ofSetVerticalSync(true);
-    ofSetWindowTitle("PiranhaVivo");
-    ofSetWindowShape(1024, 768); /// La resolución de la pantalla final
-    ofSetFrameRate(60);
-    ofHideCursor();
-
-}
-
 void ofApp::setup(){
     
     // iniciales
@@ -22,10 +8,14 @@ void ofApp::setup(){
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
     ofSetVerticalSync(true);
-    ofSetWindowTitle("Preview");
-    ofSetWindowShape(1024, 768); /// La resolución de la pantalla final
+    ofSetWindowTitle("Orbit");
+    
+    winSizeW = 1024;
+    winSizeH = 768;
+    
+    ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
     ofSetFrameRate(60);
-    //ofHideCursor();
+    ofHideCursor();
     tempo = 1;
     
     // camara
@@ -263,6 +253,9 @@ void ofApp::update(){
             namesON = m.getArgAsInt(0);
         }
         
+        if (m.getAddress() == "/timeElapsedON"  &&  m.getNumArgs() == 1){
+            timeElapsedON = m.getArgAsInt(0);
+        }
         
         if (m.getAddress() == "/textON" && m.getNumArgs() == 2){
             textON = m.getArgAsInt(0);
@@ -399,29 +392,8 @@ void ofApp::update(){
     
 }
 
-//--------------------------------------------------------------
 void ofApp::draw(){
-    
-    // iniciales
-    ofClear(0);
 
-    ofBackground(0, 0, 0);
-    ofEnableAlphaBlending();
-    ofSetRectMode(OF_RECTMODE_CORNER);
-   
-    //ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
-
-    //ofBackground(0, 0, 0);
-    
-    //ofScale(0.5, 0.5);
-    //ofTranslate(200, 200);
-    
-    fbo.draw(0, 0);
-    
-}
-
-void ofApp::drawGlitch(ofEventArgs & args){
-    
     // Glitch
     
     ofBackground(0, 0, 0);

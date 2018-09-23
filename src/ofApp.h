@@ -32,8 +32,6 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    void setupGlitch();
-    void drawGlitch(ofEventArgs & args);
     void drawScene();
     
     ofxHapPlayer videoLC[LIM];
@@ -43,7 +41,6 @@ public:
     float position;
     ofTexture screenImage;
     bool feedback;
-    ofxHapPlayer player;
     
 #if (defined(__APPLE__) && defined(__MACH__))
     ofxSyphonClient client;
@@ -57,6 +54,9 @@ public:
     int retroX;
     int retroY;
     int retroON;
+    
+    int winSizeW;
+    int winSizeH;
     
     int portIn;
     int portOut;
