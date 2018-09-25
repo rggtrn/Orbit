@@ -3,6 +3,8 @@
 
 Text / Sound / Video | OpenFrameworks + SuperCollider
 
+![holaMundo](img/holaMundo.gif)
+
 ### Orbit en acción 
 
 [RGGTRN - moombahcode++geom](https://vimeo.com/289901460)
