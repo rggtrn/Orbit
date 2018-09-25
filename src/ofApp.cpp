@@ -11,17 +11,17 @@ void ofApp::setup(){
     ofSetWindowTitle("Orbit");
     
     winSizeW = 1024;
-    winSizeH = 768;
+    winSizeH = 1024;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
-
+    
     // domemmaster
-
+    
     domemaster.setup();
-    domemaster.setCameraPosition(0,0,10);    
+    domemaster.setCameraPosition(0,0,20);
     
     // camara
     
@@ -32,7 +32,7 @@ void ofApp::setup(){
     distanceLockON = 1;
     
     // texto
-
+    
     //font2.load("fonts/CloisterBlack.ttf", 28, true, true, true);
     //font.load("fonts/CloisterBlack.ttf", 20, true, true, true);
     
@@ -57,7 +57,7 @@ void ofApp::setup(){
     // glitch
     
     plane.set(ofGetWidth(), ofGetHeight());
-    ofDisableArbTex();
+    //ofDisableArbTex();
     //fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     myGlitch.setup(&fbo);
@@ -89,7 +89,7 @@ void ofApp::setup(){
     /// información
     
     timeElapsedON=0;
-
+    
     
     // OSC
     
@@ -347,7 +347,7 @@ void ofApp::update(){
                 slitscan = false;
                 swell = false;
                 invert = false;
-
+                
             }
             
             if(m.getArgAsInt(1) == 1){
@@ -391,15 +391,36 @@ void ofApp::update(){
             }
             
         }
-    
+        
     }
     
+    
+    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
+    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
+    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
+    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
+    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
+    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
+    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
+    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
+    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
+    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
+    
     drawScene();
+    
+    //fbo.draw(0, 0);
     
 }
 
 void ofApp::draw(){
-
+    
     // Glitch
     
     ofBackground(0, 0, 0);
@@ -407,91 +428,57 @@ void ofApp::draw(){
     ofSetRectMode(OF_RECTMODE_CORNER);
     
     ofClear(0);
-
-    /*
-
     myGlitch.generateFx();
-    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
-    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
-    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
-    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
-    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
-    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
-    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
-    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
-    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
-    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
-
-    */
     
-    // drawScene();
-    // fbo.draw(0, 0);
-
+    
     for (int i=0; i<domemaster.renderCount; i++){
-      domemaster.begin(i);
-      drawFbo();
-      //fbo.draw(0, 0);
-      domemaster.end(i);
+        domemaster.begin(i);
+        drawFbo();
+        //fbo.draw(0, 0);
+        domemaster.end(i);
     }
     
     domemaster.draw();
+    
+    
 }
 
 
 //--------------------------------------------------------------
 
 void ofApp::drawFbo(){
-  
-  ofSetRectMode(OF_RECTMODE_CENTER);
-  ofScale(0.125, 0.125);
-  ofTranslate(0, 0, -10);
-  fbo.getTexture().bind();
-  plane.draw();
-  fbo.getTexture().unbind();
-  
+    
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofScale(0.125, 0.125);
+    ofTranslate(0, 0, -10);
+    ofRotateX(180);
+    
+    //fbo.getTexture().bind();
+    //plane.draw();
+    //fbo.getTexture().unbind();
+    fbo.draw(0, 0);
+    
 }
 
 //--------------------------------------------------------------
 
 void ofApp::drawScene(){
-
-    myGlitch.generateFx();
-    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
-    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
-    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
-    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
-    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
-    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
-    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
-    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
-    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
-    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
-  
+    
+    
     fbo.begin();
+    
     ofClear(0);
+    //glEnable(GL_DEPTH_TEST);
+    
     
     if(timeElapsedON==1){
-    ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
+        ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
     }
     
     if(feedbackON == 1){
         screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     }
-
+    
     // luces
     
     if(lightON == 1){
@@ -549,6 +536,8 @@ void ofApp::drawScene(){
         /// texto en cámara
         
         if(textON == 1 && fixText == 0){
+            
+            //ofDisableArbTex();
             
             ofSetRectMode(OF_RECTMODE_CENTER);
             ofTranslate(0, 0, 200);

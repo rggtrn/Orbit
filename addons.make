@@ -1,7 +1,8 @@
 ofxAssimpModelLoader
 ofxCenteredTrueTypeFont
+ofxDomemaster
 ofxHapPlayer
 ofxOsc
 ofxPostGlitch
+ofxSyphon
 ofxXmlSettings
-ofxDomemaster
