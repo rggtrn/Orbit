@@ -22,6 +22,7 @@ void ofApp::setup(){
     
     domemaster.setup();
     domemaster.setCameraPosition(0,0,20);
+    domeON = 0;
     
     // camara
     
@@ -255,6 +256,10 @@ void ofApp::update(){
             texto = m.getArgAsString(0);
         }
         
+        if (m.getAddress() == "/domeON"  &&  m.getNumArgs() == 1){
+            domeON = m.getArgAsInt(0);
+        }
+        
         if (m.getAddress() == "/namesON"  &&  m.getNumArgs() == 1){
             namesON = m.getArgAsInt(0);
         }
@@ -394,7 +399,6 @@ void ofApp::update(){
         
     }
     
-    
     myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
     myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
     myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
@@ -430,15 +434,19 @@ void ofApp::draw(){
     ofClear(0);
     myGlitch.generateFx();
     
+    if(domeON == 0){
+        fbo.draw(0, 0);
+    }
     
+    if(domeON == 1){
     for (int i=0; i<domemaster.renderCount; i++){
         domemaster.begin(i);
         drawFbo();
         //fbo.draw(0, 0);
         domemaster.end(i);
     }
-    
     domemaster.draw();
+    }
     
     
 }

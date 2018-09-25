@@ -56,6 +56,7 @@ public:
     int retroX;
     int retroY;
     int retroON;
+    int domeON;
     
     int winSizeW;
     int winSizeH;
