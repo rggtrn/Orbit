@@ -11,6 +11,7 @@
 #include "ofxXmlSettings.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxCenteredTrueTypeFont.h"
+#include "ofxDomemaster.h"
 
 #define LIM 10
 
@@ -33,9 +34,10 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     void drawScene();
+    void drawFbo();
     
     ofxHapPlayer videoLC[LIM];
-    
+    ofxDomemaster domemaster;
     // retroalimentación
     
     float position;
