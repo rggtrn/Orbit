@@ -7,21 +7,23 @@ void ofApp::setup(){
     
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
-    ofSetVerticalSync(true);
+    //ofSetVerticalSync(true);
     ofSetWindowTitle("Orbit");
     
-    winSizeW = 1024;
-    winSizeH = 1024;
+    winSizeW = 1360;
+    winSizeH = 768;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
     ofHideCursor();
     tempo = 1;
+    onScreen = 1;
     
     // domemmaster
     
+    domeDistance=20;
     domemaster.setup();
-    domemaster.setCameraPosition(0,0,20);
+    domemaster.setCameraPosition(0,0,domeDistance);
     domeON = 0;
     
     // camara
@@ -34,19 +36,50 @@ void ofApp::setup(){
     
     // texto
     
-    //font2.load("fonts/CloisterBlack.ttf", 28, true, true, true);
-    //font.load("fonts/CloisterBlack.ttf", 20, true, true, true);
-    
-    font2.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
-    font.load("fonts/DejaVuSansMono.ttf", 20, true, true, true);
+    //font2.load("fonts/CloisterBlack.ttf", 80, true, true, true);
+    //font.load("fonts/CloisterBlack.ttf", 80, true, true, true);
+    titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+    font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    fontOrb1.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    fontOrb2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    fontOrb3.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+
     textON = 0;
-    texto = "";
+    texto = "testo";
     nombre = "";
     fixText = 1;
     textRotX = 0;
     textRotY = 0;
     textRotZ = 0;
     namesON = 0;
+    
+    textOrb1 = "prueba orbita 1";
+    textOrb2 = "prueba orbita 1";
+    textOrb3 = "prueba orbita 1";
+
+    msg2ON = 0;
+    msg3ON = 0;
+    msg4ON = 0;
+
+    noise2X = 0;
+    noise2Y = 0;
+    noise3X = 0;
+    noise3Y = 0;
+    noise4X = 0;
+    noise4Y = 0;
+    
+    msg2rotX = 0;
+    msg2rotY = 0;
+    msg2rotZ = 0;
+    
+    msg3rotX = 0;
+    msg3rotY = 0;
+    msg3rotZ = 0;
+    
+    msg4rotX = 0;
+    msg4rotY = 0;
+    msg4rotZ = 0;
     
     // Syphon
     
@@ -87,10 +120,14 @@ void ofApp::setup(){
     redinvert = false;
     greeninvert = false;
     
-    /// información
+    // información
     
     timeElapsedON=0;
     
+    // objetos
+    
+    icoIntON = 0;
+    icoOutON = 0;
     
     // OSC
     
@@ -118,9 +155,9 @@ void ofApp::setup(){
         path[i];
     }
     
-    /// retro alimentación
+    // retro alimentación
     
-    retroON = 0;
+    retroON = 1;
     position = 0;
     screenImage.allocate(960*2, 560*2, GL_RGBA);
     retroX = 40;
@@ -130,12 +167,27 @@ void ofApp::setup(){
     canonGenerator = 0;
     feedbackON = 0; /// activarla de vez en cuando chin
     
-    /// Luces
+    /// luces
+    
+    colorLight1 = ofColor(200, 200, 200);
+    colorLight2 = ofColor( 200, 200, 200 );
+    colorLight3 = ofColor(200, 200, 200);
     
     ofSetSmoothLighting(true);
-    pointLight.setDiffuseColor( ofFloatColor(1.f, 1.f, 1.f) );
-    pointLight.setSpecularColor( ofFloatColor(1.f, 1.f, 1.f));
-    lightON = 0;
+    
+    pointLight.setDiffuseColor( colorLight1 );
+    pointLight.setSpecularColor( colorLight1 );
+    
+    pointLight2.setDiffuseColor( colorLight2 );
+    pointLight2.setSpecularColor( colorLight2 );
+    
+    pointLight3.setDiffuseColor( colorLight3 );
+    pointLight3.setSpecularColor( colorLight3 );
+    
+    // shininess is a value between 0 - 128, 128 being the most shiny //
+    material.setShininess( 20 );
+    // the light highlight of the material //
+    material.setSpecularColor(ofColor(255, 255, 255, 255));
     
 }
 
@@ -143,11 +195,22 @@ void ofApp::update(){
     
     /// luces
     
-    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 200);
+    //pointLight.setPosition(ofGetWidth()/2, ofGetHeight()/2, 500);
+    
+    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
+    pointLight2.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.15)*(ofGetWidth()*.3),
+                            ofGetHeight()*.5 + sin(ofGetElapsedTimef()*.7)*(ofGetHeight()), 300);
+    
+    pointLight3.setPosition(
+                            cos(ofGetElapsedTimef()*1.5) * ofGetWidth()*.5,
+                            sin(ofGetElapsedTimef()*1.5f) * ofGetWidth()*.5,
+                            cos(ofGetElapsedTimef()*.2) * ofGetWidth()
+                            );
+    ;
     
     // retroalmientación
     
-    position = 500 + 250 * sin(ofGetElapsedTimef() * 4);
+    position = 500 + 250 * sin(ofGetElapsedTimef() * 8);
     screenImage.loadScreenData(0,0,ofGetWidth(), ofGetHeight());
     
     //// OSC
@@ -256,8 +319,51 @@ void ofApp::update(){
             texto = m.getArgAsString(0);
         }
         
+        if (m.getAddress() == "/message_02"  &&  m.getNumArgs() == 7){
+            msg2ON = m.getArgAsFloat(0);
+            noise2X = m.getArgAsFloat(1);
+            noise2Y = m.getArgAsFloat(2);
+            msg2rotX = m.getArgAsFloat(3);
+            msg2rotY = m.getArgAsFloat(4);
+            msg2rotZ = m.getArgAsFloat(5);
+            textOrb1 = m.getArgAsString(6);
+        }
+        
+        if (m.getAddress() == "/message_03"  &&  m.getNumArgs() == 7){
+            msg3ON = m.getArgAsFloat(0);
+            noise3X = m.getArgAsFloat(1);
+            noise3Y = m.getArgAsFloat(2);
+            msg3rotX = m.getArgAsFloat(3);
+            msg3rotY = m.getArgAsFloat(4);
+            msg3rotZ = m.getArgAsFloat(5);
+            textOrb2 = m.getArgAsString(6);
+        }
+        
+        if (m.getAddress() == "/message_04"  &&  m.getNumArgs() == 7){
+            msg4ON = m.getArgAsFloat(0);
+            noise4X = m.getArgAsFloat(1);
+            noise4Y = m.getArgAsFloat(2);
+            msg4rotX = m.getArgAsFloat(3);
+            msg4rotY = m.getArgAsFloat(4);
+            msg4rotZ = m.getArgAsFloat(5);
+            textOrb3 = m.getArgAsString(6);
+        }
+        
         if (m.getAddress() == "/domeON"  &&  m.getNumArgs() == 1){
             domeON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/onScreen"  &&  m.getNumArgs() == 1){
+            onScreen = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/icosON"  &&  m.getNumArgs() == 1){
+            icoOutON = m.getArgAsInt(0);
+            icoIntON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/domeDistance"  &&  m.getNumArgs() == 1){
+            domeDistance = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/namesON"  &&  m.getNumArgs() == 1){
@@ -431,7 +537,6 @@ void ofApp::draw(){
     ofEnableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
     
-    ofClear(0);
     myGlitch.generateFx();
     
     if(domeON == 0){
@@ -439,15 +544,13 @@ void ofApp::draw(){
     }
     
     if(domeON == 1){
-    for (int i=0; i<domemaster.renderCount; i++){
-        domemaster.begin(i);
-        drawFbo();
-        //fbo.draw(0, 0);
-        domemaster.end(i);
+        for (int i=0; i<domemaster.renderCount; i++){
+            domemaster.begin(i);
+            drawFbo();
+            domemaster.end(i);
+        }
+        domemaster.draw();
     }
-    domemaster.draw();
-    }
-    
     
 }
 
@@ -458,7 +561,7 @@ void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofScale(0.125, 0.125);
-    ofTranslate(0, 0, -10);
+    ofTranslate(0, 0, 0);
     ofRotateX(180);
     
     //fbo.getTexture().bind();
@@ -472,12 +575,10 @@ void ofApp::drawFbo(){
 
 void ofApp::drawScene(){
     
-    
     fbo.begin();
     
-    ofClear(0);
     //glEnable(GL_DEPTH_TEST);
-    
+    ofClear(0);
     
     if(timeElapsedON==1){
         ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
@@ -489,10 +590,9 @@ void ofApp::drawScene(){
     
     // luces
     
-    if(lightON == 1){
-        ofEnableLighting();
-        pointLight.enable();
-    }
+    //if(lightON == 1){
+    
+    //}
     
     // syphon
     
@@ -504,83 +604,49 @@ void ofApp::drawScene(){
     
 #endif
     
+    //for(int i = 0; i < LIM; i++){
+    
+    //    ofPushMatrix();
+    ///texto fuera de cámara
+    
+    if(textON == 1 && fixText == 1){
+        
+        ofSetRectMode(OF_RECTMODE_CENTER);
+        ofTranslate(0, 0, 200);
+        ofScale(1, 1);
+        ofRotateX(textRotX);
+        ofRotateY(textRotY);
+        ofRotateZ(textRotZ);
+        
+        text = wrapString(texto, 200);
+        ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
+        
+        if(namesON == 1){
+            float distancia;
+            float distancia2;
+            distancia = ofMap(rect.height, 25, 1000, 55, 625);
+            distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
+            font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
+        }
+        
+        if(distanceLockON == 1){
+            float distancia;
+            distancia = ofMap(rect.height, 0, 1000, 100, -400);
+            ofTranslate(0, 0, distancia);
+        }
+        
+        font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
+    };
+    
+    camera.begin();
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofRectangle rect;
+    
+    // texto en cámara
+    
     for(int i = 0; i < LIM; i++){
         
         ofPushMatrix();
-        ///texto fuera de cámara
-        
-        if(textON == 1 && fixText == 1){
-            
-            ofSetRectMode(OF_RECTMODE_CENTER);
-            ofTranslate(0, 0, 200);
-            ofScale(1, 1);
-            ofRotateX(textRotX);
-            ofRotateY(textRotY);
-            ofRotateZ(textRotZ);
-            
-            text = wrapString(texto, 200);
-            ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
-            
-            if(namesON == 1){
-                float distancia;
-                float distancia2;
-                distancia = ofMap(rect.height, 25, 1000, 55, 625);
-                distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
-                font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
-            }
-            
-            if(distanceLockON == 1){
-                float distancia;
-                distancia = ofMap(rect.height, 0, 1000, 100, -400);
-                ofTranslate(0, 0, distancia);
-            }
-            
-            font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
-        };
-        
-        camera.begin();
-        ofSetRectMode(OF_RECTMODE_CENTER);
-        
-        /// texto en cámara
-        
-        if(textON == 1 && fixText == 0){
-            
-            //ofDisableArbTex();
-            
-            ofSetRectMode(OF_RECTMODE_CENTER);
-            ofTranslate(0, 0, 200);
-            ofScale(1, 1);
-            ofRotateX(textRotX);
-            ofRotateY(textRotY);
-            ofRotateZ(textRotZ);
-            
-            text = wrapString(texto, 200);
-            ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
-            font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-            
-            if(namesON == 1){
-                float distancia;
-                float distancia2;
-                distancia = ofMap(rect.height, 25, 1000, 55, 625);
-                distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
-                font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
-            }
-            
-            if(autoOrbit == 1){
-                camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
-            }
-            
-            if(distanceLockON == 1){
-                float distancia;
-                distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
-                camera.setDistance(distancia);
-            }
-            
-            if(distanceLockON == 0){
-                camera.setDistance(100);
-            }
-            
-        };
         
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
@@ -590,15 +656,168 @@ void ofApp::drawScene(){
         ofTranslate((vX[i]),vY[i], vZ[i]-200);
         videoLC[i].draw(0, 0);
         
-        camera.end();
-        
-        if(canonGenerator == 1){
-            videoLC[i].setLoopState(OF_LOOP_NONE);
-        }
-        
         ofPopMatrix();
         
     }
+    ofEnableLighting();
+    
+    pointLight.enable();
+    pointLight2.enable();
+    pointLight3.enable();
+    
+    material.begin();
+    
+    if(textON == 1 && fixText == 0){
+        
+        //ofDisableArbTex();
+        //material.begin();
+        
+        //pointLight.draw();
+        //pointLight2.draw();
+        //pointLight3.draw();
+        
+        ofSetRectMode(OF_RECTMODE_CENTER);
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1);
+        ofRotateX(textRotX);
+        ofRotateY(textRotY);
+        ofRotateZ(textRotZ);
+        
+        /*
+         if(onScreen == 1){
+         text = wrapString(clientTyping, 200);
+         rect = font.getStringBoundingBox(text, 0, 0);
+         titleFont.drawStringAsShapes(text, 0-(rect.width*0.75), 0+(rect.height*0.5));
+         }
+         
+         //if(onScreen == 0){
+         text = wrapString(texto, 200);
+         rect = font.getStringBoundingBox(text, 0, 0);
+         //ofNoFill();
+         font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+         //}
+         */
+        
+        text = wrapString(texto, 500);
+        rect = font.getStringBoundingBox(text, 0, 0);
+        //ofNoFill();
+        font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        
+        
+        ///
+        if(namesON == 1){
+            ofRotateZ(0);
+            float distancia;
+            float distancia2;
+            distancia = ofMap(rect.height, 25, 1000, 55, 625);
+            distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
+            font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
+        }
+        
+        //material.end();
+        
+        if(autoOrbit == 1){
+            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+        }
+        
+        if(distanceLockON == 1){
+            float distancia;
+            distancia = ofMap(rect.height, 26, 1234, 750, 1234 * 1.25);
+            camera.setDistance(distancia);
+        }
+        
+        if(distanceLockON == 0){
+            camera.setDistance(100);
+        }
+        
+    };
+    
+    // Msg 2
+    
+    if(msg2ON == 1){
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1);
+        ofRotateX(msg2rotX);
+        ofRotateY(msg2rotY);
+        ofRotateZ(msg2rotZ);
+        ofRectangle rectOrb1;
+        
+        textOrb1Prima = wrapString(textOrb1, 500);
+        rectOrb1 = fontOrb1.getStringBoundingBox(textOrb1Prima, 0, 0);
+        //ofNoFill();
+        fontOrb1.drawStringAsShapes(textOrb1Prima, noise2X + (rect.width*0.5),  noise2Y + (rect.height*0.5));
+    }
+    
+    // Msg 3
+    
+    if(msg3ON == 1){
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1);
+        ofRotateX(msg3rotX);
+        ofRotateY(msg3rotY);
+        ofRotateZ(msg3rotZ);
+        ofRectangle rectOrb2;
+        
+        textOrb2Prima = wrapString(textOrb2, 500);
+        rectOrb2 = fontOrb2.getStringBoundingBox(textOrb2Prima, 0, 0);
+        //ofNoFill();
+        fontOrb2.drawStringAsShapes(textOrb2Prima, noise3X + (rect.width*0.5),  noise3Y + (rect.height*0.5));
+    }
+    
+    // Msg 4
+    
+    if(msg4ON == 1){
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1);
+        ofRotateX(msg4rotX);
+        ofRotateY(msg4rotY);
+        ofRotateZ(msg4rotZ);
+        ofRectangle rectOrb3;
+        
+        textOrb3Prima = wrapString(textOrb3, 500);
+        rectOrb3 = fontOrb3.getStringBoundingBox(textOrb3Prima, 0, 0);
+        //ofNoFill();
+        fontOrb2.drawStringAsShapes(textOrb3Prima, noise4X + (rect.width*0.5),  noise4Y + (rect.height*0.5));
+    }
+    
+    // ICOS
+    
+    if(icoIntON == 1){
+        ofRotateZ(10);
+        icoSphere.setRadius(rect.width*1.5);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setResolution(0);
+        icoSphere.drawWireframe();
+        ofRotateZ(0);
+    }
+    
+    if(icoOutON == 1){
+        ofRotateZ(100);
+        icoSphere.setRadius(rect.width*2);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setResolution(1);
+        icoSphere.drawWireframe();
+        ofRotateZ(0);
+    }
+    
+    // estrellas puntos
+    /*
+    for (int i = 0;i < 500;i++){
+        
+        ofPushMatrix();
+        
+        ofTranslate((ofNoise(i/2.4)-0.5)*5000,
+                    (ofNoise(i/5.6)-0.5)*5000,
+                    (ofNoise(i/8.2)-0.5)*5000);
+        ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*0.25+ofRandom(3));
+        ofPopMatrix();
+    }
+     
+     */
+    
+    material.end();
+    
+    camera.end();
     
     if(feedbackON == 1){
         screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
@@ -610,6 +829,25 @@ void ofApp::drawScene(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    
+    // if we didn't hit return, add the key to our string
+    if(key != OF_KEY_RETURN){
+        // some trickery: ignore the backspace key
+        if(key != OF_KEY_BACKSPACE){
+            clientTyping += key;
+        }
+        else{
+            if(clientTyping.size() > 0){
+                clientTyping.erase(clientTyping.end() - 1);
+            }
+        }
+    }
+    // hit Return, time to send the osc message if it's not empty
+    else{
+        
+        // aquí iría el old. a ver si funciona.
+        clientTyping = "";
+    }
     
 }
 
@@ -630,12 +868,18 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    
+
+    if(autoOrbit== 1 && orbitX != 0){
+    autoOrbit = 0;
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    
+    if(autoOrbit== 0 && orbitX != 0){
+        autoOrbit = 1;
+        
+    }
 }
 
 //--------------------------------------------------------------

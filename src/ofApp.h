@@ -57,7 +57,14 @@ public:
     int retroY;
     int retroON;
     int domeON;
+    int domeDistance;
     
+    //ofBoxPrimitive caja;
+    ofIcoSpherePrimitive icoSphere;
+    ofIcoSpherePrimitive icoSphere2;
+    ofIcoSpherePrimitive icoSphere3;
+
+
     int winSizeW;
     int winSizeH;
     
@@ -86,6 +93,18 @@ public:
     ofPlanePrimitive plane;    
     ofxPostGlitch myGlitch;
     
+    int icoIntON;
+    int icoOutON;
+
+    //
+    string clientTyping;
+    ofTrueTypeFont titleFont; // font for some info in the title line
+    //
+    
+    ofColor colorLight1;
+    ofColor colorLight2;
+    ofColor colorLight3;
+
     float fbox;
     float fboy;
     float fboz;
@@ -122,6 +141,7 @@ public:
     bool blueinvert;
     bool redinvert;
     bool greeninvert;
+    float onScreen;
     
     float textRotX;
     float textRotY;
@@ -129,22 +149,64 @@ public:
     int ofxglitch;
     float tempo;
         
-    ofLight light;
+    ofLight pointLight;
+    ofLight pointLight2;
+    ofLight pointLight3;
+    ofMaterial material;
+    ofColor lightColor;
+
     ofxCenteredTrueTypeFont font;
     ofxCenteredTrueTypeFont font2;
+    ofxCenteredTrueTypeFont fontOrb1;
+    ofxCenteredTrueTypeFont fontOrb2;
+    ofxCenteredTrueTypeFont fontOrb3;
+
+    float fontScale;
+
 
     string texto; 
     string nombre;
     string text;
-    float fontScale;
+    
+    string textOrb1;
+    string textOrb1Prima;
+    
+    string textOrb2;
+    string textOrb2Prima;
+    
+    string textOrb3;
+    string textOrb3Prima;
+    
+    float msg2ON;
+    float msg3ON;
+    float msg4ON;
+    
+    float noise2X;
+    float noise2Y;
+    
+    float noise3X;
+    float noise3Y;
+    
+    float noise4X;
+    float noise4Y;
+    
+    float msg2rotX;
+    float msg2rotY;
+    float msg2rotZ;
+
+    float msg3rotX;
+    float msg3rotY;
+    float msg3rotZ;
+    
+    float msg4rotX;
+    float msg4rotY;
+    float msg4rotZ;
     
     ofxAssimpModelLoader models3D[LIM];
     bool model3DOn[LIM];
     int textON;
     int fontSize;
-    
-    ofLight pointLight;
-    
+        
     ofEasyCam camera;
     
     string wrapString(string text, int width) {
