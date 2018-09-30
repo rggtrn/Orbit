@@ -157,50 +157,24 @@ public:
 
     ofxCenteredTrueTypeFont font;
     ofxCenteredTrueTypeFont font2;
-    ofxCenteredTrueTypeFont fontOrb1;
-    ofxCenteredTrueTypeFont fontOrb2;
-    ofxCenteredTrueTypeFont fontOrb3;
-
-    float fontScale;
-
-
-    string texto; 
+    
+    string texto;
     string nombre;
     string text;
     
-    string textOrb1;
-    string textOrb1Prima;
+    ofxCenteredTrueTypeFont fontOrb [LIM];
+    ofRectangle rectOrb [LIM];
     
-    string textOrb2;
-    string textOrb2Prima;
+    string textOrb[LIM];
+    string textOrbPrima[LIM];
+    float noiseX[LIM];
+    float noiseY[LIM];
+    float msgRotX[LIM];
+    float msgRotY[LIM];
+    float msgRotZ[LIM];
     
-    string textOrb3;
-    string textOrb3Prima;
-    
-    float msg2ON;
-    float msg3ON;
-    float msg4ON;
-    
-    float noise2X;
-    float noise2Y;
-    
-    float noise3X;
-    float noise3Y;
-    
-    float noise4X;
-    float noise4Y;
-    
-    float msg2rotX;
-    float msg2rotY;
-    float msg2rotZ;
-
-    float msg3rotX;
-    float msg3rotY;
-    float msg3rotZ;
-    
-    float msg4rotX;
-    float msg4rotY;
-    float msg4rotZ;
+    float multiMsg;
+    float stars; 
     
     ofxAssimpModelLoader models3D[LIM];
     bool model3DOn[LIM];

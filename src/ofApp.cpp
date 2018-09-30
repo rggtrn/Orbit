@@ -41,9 +41,6 @@ void ofApp::setup(){
     titleFont.load("fonts/DejaVuSansMono.ttf", 20);
     font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-    fontOrb1.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-    fontOrb2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-    fontOrb3.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
 
     textON = 0;
     texto = "testo";
@@ -53,33 +50,7 @@ void ofApp::setup(){
     textRotY = 0;
     textRotZ = 0;
     namesON = 0;
-    
-    textOrb1 = "prueba orbita 1";
-    textOrb2 = "prueba orbita 1";
-    textOrb3 = "prueba orbita 1";
-
-    msg2ON = 0;
-    msg3ON = 0;
-    msg4ON = 0;
-
-    noise2X = 0;
-    noise2Y = 0;
-    noise3X = 0;
-    noise3Y = 0;
-    noise4X = 0;
-    noise4Y = 0;
-    
-    msg2rotX = 0;
-    msg2rotY = 0;
-    msg2rotZ = 0;
-    
-    msg3rotX = 0;
-    msg3rotY = 0;
-    msg3rotZ = 0;
-    
-    msg4rotX = 0;
-    msg4rotY = 0;
-    msg4rotZ = 0;
+    multiMsg = 0;
     
     // Syphon
     
@@ -128,6 +99,7 @@ void ofApp::setup(){
     
     icoIntON = 0;
     icoOutON = 0;
+    stars = 0;
     
     // OSC
     
@@ -153,6 +125,19 @@ void ofApp::setup(){
         vRotY[i] = 0;
         vRotZ[i] = 0;
         path[i];
+        
+        // multMsg
+        
+        fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+        rectOrb[i];
+        textOrb[i] = "";
+        textOrbPrima[i] = "";
+        noiseX[i] = 0;
+        noiseY[i] = 0;
+        msgRotX[i] = 0;
+        msgRotY[i] = 0;
+        msgRotZ[i] = 0;
+
     }
     
     // retro alimentación
@@ -185,7 +170,7 @@ void ofApp::setup(){
     pointLight3.setSpecularColor( colorLight3 );
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
-    material.setShininess( 20 );
+    material.setShininess( 120 );
     // the light highlight of the material //
     material.setSpecularColor(ofColor(255, 255, 255, 255));
     
@@ -319,35 +304,17 @@ void ofApp::update(){
             texto = m.getArgAsString(0);
         }
         
-        if (m.getAddress() == "/message_02"  &&  m.getNumArgs() == 7){
-            msg2ON = m.getArgAsFloat(0);
-            noise2X = m.getArgAsFloat(1);
-            noise2Y = m.getArgAsFloat(2);
-            msg2rotX = m.getArgAsFloat(3);
-            msg2rotY = m.getArgAsFloat(4);
-            msg2rotZ = m.getArgAsFloat(5);
-            textOrb1 = m.getArgAsString(6);
+        if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
+            int n = m.getArgAsInt(0);
+            multiMsg = 1;
+            noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+            noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+            msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+            msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+            msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+            textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
         }
-        
-        if (m.getAddress() == "/message_03"  &&  m.getNumArgs() == 7){
-            msg3ON = m.getArgAsFloat(0);
-            noise3X = m.getArgAsFloat(1);
-            noise3Y = m.getArgAsFloat(2);
-            msg3rotX = m.getArgAsFloat(3);
-            msg3rotY = m.getArgAsFloat(4);
-            msg3rotZ = m.getArgAsFloat(5);
-            textOrb2 = m.getArgAsString(6);
-        }
-        
-        if (m.getAddress() == "/message_04"  &&  m.getNumArgs() == 7){
-            msg4ON = m.getArgAsFloat(0);
-            noise4X = m.getArgAsFloat(1);
-            noise4Y = m.getArgAsFloat(2);
-            msg4rotX = m.getArgAsFloat(3);
-            msg4rotY = m.getArgAsFloat(4);
-            msg4rotZ = m.getArgAsFloat(5);
-            textOrb3 = m.getArgAsString(6);
-        }
+
         
         if (m.getAddress() == "/domeON"  &&  m.getNumArgs() == 1){
             domeON = m.getArgAsInt(0);
@@ -360,6 +327,10 @@ void ofApp::update(){
         if (m.getAddress() == "/icosON"  &&  m.getNumArgs() == 1){
             icoOutON = m.getArgAsInt(0);
             icoIntON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/stars"  &&  m.getNumArgs() == 1){
+            stars = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/domeDistance"  &&  m.getNumArgs() == 1){
@@ -567,6 +538,7 @@ void ofApp::drawFbo(){
     //fbo.getTexture().bind();
     //plane.draw();
     //fbo.getTexture().unbind();
+    
     fbo.draw(0, 0);
     
 }
@@ -659,6 +631,7 @@ void ofApp::drawScene(){
         ofPopMatrix();
         
     }
+    
     ofEnableLighting();
     
     pointLight.enable();
@@ -732,88 +705,61 @@ void ofApp::drawScene(){
         
     };
     
-    // Msg 2
+    if(multiMsg == 1){
     
-    if(msg2ON == 1){
+    for(int i = 0; i < LIM; i++){
+        ofPushMatrix();
         ofTranslate(0, 0, 0);
         ofScale(1, 1);
-        ofRotateX(msg2rotX);
-        ofRotateY(msg2rotY);
-        ofRotateZ(msg2rotZ);
-        ofRectangle rectOrb1;
-        
-        textOrb1Prima = wrapString(textOrb1, 500);
-        rectOrb1 = fontOrb1.getStringBoundingBox(textOrb1Prima, 0, 0);
+        ofRotateX(msgRotX[i]);
+        ofRotateY(msgRotY[i]);
+        ofRotateZ(msgRotZ[i]);
+        textOrbPrima[i] = wrapString(textOrb[i], 500);
+        rectOrb[i] = fontOrb[i].getStringBoundingBox(textOrbPrima[i], 0, 0);
         //ofNoFill();
-        fontOrb1.drawStringAsShapes(textOrb1Prima, noise2X + (rect.width*0.5),  noise2Y + (rect.height*0.5));
+        fontOrb[i].drawStringAsShapes(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
+        ofPopMatrix();
     }
-    
-    // Msg 3
-    
-    if(msg3ON == 1){
-        ofTranslate(0, 0, 0);
-        ofScale(1, 1);
-        ofRotateX(msg3rotX);
-        ofRotateY(msg3rotY);
-        ofRotateZ(msg3rotZ);
-        ofRectangle rectOrb2;
         
-        textOrb2Prima = wrapString(textOrb2, 500);
-        rectOrb2 = fontOrb2.getStringBoundingBox(textOrb2Prima, 0, 0);
-        //ofNoFill();
-        fontOrb2.drawStringAsShapes(textOrb2Prima, noise3X + (rect.width*0.5),  noise3Y + (rect.height*0.5));
-    }
-    
-    // Msg 4
-    
-    if(msg4ON == 1){
-        ofTranslate(0, 0, 0);
-        ofScale(1, 1);
-        ofRotateX(msg4rotX);
-        ofRotateY(msg4rotY);
-        ofRotateZ(msg4rotZ);
-        ofRectangle rectOrb3;
-        
-        textOrb3Prima = wrapString(textOrb3, 500);
-        rectOrb3 = fontOrb3.getStringBoundingBox(textOrb3Prima, 0, 0);
-        //ofNoFill();
-        fontOrb2.drawStringAsShapes(textOrb3Prima, noise4X + (rect.width*0.5),  noise4Y + (rect.height*0.5));
     }
     
     // ICOS
     
     if(icoIntON == 1){
-        ofRotateZ(10);
+        ofRotate(ofGetElapsedTimef()*10);
         icoSphere.setRadius(rect.width*1.5);
-        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setPosition(rect.x, rect.y, 0);
         icoSphere.setResolution(0);
         icoSphere.drawWireframe();
         ofRotateZ(0);
     }
     
     if(icoOutON == 1){
-        ofRotateZ(100);
-        icoSphere.setRadius(rect.width*2);
-        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        ofRotate(ofGetElapsedTimef()*(-10));
+        icoSphere.setRadius(rect.width*4);
+        icoSphere.setPosition(rect.x, rect.y, 0);
         icoSphere.setResolution(1);
         icoSphere.drawWireframe();
         ofRotateZ(0);
     }
     
     // estrellas puntos
-    /*
+
+    if(stars == 1){
+    
     for (int i = 0;i < 500;i++){
-        
+        ofRotate(ofGetElapsedTimef()*10);
+
         ofPushMatrix();
-        
         ofTranslate((ofNoise(i/2.4)-0.5)*5000,
                     (ofNoise(i/5.6)-0.5)*5000,
                     (ofNoise(i/8.2)-0.5)*5000);
-        ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*0.25+ofRandom(3));
+ 
+        ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*10);
         ofPopMatrix();
     }
-     
-     */
+        
+    }
     
     material.end();
     
