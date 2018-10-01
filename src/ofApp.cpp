@@ -152,11 +152,11 @@ void ofApp::setup(){
     canonGenerator = 0;
     feedbackON = 0; /// activarla de vez en cuando chin
     
-    /// luces
+    // luces
     
-    colorLight1 = ofColor(200, 200, 200);
-    colorLight2 = ofColor( 200, 200, 200 );
-    colorLight3 = ofColor(200, 200, 200);
+    colorLight1 = ofColor(255, 113, 206);
+    colorLight2 = ofColor( 1, 205, 254 );
+    colorLight3 = ofColor(185, 103, 255);
     
     ofSetSmoothLighting(true);
     
@@ -726,18 +726,18 @@ void ofApp::drawScene(){
     // ICOS
     
     if(icoIntON == 1){
-        ofRotate(ofGetElapsedTimef()*10);
+        ofRotateZ(10);
         icoSphere.setRadius(rect.width*1.5);
-        icoSphere.setPosition(rect.x, rect.y, 0);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
         icoSphere.setResolution(0);
         icoSphere.drawWireframe();
         ofRotateZ(0);
     }
     
     if(icoOutON == 1){
-        ofRotate(ofGetElapsedTimef()*(-10));
-        icoSphere.setRadius(rect.width*4);
-        icoSphere.setPosition(rect.x, rect.y, 0);
+        ofRotateZ(100);
+        icoSphere.setRadius(rect.width*2);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
         icoSphere.setResolution(1);
         icoSphere.drawWireframe();
         ofRotateZ(0);
@@ -748,7 +748,6 @@ void ofApp::drawScene(){
     if(stars == 1){
     
     for (int i = 0;i < 500;i++){
-        ofRotate(ofGetElapsedTimef()*10);
 
         ofPushMatrix();
         ofTranslate((ofNoise(i/2.4)-0.5)*5000,
