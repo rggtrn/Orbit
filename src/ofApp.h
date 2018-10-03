@@ -35,6 +35,7 @@ public:
     void gotMessage(ofMessage msg);
     void drawScene();
     void drawFbo();
+    void drawBlur();
     
     ofxHapPlayer videoLC[LIM];
     ofxDomemaster domemaster;
@@ -89,8 +90,10 @@ public:
     int feedbackON;         
 
     ofShader shaderFish;
-    ofFbo fbo;
-    ofPlanePrimitive plane;    
+    
+    ofFbo fbo; 
+    
+    ofPlanePrimitive plane;
     ofxPostGlitch myGlitch;
     
     int icoIntON;
@@ -104,6 +107,15 @@ public:
     ofColor colorLight1;
     ofColor colorLight2;
     ofColor colorLight3;
+    
+    ofShader shaderBlurX;
+    ofShader shaderBlurY;
+    
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+    
+    float blur;
+    int blurON;
 
     float fbox;
     float fboy;
@@ -148,12 +160,15 @@ public:
     float textRotZ;
     int ofxglitch;
     float tempo;
+    float depth;
         
     ofLight pointLight;
     ofLight pointLight2;
     ofLight pointLight3;
     ofMaterial material;
     ofColor lightColor;
+    int modelON;
+    ofPlanePrimitive planeMatrix;
 
     ofxCenteredTrueTypeFont font;
     ofxCenteredTrueTypeFont font2;
@@ -162,6 +177,16 @@ public:
     string nombre;
     string text;
     
+    /*
+    
+    ofShader shaderBlurX;
+    ofShader shaderBlurY;
+    
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+    
+     
+     */
     ofxCenteredTrueTypeFont fontOrb [LIM];
     ofRectangle rectOrb [LIM];
     
@@ -174,10 +199,11 @@ public:
     float msgRotZ[LIM];
     
     float multiMsg;
-    float stars; 
+    float stars;
+    ofTexture asteroid; 
     
-    ofxAssimpModelLoader models3D[LIM];
-    bool model3DOn[LIM];
+    ofxAssimpModelLoader model3D2;
+    ofxAssimpModelLoader model3D;
     int textON;
     int fontSize;
         

@@ -14,10 +14,12 @@ void ofApp::setup(){
     winSizeH = 768;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
     onScreen = 1;
+    depth = 0;
+    ofSetLineWidth(4);
     
     // domemmaster
     
@@ -33,24 +35,28 @@ void ofApp::setup(){
     orbitX = 0;
     orbitY = 0;
     distanceLockON = 1;
-    
-    // texto
-    
-    //font2.load("fonts/CloisterBlack.ttf", 80, true, true, true);
-    //font.load("fonts/CloisterBlack.ttf", 80, true, true, true);
-    titleFont.load("fonts/DejaVuSansMono.ttf", 20);
-    font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-    font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
 
-    textON = 0;
-    texto = "testo";
-    nombre = "";
-    fixText = 1;
-    textRotX = 0;
-    textRotY = 0;
-    textRotZ = 0;
-    namesON = 0;
-    multiMsg = 0;
+    
+    // shader blur
+    
+#ifdef TARGET_OPENGLES
+    shaderBlurX.load("shadersES2/shaderBlurX");
+    shaderBlurY.load("shadersES2/shaderBlurY");
+#else
+    if(ofIsGLProgrammableRenderer()){
+        shaderBlurX.load("shadersGL3/shaderBlurX");
+        shaderBlurY.load("shadersGL3/shaderBlurY");
+    }else{
+        shaderBlurX.load("shadersGL2/shaderBlurX");
+        shaderBlurY.load("shadersGL2/shaderBlurY");
+    }
+#endif
+    
+    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight());
+    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight());
+    
+    blur = 0;
+    blurON = 0;
     
     // Syphon
     
@@ -59,10 +65,46 @@ void ofApp::setup(){
     syphonON = 0;
 #endif
     
+    // 3d
+    
+    model3D.loadModel("3d/terrain.obj");
+    model3D.setPosition(0, 0, 0);
+    modelON = 0;
+    
+    model3D2.loadModel("3d/stone.obj");
+    model3D2.setPosition(0, 0, 0);
+    
+    ofDisableArbTex();
+    asteroid.enableMipmap();
+    //ofDisableArbTex();
+    ofLoadImage(asteroid,"img/stone.jpg");
+    asteroid.generateMipmap();
+    asteroid.setTextureWrap(GL_REPEAT, GL_REPEAT);
+    asteroid.setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+    
+    ofEnableArbTex();
+    
+    // texto
+    
+    //font2.load("fonts/CloisterBlack.ttf", 80, true, true, true);
+    //font.load("fonts/CloisterBlack.ttf", 80, true, true, true);
+    titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+    font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+    
+    textON = 0;
+    texto = "";
+    nombre = "";
+    fixText = 1;
+    textRotX = 0;
+    textRotY = 0;
+    textRotZ = 0;
+    namesON = 0;
+    multiMsg = 0;
+    
     // glitch
     
     plane.set(ofGetWidth(), ofGetHeight());
-    //ofDisableArbTex();
     //fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     myGlitch.setup(&fbo);
@@ -100,6 +142,9 @@ void ofApp::setup(){
     icoIntON = 0;
     icoOutON = 0;
     stars = 0;
+    planeMatrix.set(3000, 3000);   ///dimensions for width and height in pixels
+    planeMatrix.setPosition(0, 0, 0); /// position in x y z
+    planeMatrix.setResolution(32, 32);
     
     // OSC
     
@@ -109,9 +154,10 @@ void ofApp::setup(){
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
     
-    // transformaciones
-    
     for(int i = 0; i < LIM; i++){
+        
+        // videos
+        
         vX[i] = 0;
         vY[i] = 0;
         vZ[i] = 0;
@@ -137,7 +183,7 @@ void ofApp::setup(){
         msgRotX[i] = 0;
         msgRotY[i] = 0;
         msgRotZ[i] = 0;
-
+        
     }
     
     // retro alimentación
@@ -153,6 +199,8 @@ void ofApp::setup(){
     feedbackON = 0; /// activarla de vez en cuando chin
     
     // luces
+    
+    lightON = 1;
     
     colorLight1 = ofColor(255, 113, 206);
     colorLight2 = ofColor( 1, 205, 254 );
@@ -173,6 +221,7 @@ void ofApp::setup(){
     material.setShininess( 120 );
     // the light highlight of the material //
     material.setSpecularColor(ofColor(255, 255, 255, 255));
+    material.setDiffuseColor(ofColor(255, 255, 255, 255));
     
 }
 
@@ -212,7 +261,7 @@ void ofApp::update(){
             videoLC[n].setLoopState(OF_LOOP_NORMAL);
             videoLC[n].load(temp);
             videoLC[n].play();
-            model3DOn[n] = false;
+            //model3DOn[n] = false;
             //vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             //vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
             vScaleX[n] = (ofGetWidth()*1.0)/960;
@@ -230,7 +279,7 @@ void ofApp::update(){
             vY[m.getArgAsInt(0)] = 0;
             vSpeed[m.getArgAsInt(0)] = 1;
             vOpacity[m.getArgAsInt(0)] = 255;
-            models3D[m.getArgAsInt(0)].clear();
+            //models3D[m.getArgAsInt(0)].clear();
             vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
         }
@@ -242,6 +291,11 @@ void ofApp::update(){
         
         if (m.getAddress() == "/lightON" && m.getNumArgs() == 1){
             lightON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/modelON" && m.getNumArgs() == 1){
+            modelON = m.getArgAsInt(0);
+            
         }
         
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
@@ -283,6 +337,11 @@ void ofApp::update(){
             retroY = m.getArgAsFloat(0);
         }
         
+        if (m.getAddress() == "/blur" && m.getNumArgs() == 2){
+            blurON = m.getArgAsInt(0);
+            blur = m.getArgAsFloat(1);
+        }
+        
         if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
             vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
@@ -314,10 +373,10 @@ void ofApp::update(){
             msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
             textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
         }
-
         
         if (m.getAddress() == "/domeON"  &&  m.getNumArgs() == 1){
             domeON = m.getArgAsInt(0);
+            lightON = 0;
         }
         
         if (m.getAddress() == "/onScreen"  &&  m.getNumArgs() == 1){
@@ -367,6 +426,7 @@ void ofApp::update(){
         
         if (m.getAddress() == "/feedbackON" && m.getNumArgs() == 1){
             feedbackON = m.getArgAsInt(0);
+            depth = m.getArgAsInt(0);
         }
         
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -505,13 +565,21 @@ void ofApp::draw(){
     // Glitch
     
     ofBackground(0, 0, 0);
-    ofEnableAlphaBlending();
+    ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
     
     myGlitch.generateFx();
     
     if(domeON == 0){
-        fbo.draw(0, 0);
+        
+        if(blurON == 1){
+            drawBlur();
+        }
+        
+        if(blurON == 0){
+            fbo.draw(0, 0);
+        }
+        
     }
     
     if(domeON == 1){
@@ -525,13 +593,41 @@ void ofApp::draw(){
     
 }
 
+//--------------------------------------------------------------
+
+void ofApp::drawBlur(){
+    
+    ofEnableAlphaBlending();
+    
+    //float blur = ofMap(mouseX, 0, ofGetWidth(), 0, 10, true);
+    
+    fboBlurOnePass.begin();
+    shaderBlurX.begin();
+    
+    ofClear(0);
+    shaderBlurX.setUniform1f("blurAmnt", blur);
+    fbo.draw(0, 0);
+    shaderBlurX.end();
+    fboBlurOnePass.end();
+    
+    fboBlurTwoPass.begin();
+    shaderBlurY.begin();
+    ofClear(0);
+    shaderBlurY.setUniform1f("blurAmnt", blur);
+    fboBlurOnePass.draw(0, 0);
+    shaderBlurY.end();
+    fboBlurTwoPass.end();
+
+    fboBlurTwoPass.draw(0, 0);
+    
+}
 
 //--------------------------------------------------------------
 
 void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
-    ofScale(0.125, 0.125);
+    ofScale(0.125/2, 0.125/2);
     ofTranslate(0, 0, 0);
     ofRotateX(180);
     
@@ -539,7 +635,13 @@ void ofApp::drawFbo(){
     //plane.draw();
     //fbo.getTexture().unbind();
     
-    fbo.draw(0, 0);
+    if(blurON == 1){
+        drawBlur();
+    }
+    
+    if(blurON == 0){
+        fbo.draw(0, 0);
+    }
     
 }
 
@@ -548,9 +650,19 @@ void ofApp::drawFbo(){
 void ofApp::drawScene(){
     
     fbo.begin();
-    
-    //glEnable(GL_DEPTH_TEST);
     ofClear(0);
+    ofEnableArbTex();
+    
+    if(depth == 0){
+    ofEnableDepthTest();
+    }
+    
+    if(depth == 1){
+        ofDisableDepthTest();
+    }
+    
+    ofEnableSmoothing();
+    ofEnableAntiAliasing();
     
     if(timeElapsedON==1){
         ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
@@ -559,12 +671,6 @@ void ofApp::drawScene(){
     if(feedbackON == 1){
         screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     }
-    
-    // luces
-    
-    //if(lightON == 1){
-    
-    //}
     
     // syphon
     
@@ -579,7 +685,7 @@ void ofApp::drawScene(){
     //for(int i = 0; i < LIM; i++){
     
     //    ofPushMatrix();
-    ///texto fuera de cámara
+    // texto fuera de cámara
     
     if(textON == 1 && fixText == 1){
         
@@ -614,7 +720,7 @@ void ofApp::drawScene(){
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofRectangle rect;
     
-    // texto en cámara
+    // videos
     
     for(int i = 0; i < LIM; i++){
         
@@ -632,29 +738,118 @@ void ofApp::drawScene(){
         
     }
     
-    ofEnableLighting();
+    /// luces
     
-    pointLight.enable();
-    pointLight2.enable();
-    pointLight3.enable();
-    
-    material.begin();
-    
-    if(textON == 1 && fixText == 0){
+    if(lightON == 1){
         
-        //ofDisableArbTex();
-        //material.begin();
+        ofEnableLighting();
+        
+        pointLight.draw();
+        pointLight2.draw();
+        pointLight3.draw();
+        
+        pointLight.enable();
+        pointLight2.enable();
+        pointLight3.enable();
+        material.begin();
+        
+    }
+    
+    if(lightON == 0){
+        
+        ofDisableLighting();
+        
+    }
+    
+    ofPushMatrix();
+    
+    text = wrapString(texto, 500);
+    rect = font.getStringBoundingBox(text, 0, 0);
+    ofSetLineWidth(2);
+
+    if(modelON == 1){
+        float distancia;
+        distancia = ofMap(rect.height, 26, 1234, 20, 50);
+        ofPushMatrix();
+        ofRotateX(0);
+        ofRotateY(0);
+        ofRotateZ(180);
+        ofScale(16, 16, 16);
+        ofTranslate(0, 0, 0);
+        //planeMatrix.setPosition(0, 0, 0); /// position in x y z
+        //planeMatrix.drawWireframe();
+        model3D.setPosition(0, distancia, 0);
+        asteroid.bind();
+        model3D.drawFaces();
+        asteroid.unbind();
+        ofPopMatrix();
+    }
+    
+    if(modelON == 1){
+        float distancia;
+        distancia = ofMap(rect.height, 26, 1234, 20, 50);
+        ofPushMatrix();
+        ofRotateX(0);
+        ofRotateY(ofGetElapsedTimef()*2);
+        ofRotateZ(0);
+        ofScale(2, 2, 2);
+        ofTranslate(0, 0, 0);
+        //planeMatrix.setPosition(0, 0, 0); /// position in x y z
+        //planeMatrix.drawWireframe();
+        model3D2.setPosition(500, 200, 200);
+        asteroid.bind();
+        model3D2.drawFaces();
+        asteroid.unbind();
+        ofPopMatrix();
+    }
+    
+    // ICOS
+    
+    if(icoIntON == 1){
+        ofPopMatrix();
+        ofRotateZ(0);
+        icoSphere.setRadius(rect.width*1);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setResolution(0);
+        icoSphere.drawWireframe();
+        ofPushMatrix();
+    }
+    /*
+    if(icoOutON == 1){
+        ofPopMatrix();
+        ofRotateZ(0);
+        icoSphere.setRadius(rect.width*1);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setResolution(1);
+        icoSphere.drawWireframe();
+        ofPushMatrix();
+    }
+     */
+    
+    // estrellas puntos
+    
+    if(stars == 1){
+        
+        for (int i = 0;i < 500;i++){
+            
+            ofPushMatrix();
+            ofRotateZ(ofGetElapsedTimef()+10);
+
+            ofTranslate((ofNoise(i/2.4)-0.5)*5000,
+                        (ofNoise(i/5.6)-0.5)*5000,
+                        (ofNoise(i/8.2)-0.5)*5000);
+            
+            ofCircle(0, 0, (ofNoise(i/3.4)-0.1)*2);
+            ofPopMatrix();
+        }
+        
+    }
+
+    if(textON == 1 && fixText == 0){
         
         //pointLight.draw();
         //pointLight2.draw();
         //pointLight3.draw();
-        
-        ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 0);
-        ofScale(1, 1);
-        ofRotateX(textRotX);
-        ofRotateY(textRotY);
-        ofRotateZ(textRotZ);
         
         /*
          if(onScreen == 1){
@@ -671,8 +866,15 @@ void ofApp::drawScene(){
          //}
          */
         
-        text = wrapString(texto, 500);
-        rect = font.getStringBoundingBox(text, 0, 0);
+        ofSetRectMode(OF_RECTMODE_CENTER);
+        ofTranslate(0, 0, 0);
+        ofScale(0.5, 0.5);
+        ofRotateX(textRotX);
+        ofRotateY(textRotY);
+        ofRotateZ(textRotZ);
+        
+        //text = wrapString(texto, 500);
+        //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
         font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
         
@@ -684,10 +886,8 @@ void ofApp::drawScene(){
             float distancia2;
             distancia = ofMap(rect.height, 25, 1000, 55, 625);
             distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
-            font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
+            font2.drawStringAsShapes(nombre, distancia2 * (-1), distancia);
         }
-        
-        //material.end();
         
         if(autoOrbit == 1){
             camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
@@ -695,7 +895,7 @@ void ofApp::drawScene(){
         
         if(distanceLockON == 1){
             float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 750, 1234 * 1.25);
+            distancia = ofMap(rect.height, 26, 1234, 250, 700);
             camera.setDistance(distancia);
         }
         
@@ -706,61 +906,32 @@ void ofApp::drawScene(){
     };
     
     if(multiMsg == 1){
-    
-    for(int i = 0; i < LIM; i++){
-        ofPushMatrix();
-        ofTranslate(0, 0, 0);
-        ofScale(1, 1);
-        ofRotateX(msgRotX[i]);
-        ofRotateY(msgRotY[i]);
-        ofRotateZ(msgRotZ[i]);
-        textOrbPrima[i] = wrapString(textOrb[i], 500);
-        rectOrb[i] = fontOrb[i].getStringBoundingBox(textOrbPrima[i], 0, 0);
-        //ofNoFill();
-        fontOrb[i].drawStringAsShapes(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
-        ofPopMatrix();
-    }
+        
+        for(int i = 0; i < LIM; i++){
+            // aquí había push matrix
+            ofPushMatrix();
+            ofTranslate(0, 0, 0);
+            ofScale(1, 1);
+            ofRotateX(msgRotX[i]);
+            ofRotateY(msgRotY[i]);
+            ofRotateZ(msgRotZ[i]);
+            textOrbPrima[i] = wrapString(textOrb[i], 500);
+            rectOrb[i] = fontOrb[i].getStringBoundingBox(textOrbPrima[i], 0, 0);
+            //ofNoFill();
+            fontOrb[i].drawStringAsShapes(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
+            ofPopMatrix();
+        }
         
     }
     
-    // ICOS
-    
-    if(icoIntON == 1){
-        ofRotateZ(10);
-        icoSphere.setRadius(rect.width*1.5);
-        icoSphere.setPosition(rect.x, rect.y+50, 0);
-        icoSphere.setResolution(0);
-        icoSphere.drawWireframe();
-        ofRotateZ(0);
-    }
-    
-    if(icoOutON == 1){
-        ofRotateZ(100);
-        icoSphere.setRadius(rect.width*2);
-        icoSphere.setPosition(rect.x, rect.y+50, 0);
-        icoSphere.setResolution(1);
-        icoSphere.drawWireframe();
-        ofRotateZ(0);
-    }
-    
-    // estrellas puntos
-
-    if(stars == 1){
-    
-    for (int i = 0;i < 500;i++){
-
-        ofPushMatrix();
-        ofTranslate((ofNoise(i/2.4)-0.5)*5000,
-                    (ofNoise(i/5.6)-0.5)*5000,
-                    (ofNoise(i/8.2)-0.5)*5000);
- 
-        ofCircle(0, 0, (ofNoise(i/3.4)-0.5)*10);
-        ofPopMatrix();
-    }
+    ofPopMatrix();
+   
+    if(lightON == 1){
+        
+        material.end();
         
     }
-    
-    material.end();
+
     
     camera.end();
     
@@ -813,9 +984,9 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-
+    
     if(autoOrbit== 1 && orbitX != 0){
-    autoOrbit = 0;
+        autoOrbit = 0;
     }
 }
 
