@@ -198,11 +198,19 @@ public:
     float msgRotY[LIM];
     float msgRotZ[LIM];
     
+    float lcneON;
     float multiMsg;
     float stars;
-    ofTexture asteroid; 
-    
-    ofxAssimpModelLoader model3D2;
+    ofTexture asteroid;
+    int multiModelON;
+    int multiModelX[LIM];
+    int multiModelY[LIM];
+    int multiModelZ[LIM];
+    int multiModelRotX[LIM];
+    int multiModelRotY[LIM];
+    int multiModelRotZ[LIM];
+
+    ofxAssimpModelLoader multiModel[LIM];
     ofxAssimpModelLoader model3D;
     int textON;
     int fontSize;

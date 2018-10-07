@@ -10,8 +10,9 @@ void ofApp::setup(){
     //ofSetVerticalSync(true);
     ofSetWindowTitle("Orbit");
     
-    winSizeW = 1360;
-    winSizeH = 768;
+    winSizeW = 800;
+    winSizeH = 800;
+    lcneON = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
     ofSetFrameRate(30);
@@ -70,9 +71,7 @@ void ofApp::setup(){
     model3D.loadModel("3d/terrain.obj");
     model3D.setPosition(0, 0, 0);
     modelON = 0;
-    
-    model3D2.loadModel("3d/stone.obj");
-    model3D2.setPosition(0, 0, 0);
+    multiModelON = 0;
     
     ofDisableArbTex();
     asteroid.enableMipmap();
@@ -184,6 +183,15 @@ void ofApp::setup(){
         msgRotY[i] = 0;
         msgRotZ[i] = 0;
         
+        // multiModel
+        
+        multiModelX[i] = 0;
+        multiModelY[i] = 0;
+        multiModelZ[i] = 0;
+        multiModelRotX[i] = 0;
+        multiModelRotY[i] = 0;
+        multiModelRotZ[i] = 0;
+        
     }
     
     // retro alimentación
@@ -279,7 +287,6 @@ void ofApp::update(){
             vY[m.getArgAsInt(0)] = 0;
             vSpeed[m.getArgAsInt(0)] = 1;
             vOpacity[m.getArgAsInt(0)] = 255;
-            //models3D[m.getArgAsInt(0)].clear();
             vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
         }
@@ -295,7 +302,6 @@ void ofApp::update(){
         
         if (m.getAddress() == "/modelON" && m.getNumArgs() == 1){
             modelON = m.getArgAsInt(0);
-            
         }
         
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
@@ -335,6 +341,34 @@ void ofApp::update(){
         
         if (m.getAddress() == "/feedbackY" && m.getNumArgs() == 1){
             retroY = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/multiModel" && m.getNumArgs() == 3){
+            string temp = "3d/" + m.getArgAsString(2) + ".obj";
+            multiModel[m.getArgAsInt(1)].loadModel(temp);
+            multiModelON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/multiModelFree" && m.getNumArgs() == 1){
+            multiModelON = m.getArgAsInt(0);
+            multiModel[m.getArgAsInt(0)].clear();
+        }
+        
+        if (m.getAddress() == "/modelFree" && m.getNumArgs() == 1){
+            model3D.clear();
+            modelON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/multiModelPos" && m.getNumArgs() == 4){
+            multiModelX[m.getArgAsInt(0)] = m.getArgAsInt(1);
+            multiModelY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+            multiModelZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
+        }
+        
+        if (m.getAddress() == "/multiModelRot" && m.getNumArgs() == 4){
+            multiModelRotX[m.getArgAsInt(0)] = m.getArgAsInt(1);
+            multiModelRotY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+            multiModelRotZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
         }
         
         if (m.getAddress() == "/blur" && m.getNumArgs() == 2){
@@ -571,15 +605,12 @@ void ofApp::draw(){
     myGlitch.generateFx();
     
     if(domeON == 0){
-        
         if(blurON == 1){
             drawBlur();
         }
-        
         if(blurON == 0){
             fbo.draw(0, 0);
         }
-        
     }
     
     if(domeON == 1){
@@ -723,9 +754,7 @@ void ofApp::drawScene(){
     // videos
     
     for(int i = 0; i < LIM; i++){
-        
         ofPushMatrix();
-        
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
@@ -733,32 +762,24 @@ void ofApp::drawScene(){
         ofScale(vScaleX[i],vScaleY[i]);
         ofTranslate((vX[i]),vY[i], vZ[i]-200);
         videoLC[i].draw(0, 0);
-        
         ofPopMatrix();
-        
     }
     
     /// luces
     
     if(lightON == 1){
-        
         ofEnableLighting();
-        
-        pointLight.draw();
-        pointLight2.draw();
-        pointLight3.draw();
-        
+        //pointLight.draw();
+        //pointLight2.draw();
+        //pointLight3.draw();
         pointLight.enable();
         pointLight2.enable();
         pointLight3.enable();
         material.begin();
-        
     }
     
     if(lightON == 0){
-        
         ofDisableLighting();
-        
     }
     
     ofPushMatrix();
@@ -785,22 +806,24 @@ void ofApp::drawScene(){
         ofPopMatrix();
     }
     
-    if(modelON == 1){
+    if(multiModelON == 1){
+        for(int i = 0; i < LIM; i++){
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
         ofPushMatrix();
-        ofRotateX(0);
-        ofRotateY(ofGetElapsedTimef()*2);
-        ofRotateZ(0);
+        ofRotateX(ofGetElapsedTimef() * multiModelRotX[i]);
+        ofRotateY(ofGetElapsedTimef() * multiModelRotY[i]);
+        ofRotateZ(ofGetElapsedTimef() * multiModelRotZ[i]);
         ofScale(2, 2, 2);
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
-        model3D2.setPosition(500, 200, 200);
+        multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
         asteroid.bind();
-        model3D2.drawFaces();
+        multiModel[i].drawFaces();
         asteroid.unbind();
         ofPopMatrix();
+        }
     }
     
     // ICOS
@@ -814,6 +837,7 @@ void ofApp::drawScene(){
         icoSphere.drawWireframe();
         ofPushMatrix();
     }
+    
     /*
     if(icoOutON == 1){
         ofPopMatrix();
@@ -877,7 +901,8 @@ void ofApp::drawScene(){
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
         font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-        
+        //font.drawStringExtruded(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+
         
         ///
         if(namesON == 1){
@@ -895,7 +920,7 @@ void ofApp::drawScene(){
         
         if(distanceLockON == 1){
             float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 250, 700);
+            distancia = ofMap(rect.height, 26, 1234, 350, 700);
             camera.setDistance(distancia);
         }
         
