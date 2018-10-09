@@ -10,8 +10,8 @@ void ofApp::setup(){
     //ofSetVerticalSync(true);
     ofSetWindowTitle("Orbit");
     
-    winSizeW = 800;
-    winSizeH = 800;
+    winSizeW = 1200;
+    winSizeH = 740;
     lcneON = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
@@ -900,8 +900,10 @@ void ofApp::drawScene(){
         //text = wrapString(texto, 500);
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
-        font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-        //font.drawStringExtruded(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        //font.drawStringCentered(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+
+	//font.drawStringExtruded(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
 
         
         ///
@@ -911,7 +913,7 @@ void ofApp::drawScene(){
             float distancia2;
             distancia = ofMap(rect.height, 25, 1000, 55, 625);
             distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
-            font2.drawStringAsShapes(nombre, distancia2 * (-1), distancia);
+            font2.drawString(nombre, distancia2 * (-1), distancia);
         }
         
         if(autoOrbit == 1){
