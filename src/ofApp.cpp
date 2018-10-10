@@ -1,6 +1,8 @@
 
 #include "ofApp.h"
 
+// faltan un buen de cosas: el blur glitch, una matrix audioreactiva, colores para las luces, funciones para que los valores tipo int o float reaccionen a entradas de audio, a funciones sinosoidales o a funciones caóticas. 
+
 void ofApp::setup(){
     
     // iniciales
@@ -10,8 +12,8 @@ void ofApp::setup(){
     //ofSetVerticalSync(true);
     ofSetWindowTitle("Orbit");
     
-    winSizeW = 1200;
-    winSizeH = 740;
+    winSizeW = 1360;
+    winSizeH = 768;
     lcneON = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
@@ -31,12 +33,12 @@ void ofApp::setup(){
     
     // camara
     
-    camera.setDistance(1500);
+    camera.setDistance(250);
     autoOrbit = 0;
     orbitX = 0;
     orbitY = 0;
     distanceLockON = 1;
-
+    
     
     // shader blur
     
@@ -91,7 +93,7 @@ void ofApp::setup(){
     font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     
-    textON = 0;
+    textON = 1;
     texto = "";
     nombre = "";
     fixText = 1;
@@ -100,6 +102,10 @@ void ofApp::setup(){
     textRotZ = 0;
     namesON = 0;
     multiMsg = 0;
+    cero = "";
+    uno = "";
+    dos = "";
+    tres = "";
     
     // glitch
     
@@ -152,6 +158,11 @@ void ofApp::setup(){
     sender.setup("127.0.0.1",portOut);
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
+    
+    // client side
+    clientDestination = "127.0.0.1";
+    //clientDestination    = "192.168.0.115"; // if you send to another instance enter IP here
+    clientSender.setup(clientDestination, 5612);
     
     for(int i = 0; i < LIM; i++){
         
@@ -316,10 +327,11 @@ void ofApp::update(){
             vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             vY[m.getArgAsInt(0)] = m.getArgAsInt(2);
             vZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
-            
-            if(canonGenerator == 1){
-                videoLC[m.getArgAsInt(0)].play();
-            }
+            /*
+             if(canonGenerator == 1){
+             videoLC[m.getArgAsInt(0)].play();
+             }
+             */
             
         }
         
@@ -343,14 +355,13 @@ void ofApp::update(){
             retroY = m.getArgAsFloat(0);
         }
         
-        if (m.getAddress() == "/multiModel" && m.getNumArgs() == 3){
+        if (m.getAddress() == "/multiModel" && m.getNumArgs() == 3){ /// modificar sintaxis
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             multiModel[m.getArgAsInt(1)].loadModel(temp);
             multiModelON = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/multiModelFree" && m.getNumArgs() == 1){
-            multiModelON = m.getArgAsInt(0);
             multiModel[m.getArgAsInt(0)].clear();
         }
         
@@ -387,6 +398,8 @@ void ofApp::update(){
             textRotY = m.getArgAsFloat(1);
             textRotZ = m.getArgAsFloat(2);
         }
+        
+        /// faltan los mensajes en el modo on screen
         
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 2){
             texto = m.getArgAsString(0);
@@ -425,6 +438,8 @@ void ofApp::update(){
         if (m.getAddress() == "/stars"  &&  m.getNumArgs() == 1){
             stars = m.getArgAsInt(0);
         }
+        
+        // no funciona
         
         if (m.getAddress() == "/domeDistance"  &&  m.getNumArgs() == 1){
             domeDistance = m.getArgAsInt(0);
@@ -648,7 +663,7 @@ void ofApp::drawBlur(){
     fboBlurOnePass.draw(0, 0);
     shaderBlurY.end();
     fboBlurTwoPass.end();
-
+    
     fboBlurTwoPass.draw(0, 0);
     
 }
@@ -683,9 +698,10 @@ void ofApp::drawScene(){
     fbo.begin();
     ofClear(0);
     ofEnableArbTex();
+    ofRectangle rect;
     
     if(depth == 0){
-    ofEnableDepthTest();
+        ofEnableDepthTest();
     }
     
     if(depth == 1){
@@ -712,44 +728,13 @@ void ofApp::drawScene(){
     };
     
 #endif
-    
-    //for(int i = 0; i < LIM; i++){
-    
-    //    ofPushMatrix();
-    // texto fuera de cámara
-    
-    if(textON == 1 && fixText == 1){
-        
-        ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 200);
-        ofScale(1, 1);
-        ofRotateX(textRotX);
-        ofRotateY(textRotY);
-        ofRotateZ(textRotZ);
-        
-        text = wrapString(texto, 200);
-        ofRectangle rect = font.getStringBoundingBox(text, 0, 0);
-        
-        if(namesON == 1){
-            float distancia;
-            float distancia2;
-            distancia = ofMap(rect.height, 25, 1000, 55, 625);
-            distancia2 = ofMap(rect.width, 25, 1000, 55, 525);
-            font2.drawStringCentered(nombre, distancia2 * (-1), distancia);
-        }
-        
-        if(distanceLockON == 1){
-            float distancia;
-            distancia = ofMap(rect.height, 0, 1000, 100, -400);
-            ofTranslate(0, 0, distancia);
-        }
-        
-        font.drawStringCentered(text, (ofGetWidth()*0.5), ofGetHeight()*0.5);
-    };
-    
+
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);
-    ofRectangle rect;
+    
+    if(autoOrbit == 1){
+    camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
+    }
     
     // videos
     
@@ -784,10 +769,10 @@ void ofApp::drawScene(){
     
     ofPushMatrix();
     
-    text = wrapString(texto, 500);
+    text = wrapString(texto, 400);
     rect = font.getStringBoundingBox(text, 0, 0);
     ofSetLineWidth(2);
-
+    
     if(modelON == 1){
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
@@ -808,21 +793,21 @@ void ofApp::drawScene(){
     
     if(multiModelON == 1){
         for(int i = 0; i < LIM; i++){
-        float distancia;
-        distancia = ofMap(rect.height, 26, 1234, 20, 50);
-        ofPushMatrix();
-        ofRotateX(ofGetElapsedTimef() * multiModelRotX[i]);
-        ofRotateY(ofGetElapsedTimef() * multiModelRotY[i]);
-        ofRotateZ(ofGetElapsedTimef() * multiModelRotZ[i]);
-        ofScale(2, 2, 2);
-        ofTranslate(0, 0, 0);
-        //planeMatrix.setPosition(0, 0, 0); /// position in x y z
-        //planeMatrix.drawWireframe();
-        multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
-        asteroid.bind();
-        multiModel[i].drawFaces();
-        asteroid.unbind();
-        ofPopMatrix();
+            float distancia;
+            distancia = ofMap(rect.height, 26, 1234, 20, 50);
+            ofPushMatrix();
+            ofRotateX(ofGetElapsedTimef() * multiModelRotX[i]);
+            ofRotateY(ofGetElapsedTimef() * multiModelRotY[i]);
+            ofRotateZ(ofGetElapsedTimef() * multiModelRotZ[i]);
+            ofScale(2, 2, 2);
+            ofTranslate(0, 0, 0);
+            //planeMatrix.setPosition(0, 0, 0); /// position in x y z
+            //planeMatrix.drawWireframe();
+            multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
+            asteroid.bind();
+            multiModel[i].drawFaces();
+            asteroid.unbind();
+            ofPopMatrix();
         }
     }
     
@@ -839,15 +824,15 @@ void ofApp::drawScene(){
     }
     
     /*
-    if(icoOutON == 1){
-        ofPopMatrix();
-        ofRotateZ(0);
-        icoSphere.setRadius(rect.width*1);
-        icoSphere.setPosition(rect.x, rect.y+50, 0);
-        icoSphere.setResolution(1);
-        icoSphere.drawWireframe();
-        ofPushMatrix();
-    }
+     if(icoOutON == 1){
+     ofPopMatrix();
+     ofRotateZ(0);
+     icoSphere.setRadius(rect.width*1);
+     icoSphere.setPosition(rect.x, rect.y+50, 0);
+     icoSphere.setResolution(1);
+     icoSphere.drawWireframe();
+     ofPushMatrix();
+     }
      */
     
     // estrellas puntos
@@ -858,7 +843,7 @@ void ofApp::drawScene(){
             
             ofPushMatrix();
             ofRotateZ(ofGetElapsedTimef()+10);
-
+            
             ofTranslate((ofNoise(i/2.4)-0.5)*5000,
                         (ofNoise(i/5.6)-0.5)*5000,
                         (ofNoise(i/8.2)-0.5)*5000);
@@ -868,27 +853,18 @@ void ofApp::drawScene(){
         }
         
     }
-
+    
     if(textON == 1 && fixText == 0){
         
         //pointLight.draw();
         //pointLight2.draw();
         //pointLight3.draw();
         
-        /*
-         if(onScreen == 1){
-         text = wrapString(clientTyping, 200);
-         rect = font.getStringBoundingBox(text, 0, 0);
-         titleFont.drawStringAsShapes(text, 0-(rect.width*0.75), 0+(rect.height*0.5));
-         }
-         
-         //if(onScreen == 0){
-         text = wrapString(texto, 200);
-         rect = font.getStringBoundingBox(text, 0, 0);
-         //ofNoFill();
-         font.drawStringAsShapes(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-         //}
-         */
+        if(onScreen == 1){
+            text = wrapString(clientTyping, 400);
+            rect = font.getStringBoundingBox(text, 0, 0);
+            font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        }
         
         ofSetRectMode(OF_RECTMODE_CENTER);
         ofTranslate(0, 0, 0);
@@ -900,13 +876,10 @@ void ofApp::drawScene(){
         //text = wrapString(texto, 500);
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
-        font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-        //font.drawStringCentered(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-
-	//font.drawStringExtruded(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-
+        if(onScreen == 0){
+            font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        }
         
-        ///
         if(namesON == 1){
             ofRotateZ(0);
             float distancia;
@@ -922,7 +895,7 @@ void ofApp::drawScene(){
         
         if(distanceLockON == 1){
             float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 350, 700);
+            distancia = ofMap(rect.height, 25, 1234, 500, 700);
             camera.setDistance(distancia);
         }
         
@@ -945,22 +918,46 @@ void ofApp::drawScene(){
             textOrbPrima[i] = wrapString(textOrb[i], 500);
             rectOrb[i] = fontOrb[i].getStringBoundingBox(textOrbPrima[i], 0, 0);
             //ofNoFill();
-            fontOrb[i].drawStringAsShapes(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
+            fontOrb[i].drawString(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
             ofPopMatrix();
         }
         
     }
     
     ofPopMatrix();
-   
+    
     if(lightON == 1){
-        
         material.end();
-        
     }
-
     
     camera.end();
+    
+    /*
+     
+     text = wrapString(clientTyping, 500);
+     rect = font.getStringBoundingBox(text, 0, 0);
+     font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+     
+     */
+    
+    if(textON == 1 && fixText == 1){
+        ofDisableDepthTest();
+        ofSetRectMode(OF_RECTMODE_CENTER);
+        ofTranslate(0, 0, 0);
+        ofScale(0.5, 0.5);
+        ofRotateX(textRotX);
+        ofRotateY(textRotY);
+        ofRotateZ(textRotZ);
+        ofPushMatrix();
+        text = wrapString(clientTyping, 500);
+        rect = font.getStringBoundingBox(text, 0, 0);
+        ofTranslate(0, 0, -200);
+        float distancia;
+        distancia = ofMap(rect.height, 0, 500, 700, -100);
+        ofTranslate(0, 0, distancia);
+        font.drawString(text, ofGetWidth()-(rect.width*0.5), ofGetHeight()-(rect.height*0.25));
+        ofPopMatrix();
+    };
     
     if(feedbackON == 1){
         screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
@@ -969,6 +966,7 @@ void ofApp::drawScene(){
     fbo.end();
     
 }
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
@@ -985,11 +983,258 @@ void ofApp::keyPressed(int key){
             }
         }
     }
-    // hit Return, time to send the osc message if it's not empty
+    
     else{
         
-        // aquí iría el old. a ver si funciona.
+        std::vector < std::string > textAnalisis = ofSplitString(clientTyping, " ");
+        textAnalisis.push_back(clientTyping);
+        
+        if(clientTyping.size() > 1){
+            cero = textAnalisis[2];
+        } else {
+            cero = "";
+        }
+        
+        if(textAnalisis[0] == "load"){
+            string temp = "videos/" + cero + ".mov";
+            videoLC[ofToInt(textAnalisis[1])].setPixelFormat(OF_PIXELS_RGBA);
+            videoLC[ofToInt(textAnalisis[1])].setLoopState(OF_LOOP_NORMAL);
+            videoLC[ofToInt(textAnalisis[1])].load(temp);
+            videoLC[ofToInt(textAnalisis[1])].play();
+            vScaleX[ofToInt(textAnalisis[1])] = (ofGetWidth()*1.0)/960;
+            vScaleY[ofToInt(textAnalisis[1])] = (ofGetHeight()*1.0)/560;
+            vRotX[ofToInt(textAnalisis[1])] = 0;
+            vRotY[ofToInt(textAnalisis[1])] = 0;
+            vRotZ[ofToInt(textAnalisis[1])] = 0;
+        }
+        
+        if (textAnalisis[0] == "free"){ // falta rot
+            videoLC[ofToInt(textAnalisis[1])].close();
+            vX[ofToInt(textAnalisis[1])] = 0;
+            vY[ofToInt(textAnalisis[1])] = 0;
+            vSpeed[ofToInt(textAnalisis[1])] = 1;
+            vOpacity[ofToInt(textAnalisis[1])] = 255;
+            vX[ofToInt(textAnalisis[1])] = 0;
+            vY[ofToInt(textAnalisis[1])] = 0;
+            vZ[ofToInt(textAnalisis[1])] = 0;
+            vRotX[ofToInt(textAnalisis[1])] = 0;
+            vRotZ[ofToInt(textAnalisis[1])] = 0;
+            vRotX[ofToInt(textAnalisis[1])] = 0;
+        }
+        
+        if (textAnalisis[0] == "speed"){
+            videoLC[ofToInt(textAnalisis[1])].setSpeed(ofToFloat(textAnalisis[2])*tempo);
+        }
+        
+        if (textAnalisis[0] == "light"){
+            lightON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "model"){
+            modelON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "tempo"){
+            tempo = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "opacity"){
+            vOpacity[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+        }
+        
+        if (textAnalisis[0] == "pos"){
+            vX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+            vY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[3]);
+            vZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
+        }
+        
+        if (textAnalisis[0] == "size"){
+            vScaleX[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[2]);
+            vScaleY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "feedback"){
+            retroX = ofToFloat(textAnalisis[2]);
+            retroY = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "feedbackx"){
+            retroX = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "feedbacky"){
+            retroY = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "multimodel"){
+            string temp = "3d/" + textAnalisis[3] + ".obj";
+            multiModel[ofToInt(textAnalisis[2])].loadModel(temp);
+            multiModelON = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "multimodelfree"){
+            multiModel[ofToInt(textAnalisis[2])].clear();
+        }
+        
+        if (textAnalisis[0] == "modelfree"){
+            model3D.clear();
+        }
+        
+        if (textAnalisis[0] == "multimodelpos"){
+            multiModelX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+            multiModelY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[3]);
+            multiModelZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
+        }
+        
+        if (textAnalisis[0] == "multimodelrot" ){
+            multiModelRotX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+            multiModelRotY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+            multiModelRotZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+        }
+        
+        if (textAnalisis[0] == "blur"){
+            blurON = ofToInt(textAnalisis[1]);
+            blur = ofToInt(textAnalisis[2]);
+        }
+        
+        if (textAnalisis[0] == "rot"){
+            vRotX[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[2]);
+            vRotY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
+            vRotZ[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[4]);
+        }
+        
+        if (textAnalisis[0] == "textrot"){
+            textRotX = ofToFloat(textAnalisis[1]);
+            textRotY = ofToFloat(textAnalisis[2]);
+            textRotZ = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "dome"){
+            domeON = ofToInt(textAnalisis[1]);
+            lightON = 0;
+        }
+        
+        if (textAnalisis[0] == "icos"){ // patrones de movimiento
+            icoOutON = ofToInt(textAnalisis[1]);
+            icoIntON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "stars"){
+            stars = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "fb" ){
+            feedbackON = ofToInt(textAnalisis[1]);
+            depth = ofToInt(textAnalisis[1]);
+        }
+        
+        if(textAnalisis[0] == "orbit"){
+            autoOrbit = ofToInt(textAnalisis[1]);
+            orbitX = ofToFloat(textAnalisis[2]);
+            orbitY = ofToInt(textAnalisis[3]);
+            
+        }
+        
+        if (textAnalisis[0] == "glitch"){
+            
+            if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
+                convergence = false;
+                glow = false;
+                shaker = false;
+                cutslider = false;
+                twist = false;
+                outline = false;
+                noise = false;
+                slitscan = false;
+                swell = false;
+                invert = false;
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 1){
+                convergence = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 2){
+                glow = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 3){
+                shaker = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 4){
+                cutslider = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 5){
+                twist = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 6){
+                outline = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 7){
+                noise = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 8){
+                slitscan = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 9){
+                swell = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 10){
+                invert = ofToBool(textAnalisis[1]);
+            }
+            
+        }
+        
+        if (textAnalisis[0] == "glitchcolor"){
+            
+            if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
+                highcontrast = false;
+                blueraise = false;
+                redraise = false;
+                greenraise = false;
+                blueinvert = false;
+                redinvert = false;
+                greeninvert = false;
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 1){
+                highcontrast = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 2){
+                blueraise = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 3){
+                redraise = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 4){
+                greenraise = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 5){
+                blueinvert = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 6){
+                redinvert = ofToBool(textAnalisis[1]);
+            }
+            
+            if(ofToInt(textAnalisis[2]) == 1){
+                greeninvert = ofToBool(textAnalisis[1]);
+            }
+        }
+        
         clientTyping = "";
+        
     }
     
 }

@@ -36,6 +36,7 @@ public:
     void drawScene();
     void drawFbo();
     void drawBlur();
+    void textControl();
     
     ofxHapPlayer videoLC[LIM];
     ofxDomemaster domemaster;
@@ -198,6 +199,16 @@ public:
     float msgRotY[LIM];
     float msgRotZ[LIM];
     
+    string cero;
+    string uno;
+    string dos;
+    string tres;
+    string prueba;
+    
+    ofxOscSender clientSender; // client sender object
+    string clientDestination; // IP address we're sending to
+    int clientSendPort; // port we're sending to
+
     float lcneON;
     float multiMsg;
     float stars;

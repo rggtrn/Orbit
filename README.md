@@ -1,9 +1,11 @@
 
 # Orbit
 
-Text / Sound / Video | OpenFrameworks + SuperCollider
+Text | Video | Sound | OpenFrameworks + SuperCollider
 
-![holaMundo](img/holaMundo.gif)
+Orbit es una exploración promovida desde PiranhaLab que se adscribe al paradigma de la programación al vuelo o live coding. Algunos antecedentes/desarrollos amigos que inspiran a Orbit son: CineVivo, Hydra y principalmente, Fluxus.
+
+Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/PiranhaLib) y en general, por medio del protocolo OSC. También es posible controlar Orbit desde la ventana: basta teclear un poco sobre la ventana para introducir caracteres que pueden ser instrucciones. 
 
 ### Orbit en acción 
 
@@ -22,6 +24,12 @@ Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 `$ git checkout libavformat-OF-0.9`
 
 Para compilar en Linux es necesario eliminar la línea ofxSyphon del archivo addons.make.
+
+### Control en ventana
+
+La sintáxis del control en ventana varía según la instrucción. En todos los casos, la instrucción empieza con una acción. Ej. load 1 samplehap (donde load es la instrucción para cargar un video, 1 es la pista en la que el video será cargado y samplehap es el nombre del archivo sin extensión).
+
+Una versión detallada de las instrucciones se puede encontrar en la carpeta /bin/data/
 
 ### Control OSC
 
@@ -46,3 +54,5 @@ La conversión de videos es posible con ffmpeg. En macOS es posible instalar FFm
 `ffmpeg -i yourSourceFile.mov -c:v hap -format hap_alpha outputName.mov`
 
 * Para instrucciones más detalladas en inglés: https://gist.github.com/dlublin/e4585b872dd136ae88b2aa51a6a89aac
+
+Nota: por el momento, el nombre de los archivos cargados (video o modelos) no debe contener caracteres en mayúsculas. 
