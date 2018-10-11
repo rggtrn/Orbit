@@ -29,7 +29,7 @@ Para compilar en Linux es necesario eliminar la línea ofxSyphon del archivo add
 
 La sintáxis del control en ventana varía según la instrucción. En todos los casos, la instrucción empieza con una acción. Ej. load 1 samplehap (donde load es la instrucción para cargar un video, 1 es la pista en la que el video será cargado y samplehap es el nombre del archivo sin extensión).
 
-Una versión detallada de las instrucciones se puede encontrar en la carpeta /bin/data/
+Una versión detallada de las instrucciones se puede encontrar en la carpeta /bin/data/Orbit.txt
 
 ### Control OSC
 

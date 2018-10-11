@@ -28,7 +28,7 @@ void ofApp::setup(){
     
     domeDistance=20;
     domemaster.setup();
-    domemaster.setCameraPosition(0,0,domeDistance);
+    domemaster.setCameraPosition(0, 0, domeDistance);
     domeON = 0;
     
     // camara
@@ -198,7 +198,7 @@ void ofApp::setup(){
         
         multiModelX[i] = 0;
         multiModelY[i] = 0;
-        multiModelZ[i] = 0;
+        multiModelZ[i] = -200;
         multiModelRotX[i] = 0;
         multiModelRotY[i] = 0;
         multiModelRotZ[i] = 0;
@@ -330,8 +330,7 @@ void ofApp::update(){
             /*
              if(canonGenerator == 1){
              videoLC[m.getArgAsInt(0)].play();
-             }
-             */
+             }             */
             
         }
         
@@ -809,7 +808,7 @@ void ofApp::drawScene(){
             asteroid.unbind();
             ofPopMatrix();
         }
-    }
+	}
     
     // ICOS
     
@@ -995,7 +994,7 @@ void ofApp::keyPressed(int key){
             cero = "";
         }
         
-        if(textAnalisis[0] == "load"){
+        if(textAnalisis[0] == "vload"){
             string temp = "videos/" + cero + ".mov";
             videoLC[ofToInt(textAnalisis[1])].setPixelFormat(OF_PIXELS_RGBA);
             videoLC[ofToInt(textAnalisis[1])].setLoopState(OF_LOOP_NORMAL);
@@ -1008,7 +1007,7 @@ void ofApp::keyPressed(int key){
             vRotZ[ofToInt(textAnalisis[1])] = 0;
         }
         
-        if (textAnalisis[0] == "free"){ // falta rot
+        if (textAnalisis[0] == "vfree"){ // falta rot
             videoLC[ofToInt(textAnalisis[1])].close();
             vX[ofToInt(textAnalisis[1])] = 0;
             vY[ofToInt(textAnalisis[1])] = 0;
@@ -1022,7 +1021,7 @@ void ofApp::keyPressed(int key){
             vRotX[ofToInt(textAnalisis[1])] = 0;
         }
         
-        if (textAnalisis[0] == "speed"){
+        if (textAnalisis[0] == "vspeed"){
             videoLC[ofToInt(textAnalisis[1])].setSpeed(ofToFloat(textAnalisis[2])*tempo);
         }
         
@@ -1038,17 +1037,17 @@ void ofApp::keyPressed(int key){
             tempo = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "opacity"){
+        if (textAnalisis[0] == "vop"){
             vOpacity[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
         }
         
-        if (textAnalisis[0] == "pos"){
+        if (textAnalisis[0] == "vpos"){
             vX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
             vY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[3]);
             vZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
         }
         
-        if (textAnalisis[0] == "size"){
+        if (textAnalisis[0] == "vsize"){
             vScaleX[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[2]);
             vScaleY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
         }
@@ -1066,27 +1065,27 @@ void ofApp::keyPressed(int key){
             retroY = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "multimodel"){
+        if (textAnalisis[0] == "mload"){ // probar sin el primer elemento 
             string temp = "3d/" + textAnalisis[3] + ".obj";
             multiModel[ofToInt(textAnalisis[2])].loadModel(temp);
             multiModelON = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "multimodelfree"){
-            multiModel[ofToInt(textAnalisis[2])].clear();
+        if (textAnalisis[0] == "mfree"){
+            multiModel[ofToInt(textAnalisis[1])].clear();
         }
         
         if (textAnalisis[0] == "modelfree"){
             model3D.clear();
         }
         
-        if (textAnalisis[0] == "multimodelpos"){
+        if (textAnalisis[0] == "mpos"){
             multiModelX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
             multiModelY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[3]);
             multiModelZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
         }
         
-        if (textAnalisis[0] == "multimodelrot" ){
+        if (textAnalisis[0] == "mrot" ){
             multiModelRotX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
             multiModelRotY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
             multiModelRotZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
@@ -1097,7 +1096,7 @@ void ofApp::keyPressed(int key){
             blur = ofToInt(textAnalisis[2]);
         }
         
-        if (textAnalisis[0] == "rot"){
+        if (textAnalisis[0] == "vrot"){
             vRotX[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[2]);
             vRotY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
             vRotZ[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[4]);
@@ -1192,7 +1191,7 @@ void ofApp::keyPressed(int key){
             
         }
         
-        if (textAnalisis[0] == "glitchcolor"){
+        if (textAnalisis[0] == "cglitch"){
             
             if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
                 highcontrast = false;
