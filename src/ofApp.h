@@ -37,6 +37,7 @@ public:
     void drawFbo();
     void drawBlur();
     void textControl();
+    void drawGlitchBlur();
     
     ofxHapPlayer videoLC[LIM];
     ofxDomemaster domemaster;
@@ -88,11 +89,15 @@ public:
     int canonGenerator;
     ofPath path[LIM];
     
-    int feedbackON;         
+    int feedbackON;
+    float glitchBlur;
+    int glitchBlurON;
+    float lago;
 
     ofShader shaderFish;
     
-    ofFbo fbo; 
+    ofFbo fbo;
+    int clearGB;
     
     ofPlanePrimitive plane;
     ofxPostGlitch myGlitch;
@@ -112,8 +117,14 @@ public:
     ofShader shaderBlurX;
     ofShader shaderBlurY;
     
+    ofShader glitchBlurX;
+    ofShader glitchBlurY;
+    
     ofFbo fboBlurOnePass;
     ofFbo fboBlurTwoPass;
+    
+    ofFbo fboGlitchBlurOnePass;
+    ofFbo fboGlitchBlurTwoPass;
     
     float blur;
     int blurON;

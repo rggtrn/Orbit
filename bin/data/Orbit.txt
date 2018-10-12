@@ -15,19 +15,20 @@ vop | pista(entero) | entero(0 a 255) // define el valor de opacidad en los vide
 vpos | pista(entero) | posX(entero) | posY(entero) | posZ(entero) // determina la posición de un video 
 vsize | pista(entero) | sizeX(entero) | sizeY(entero) // determina el tamaño de un video
 vrot | pista(entero) | rotX(entero) | rotY(entero) | rotZ(entero) // modifica la rotación de un video
-fb | encendido/apagado(1 ó 0) // enciende o apaga la retroalimentación 
-feedback | feedbackX(entero) | feebackY(entero) // determina los valores en X y Y de la retroalimentación
+fb | encendido/apagado (1 ó 0) // enciende o apaga la retroalimentación 
+fbxy | feedback X (entero) | feeback Y (entero) // determina los valores en X y Y de la retroalimentación
 light | encendido/apagado(1 ó 0) // Enciende o apaga las luces
 tempo | tempoGlobal(flotante) // Define el tempo global de Orbit
 mload | pista(entero) | encendido/apgado(1 ó 0) | nombreDelArchivo(sin extensión) // carga un modelo 3d
 mfree | pista(entero) // libera un modelo 3d
 mpos | pista(entero) | posX(entero) | posY(entero) | posZ(entero) // posiciona un modelo 3d 
 blur | encendido/apgado(1 ó 0) | valor(flotante) // aplica un efecto blur 
-textrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de un texto
+txtrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de un texto
 dome | encendido/apagado(1 ó 0) | enciende una distorsión tipo fisheye
 icos | encendido/apagado(1 ó 0) | dibuja icosaedros
 stars | encendido/apagado(1 ó 0) | enciende o apaga las estrellas
 orbit | encendido/apagado(1 ó 0) | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
 glitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 10) // enciende o apaga glitches
 cglitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 6) // enciende o apaga distorsiones de color
-
+gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
+gclear | limpia la ventana si hubo barridos 

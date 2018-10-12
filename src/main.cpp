@@ -5,8 +5,8 @@
 int main( ){
     //ofAppGlutWindow window;
     
-    ofAppGlutWindow window;
-    window.setGlutDisplayString("rgba double depth alpha samples>=4");
+    //ofAppGlutWindow window;
+   // window.setGlutDisplayString("rgba double depth alpha samples>=4");
     //ofSetupOpenGL(&window, 1440, 900, OF_WINDOW);
 
     //window.setGlutDisplayString("rgba alpha double stencil samples>=4");

@@ -1,7 +1,7 @@
 
 #include "ofApp.h"
 
-// faltan un buen de cosas: el blur glitch, una matrix audioreactiva, colores para las luces, funciones para que los valores tipo int o float reaccionen a entradas de audio, a funciones sinosoidales o a funciones caóticas. 
+// faltan un buen de cosas: parametros de glitchblur, una matrix audioreactiva, colores para las luces, funciones para que los valores tipo int o float reaccionen a entradas de audio, a funciones sinosoidales o a funciones caóticas.
 
 void ofApp::setup(){
     
@@ -15,6 +15,7 @@ void ofApp::setup(){
     winSizeW = 1360;
     winSizeH = 768;
     lcneON = 1;
+    lago = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
     ofSetFrameRate(30);
@@ -39,8 +40,7 @@ void ofApp::setup(){
     orbitY = 0;
     distanceLockON = 1;
     
-    
-    // shader blur
+    // Shaders
     
 #ifdef TARGET_OPENGLES
     shaderBlurX.load("shadersES2/shaderBlurX");
@@ -61,6 +61,17 @@ void ofApp::setup(){
     blur = 0;
     blurON = 0;
     
+    glitchBlurX.load("Shaders/glitchBlurX");
+    glitchBlurY.load("Shaders/glitchBlurY");
+    
+    fboGlitchBlurOnePass.allocate(ofGetWidth(), ofGetHeight());
+    fboGlitchBlurTwoPass.allocate(ofGetWidth(), ofGetHeight());
+    
+    glitchBlur = 0;
+    glitchBlurON = 0;
+    
+    clearGB = 0;
+    
     // Syphon
     
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -70,8 +81,8 @@ void ofApp::setup(){
     
     // 3d
     
-    model3D.loadModel("3d/terrain.obj");
-    model3D.setPosition(0, 0, 0);
+    model3D.loadModel("3d/nave.obj");
+    model3D.setPosition(100, 0, 0);
     modelON = 0;
     multiModelON = 0;
     
@@ -354,6 +365,10 @@ void ofApp::update(){
             retroY = m.getArgAsFloat(0);
         }
         
+        if (m.getAddress() == "/lago" && m.getNumArgs() == 1){
+            lago = m.getArgAsFloat(0)+0.1;
+        }
+        
         if (m.getAddress() == "/multiModel" && m.getNumArgs() == 3){ /// modificar sintaxis
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             multiModel[m.getArgAsInt(1)].loadModel(temp);
@@ -386,6 +401,11 @@ void ofApp::update(){
             blur = m.getArgAsFloat(1);
         }
         
+        if (m.getAddress() == "/glitchblur" && m.getNumArgs() == 2){
+            glitchBlurON = m.getArgAsInt(0);
+            glitchBlur = m.getArgAsFloat(1);
+        }
+        
         if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
             vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
@@ -403,6 +423,10 @@ void ofApp::update(){
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 2){
             texto = m.getArgAsString(0);
             nombre = m.getArgAsString(1);
+        }
+        
+        if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
+            texto = m.getArgAsString(0);
         }
         
         if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
@@ -619,10 +643,16 @@ void ofApp::draw(){
     myGlitch.generateFx();
     
     if(domeON == 0){
+        
         if(blurON == 1){
             drawBlur();
         }
-        if(blurON == 0){
+        
+        if(glitchBlurON == 1){
+            drawGlitchBlur();
+        }
+        
+        if(blurON == 0 && glitchBlurON == 0){
             fbo.draw(0, 0);
         }
     }
@@ -664,6 +694,53 @@ void ofApp::drawBlur(){
     fboBlurTwoPass.end();
     
     fboBlurTwoPass.draw(0, 0);
+    
+}
+
+//--------------------------------------------------------------
+
+void ofApp::drawGlitchBlur(){
+    
+    ofEnableAlphaBlending();
+    
+    fboGlitchBlurOnePass.begin();
+    
+    glitchBlurX.begin();
+    //ofClear(0);
+    
+    if(clearGB == 0){
+        ofSetColor(255, 255, 255, 0);
+    }
+    if(clearGB == 1){
+        ofClear(0);
+    }
+    
+    glitchBlurX.setUniform1f("blurAmnt", glitchBlur);
+
+    fbo.draw(0, 0);
+    glitchBlurX.end();
+    fboGlitchBlurOnePass.end();
+    
+    fboGlitchBlurTwoPass.begin();
+    
+    glitchBlurY.begin();
+    //ofClear(0);
+    
+    if(clearGB == 0){
+        ofSetColor(255, 255, 255, 20);
+    }
+    if(clearGB == 1){
+        ofClear(0);
+    }
+    
+    glitchBlurY.setUniform1f("blurAmnt", glitchBlur*lago);
+
+    fboGlitchBlurOnePass.draw(0, 0);
+    glitchBlurY.end();
+    fboGlitchBlurTwoPass.end();
+    
+    //ofSetColor(ofColor::white);
+    fboGlitchBlurTwoPass.draw(0, 0);
     
 }
 
@@ -727,12 +804,12 @@ void ofApp::drawScene(){
     };
     
 #endif
-
+    
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);
     
     if(autoOrbit == 1){
-    camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
+        camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
     }
     
     // videos
@@ -773,20 +850,23 @@ void ofApp::drawScene(){
     ofSetLineWidth(2);
     
     if(modelON == 1){
+        ofSetRectMode(OF_RECTMODE_CENTER);
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
         ofPushMatrix();
-        ofRotateX(0);
-        ofRotateY(0);
-        ofRotateZ(180);
+        ofRotateX(90);
+        ofRotateY(180);
+        //ofRotateZ(0+ofGetElapsedTimef()); // 180 cuando es el otro
+        ofRotateZ(0);
         ofScale(16, 16, 16);
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
-        model3D.setPosition(0, distancia, 0);
-        asteroid.bind();
+        //model3D.setPosition(-200, distancia, 0);
+        model3D.setPosition(-275, -200, -50);
+        //asteroid.bind();
         model3D.drawFaces();
-        asteroid.unbind();
+        //asteroid.unbind();
         ofPopMatrix();
     }
     
@@ -795,20 +875,20 @@ void ofApp::drawScene(){
             float distancia;
             distancia = ofMap(rect.height, 26, 1234, 20, 50);
             ofPushMatrix();
-            ofRotateX(ofGetElapsedTimef() * multiModelRotX[i]);
-            ofRotateY(ofGetElapsedTimef() * multiModelRotY[i]);
-            ofRotateZ(ofGetElapsedTimef() * multiModelRotZ[i]);
-            ofScale(2, 2, 2);
+            ofRotateX(multiModelRotX[i]);
+            ofRotateY(multiModelRotY[i]);
+            ofRotateZ( multiModelRotZ[i]+180);
+            ofScale(1, 1, 1); /// falta mscale
             ofTranslate(0, 0, 0);
             //planeMatrix.setPosition(0, 0, 0); /// position in x y z
             //planeMatrix.drawWireframe();
             multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
-            asteroid.bind();
+            //asteroid.bind();
             multiModel[i].drawFaces();
-            asteroid.unbind();
+            //asteroid.unbind();
             ofPopMatrix();
         }
-	}
+    }
     
     // ICOS
     
@@ -889,7 +969,8 @@ void ofApp::drawScene(){
         }
         
         if(autoOrbit == 1){
-            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+            //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
+            camera.orbit(ofGetLastFrameTime()*orbitX, ofGetLastFrameTime()*orbitY, 700, ofVec3f(0, 0, 0));
         }
         
         if(distanceLockON == 1){
@@ -948,13 +1029,13 @@ void ofApp::drawScene(){
         ofRotateY(textRotY);
         ofRotateZ(textRotZ);
         ofPushMatrix();
-        text = wrapString(clientTyping, 500);
+        text = wrapString(clientTyping, 700);
         rect = font.getStringBoundingBox(text, 0, 0);
         ofTranslate(0, 0, -200);
         float distancia;
-        distancia = ofMap(rect.height, 0, 500, 700, -100);
+        distancia = ofMap(rect.height, 0, 500, 700, 200);
         ofTranslate(0, 0, distancia);
-        font.drawString(text, ofGetWidth()-(rect.width*0.5), ofGetHeight()-(rect.height*0.25));
+        font.drawString(text, ofGetWidth()-(rect.width*0.5), ofGetHeight()-(rect.height*0.5));
         ofPopMatrix();
     };
     
@@ -972,8 +1053,10 @@ void ofApp::keyPressed(int key){
     
     // if we didn't hit return, add the key to our string
     if(key != OF_KEY_RETURN){
+        
         // some trickery: ignore the backspace key
         if(key != OF_KEY_BACKSPACE){
+            clearGB = 0;
             clientTyping += key;
         }
         else{
@@ -988,14 +1071,8 @@ void ofApp::keyPressed(int key){
         std::vector < std::string > textAnalisis = ofSplitString(clientTyping, " ");
         textAnalisis.push_back(clientTyping);
         
-        if(clientTyping.size() > 1){
-            cero = textAnalisis[2];
-        } else {
-            cero = "";
-        }
-        
         if(textAnalisis[0] == "vload"){
-            string temp = "videos/" + cero + ".mov";
+            string temp = "videos/" + textAnalisis[2] + ".mov";
             videoLC[ofToInt(textAnalisis[1])].setPixelFormat(OF_PIXELS_RGBA);
             videoLC[ofToInt(textAnalisis[1])].setLoopState(OF_LOOP_NORMAL);
             videoLC[ofToInt(textAnalisis[1])].load(temp);
@@ -1052,20 +1129,26 @@ void ofApp::keyPressed(int key){
             vScaleY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
         }
         
-        if (textAnalisis[0] == "feedback"){
-            retroX = ofToFloat(textAnalisis[2]);
-            retroY = ofToFloat(textAnalisis[3]);
+        if (textAnalisis[0] == "fbxy"){
+            retroX = ofToFloat(textAnalisis[1]);
+            retroY = ofToFloat(textAnalisis[2]);
         }
         
-        if (textAnalisis[0] == "feedbackx"){
+        if (textAnalisis[0] == "fbx"){
             retroX = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "feedbacky"){
+        if (textAnalisis[0] == "gclear"){
+            
+            clearGB = 1;
+
+        }
+        
+        if (textAnalisis[0] == "fby"){
             retroY = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "mload"){ // probar sin el primer elemento 
+        if (textAnalisis[0] == "mload"){ // probar sin el primer elemento
             string temp = "3d/" + textAnalisis[3] + ".obj";
             multiModel[ofToInt(textAnalisis[2])].loadModel(temp);
             multiModelON = ofToFloat(textAnalisis[1]);
@@ -1086,14 +1169,33 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "mrot" ){
+            
             multiModelRotX[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
-            multiModelRotY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
-            multiModelRotZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[2]);
+            multiModelRotY[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[3]);
+            multiModelRotZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
+       
         }
         
         if (textAnalisis[0] == "blur"){
+            
             blurON = ofToInt(textAnalisis[1]);
             blur = ofToInt(textAnalisis[2]);
+            
+        }
+        
+        if (textAnalisis[0] == "gblur"){
+            
+            glitchBlurON = ofToInt(textAnalisis[1]);
+            glitchBlur = ofToInt(textAnalisis[2]);
+            
+            if(ofToInt(textAnalisis[1]) == 1){
+                clearGB = 0;
+            }
+            
+            if(ofToInt(textAnalisis[1]) == 0){
+                clearGB = 1;
+            }
+            
         }
         
         if (textAnalisis[0] == "vrot"){
@@ -1102,7 +1204,7 @@ void ofApp::keyPressed(int key){
             vRotZ[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[4]);
         }
         
-        if (textAnalisis[0] == "textrot"){
+        if (textAnalisis[0] == "txtrot"){
             textRotX = ofToFloat(textAnalisis[1]);
             textRotY = ofToFloat(textAnalisis[2]);
             textRotZ = ofToFloat(textAnalisis[3]);

@@ -11,6 +11,8 @@ Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/
 
 [RGGTRN - moombahcode++geom](https://vimeo.com/289901460)
 
+[Marianne Teixido - fragmentos](https://vimeo.com/294708631)
+
 ## Instalación
 
 Orbit requiere una versión compilada de OF y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch), [ofxSyphon](https://github.com/astellato/ofxSyphon) (sólamente en mac) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
