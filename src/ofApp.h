@@ -14,6 +14,7 @@
 #include "ofxDomemaster.h"
 
 #define LIM 10
+#define LIM2 3
 
 class ofApp : public ofBaseApp{
     
@@ -93,6 +94,7 @@ public:
     float glitchBlur;
     int glitchBlurON;
     float lago;
+    float modelScale;
 
     ofShader shaderFish;
     
@@ -223,7 +225,10 @@ public:
     float lcneON;
     float multiMsg;
     float stars;
-    ofTexture asteroid;
+    
+    //ofTexture asteroid;
+    ofTexture texturas[LIM];
+
     int multiModelON;
     int multiModelX[LIM];
     int multiModelY[LIM];
@@ -231,11 +236,17 @@ public:
     int multiModelRotX[LIM];
     int multiModelRotY[LIM];
     int multiModelRotZ[LIM];
-
+    float multiModelScale[LIM];
+    
     ofxAssimpModelLoader multiModel[LIM];
     ofxAssimpModelLoader model3D;
     int textON;
     int fontSize;
+    int textureON;
+    
+    int clR[LIM2];
+    int clG[LIM2];
+    int clB[LIM2];
         
     ofEasyCam camera;
     

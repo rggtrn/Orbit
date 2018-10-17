@@ -19,9 +19,10 @@ fb | encendido/apagado (1 ó 0) // enciende o apaga la retroalimentación
 fbxy | feedback X (entero) | feeback Y (entero) // determina los valores en X y Y de la retroalimentación
 light | encendido/apagado(1 ó 0) // Enciende o apaga las luces
 tempo | tempoGlobal(flotante) // Define el tempo global de Orbit
-mload | pista(entero) | encendido/apgado(1 ó 0) | nombreDelArchivo(sin extensión) // carga un modelo 3d
+mload | pista(entero) | nombreDelArchivo(sin extensión) // carga un modelo 3d
 mfree | pista(entero) // libera un modelo 3d
 mpos | pista(entero) | posX(entero) | posY(entero) | posZ(entero) // posiciona un modelo 3d 
+mscale | pista(entero) | escala (flotante donde 1 es normal) // cambia la escala del modelo seleccionado
 blur | encendido/apgado(1 ó 0) | valor(flotante) // aplica un efecto blur 
 txtrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de un texto
 dome | encendido/apagado(1 ó 0) | enciende una distorsión tipo fisheye
@@ -32,3 +33,5 @@ glitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 10) // enciende o 
 cglitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 6) // enciende o apaga distorsiones de color
 gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
 gclear | limpia la ventana si hubo barridos 
+texmode | encendido/apagado (1 ó 0) // enciende o apaga el modo de cargar texturas para objetos 3d
+mtex | pista (entero) | nombreDelArchvoYExtensión // carga una textura en una pista específica
