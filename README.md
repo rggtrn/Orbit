@@ -15,7 +15,7 @@ Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/
 
 ## Instalación
 
-Orbit requiere una versión compilada de OF y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch), [ofxSyphon](https://github.com/astellato/ofxSyphon) (sólamente en mac) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
+Orbit requiere una versión compilada de OF y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
 
 Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
@@ -25,15 +25,13 @@ Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
 `$ git checkout libavformat-OF-0.9`
 
-Para compilar en Linux es necesario eliminar la línea ofxSyphon del archivo addons.make.
-
-### Control en ventana
+## Control en ventana
 
 La sintáxis del control en ventana varía según la instrucción. En todos los casos, la instrucción empieza con una acción. Ej. load 1 samplehap (donde load es la instrucción para cargar un video, 1 es la pista en la que el video será cargado y samplehap es el nombre del archivo sin extensión).
 
 Una versión detallada de las instrucciones se puede encontrar en la carpeta /bin/data/Orbit.txt
 
-### Control OSC
+## Control OSC
 
 Es posible controlar los parámetros de Orbit con [PiranhaLib](https://github.com/rggtrn/PiranhaLib).
 
@@ -41,7 +39,7 @@ PirS.start("127.0.0.1", 5612) // Para iniciar en modo local
 
 PirV // acciones de video ej: PirV.load
 
-### Videos en Hap
+## Videos en Hap
 
 La conversión de videos es posible con ffmpeg. En macOS es posible instalar FFmpeg con soporte para hap con [brew](https://brew.sh/index_es):
 

@@ -2,9 +2,6 @@
 #pragma once
 
 #include "ofMain.h"
-#if (defined(__APPLE__) && defined(__MACH__))
-#include "ofxSyphon.h"
-#endif
 #include "ofxHapPlayer.h"
 #include "ofxOsc.h"
 #include "ofxPostGlitch.h"
@@ -48,10 +45,6 @@ public:
     ofTexture screenImage;
     bool feedback;
     
-#if (defined(__APPLE__) && defined(__MACH__))
-    ofxSyphonClient client;
-    bool syphonON;
-#endif
     ofxXmlSettings XML;
     ofxOscReceiver reciever;
     ofxOscSender sender;
@@ -167,7 +160,8 @@ public:
     bool blueinvert;
     bool redinvert;
     bool greeninvert;
-    float onScreen;
+    float intOnScreen;
+    float outOnScreen;
     
     float textRotX;
     float textRotY;
@@ -188,6 +182,7 @@ public:
     ofxCenteredTrueTypeFont font2;
     
     string texto;
+    string textOut;
     string nombre;
     string text;
     
@@ -218,6 +213,11 @@ public:
     string tres;
     string prueba;
     
+    float radius;
+    ofVec3f center;
+    
+    int glitchON; 
+    
     ofxOscSender clientSender; // client sender object
     string clientDestination; // IP address we're sending to
     int clientSendPort; // port we're sending to
@@ -225,6 +225,10 @@ public:
     float lcneON;
     float multiMsg;
     float stars;
+    float videoTex;
+    ofTexture *textur;
+    ofShader *shad;
+    ofxHapPlayer tempPlayer;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];

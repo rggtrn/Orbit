@@ -1,7 +1,7 @@
 
 #include "ofApp.h"
 
-// faltan un buen de cosas: una matrix audioreactiva, colores para las luces, funciones para que los valores tipo int o float reaccionen a entradas de audio, a funciones sinosoidales o a funciones caóticas.
+// faltan un buen de cosas: una matrix audioreactiva
 
 void ofApp::setup(){
     
@@ -21,9 +21,11 @@ void ofApp::setup(){
     ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
-    onScreen = 1;
+    intOnScreen = 1;
+    outOnScreen = 0;
     depth = 0;
     ofSetLineWidth(4);
+    videoTex = 0;
     
     // domemmaster
     
@@ -72,13 +74,6 @@ void ofApp::setup(){
     
     clearGB = 0;
     
-    // Syphon
-    
-#if (defined(__APPLE__) && defined(__MACH__))
-    client.setup();
-    syphonON = 0;
-#endif
-    
     // 3d
     
     model3D.loadModel("3d/nave.obj");
@@ -109,7 +104,8 @@ void ofApp::setup(){
     font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     
     textON = 1;
-    texto = "";
+    textOut = "";
+    text = "";
     nombre = "";
     fixText = 1;
     textRotX = 0;
@@ -152,6 +148,7 @@ void ofApp::setup(){
     blueinvert = false;
     redinvert = false;
     greeninvert = false;
+    glitchON = 0;
     
     // información
     
@@ -257,11 +254,14 @@ void ofApp::setup(){
     ofSetSmoothLighting(true);
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
-    material.setShininess( 20 );
+    material.setShininess( 120 );
     // the light highlight of the material //
     //material.setSpecularColor(ofColor(255, 255, 255, 255));
-     material.setDiffuseColor(ofColor(255, 255, 255, 255));
+    material.setSpecularColor(ofColor(255, 255, 255, 255));
     
+    radius        = 180.f;
+    center.set(ofGetWidth()*.5, ofGetHeight()*.5, 0);
+
 }
 
 void ofApp::update(){
@@ -274,17 +274,23 @@ void ofApp::update(){
     pointLight2.setSpecularColor( colorLight2 );
     pointLight3.setDiffuseColor( colorLight3 );
     pointLight3.setSpecularColor( colorLight3 );
+    
     //pointLight.setPosition(ofGetWidth()/2, ofGetHeight()/2, 500);
     
     pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
+    
     pointLight2.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.15)*(ofGetWidth()*.3),
                             ofGetHeight()*.5 + sin(ofGetElapsedTimef()*.7)*(ofGetHeight()), 300);
     
     pointLight3.setPosition(
-                            cos(ofGetElapsedTimef()*1.5) * ofGetWidth()*.5,
-                            sin(ofGetElapsedTimef()*1.5f) * ofGetWidth()*.5,
-                            cos(ofGetElapsedTimef()*.2) * ofGetWidth()
-                            );
+                            cos(ofGetElapsedTimef()*1.5) * radius * 2 + center.x,
+                            sin(ofGetElapsedTimef()*1.5f) * radius * 2 + center.y,
+                            cos(ofGetElapsedTimef()*.2) * radius * 2 + center.z);
+    
+    //pointLight.setPosition(cos(ofGetElapsedTimef()*.6f) * radius * 2 + center.x,
+    //                       sin(ofGetElapsedTimef()*.8f) * radius * 2 + center.y,
+    //                       -cos(ofGetElapsedTimef()*.8f) * radius * 2 + center.z);
+    
     ;
     
     // retroalmientación
@@ -483,8 +489,8 @@ void ofApp::update(){
             lightON = 0;
         }
         
-        if (m.getAddress() == "/onScreen"  &&  m.getNumArgs() == 1){
-            onScreen = m.getArgAsInt(0);
+        if (m.getAddress() == "/intOnScreen"  &&  m.getNumArgs() == 1){
+            intOnScreen = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/icosON"  &&  m.getNumArgs() == 1){
@@ -535,12 +541,6 @@ void ofApp::update(){
             depth = m.getArgAsInt(0);
         }
         
-#if (defined(__APPLE__) && defined(__MACH__))
-        if (m.getAddress() == "/syphonON" && m.getNumArgs() == 1){
-            syphonON = m.getArgAsInt(0);
-        }
-#endif
-        
         if (m.getAddress() == "/glitchColor" && m.getNumArgs() == 2){
             
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
@@ -583,6 +583,8 @@ void ofApp::update(){
         }
         
         if (m.getAddress() == "/glitch" && m.getNumArgs() == 2){
+            
+            glitchON = m.getArgAsInt(0);
             
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
                 convergence = false;
@@ -670,9 +672,13 @@ void ofApp::draw(){
     
     // Glitch
     
-    ofBackground(0, 0, 0);
+    //ofBackground(0, 0, 0);
     ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
+
+    if(glitchON == 1){
+    ofBackgroundGradient(ofColor(255, 113, 206),ofColor(1, 205, 254) , OF_GRADIENT_LINEAR);
+    }
     
     myGlitch.generateFx();
     
@@ -713,7 +719,8 @@ void ofApp::drawBlur(){
     fboBlurOnePass.begin();
     shaderBlurX.begin();
     
-    ofSetColor(255, 255, 255, 0);
+    //ofSetColor(255, 255, 255, 0);
+    
     shaderBlurX.setUniform1f("blurAmnt", blur);
     fbo.draw(0, 0);
     shaderBlurX.end();
@@ -721,7 +728,8 @@ void ofApp::drawBlur(){
     
     fboBlurTwoPass.begin();
     shaderBlurY.begin();
-    ofSetColor(255, 255, 255, 0);
+    
+
     shaderBlurY.setUniform1f("blurAmnt", blur);
     fboBlurOnePass.draw(0, 0);
     shaderBlurY.end();
@@ -730,49 +738,47 @@ void ofApp::drawBlur(){
     fboBlurTwoPass.draw(0, 0);
     
 }
-
+ 
 //--------------------------------------------------------------
 
 void ofApp::drawGlitchBlur(){
     
     ofEnableAlphaBlending();
-    
     fboGlitchBlurOnePass.begin();
-    
     glitchBlurX.begin();
-    //ofClear(0);
     
+    /*ofClear(0);
     if(clearGB == 0){
         ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
-    }
+    }*/
     
     glitchBlurX.setUniform1f("blurAmnt", glitchBlur);
     
-    fbo.draw(0, 0);
+    fbo.draw(0, 0); // aqui está la parte que dibuja
+    
     glitchBlurX.end();
     fboGlitchBlurOnePass.end();
     
+    // segunda parte del blur
+    
     fboGlitchBlurTwoPass.begin();
-    
     glitchBlurY.begin();
-    //ofClear(0);
     
+    /*ofClear(0);
     if(clearGB == 0){
         ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
-    }
+    }*/
     
     glitchBlurY.setUniform1f("blurAmnt", glitchBlur*lago);
-    
-    fboGlitchBlurOnePass.draw(0, 0);
+    fboGlitchBlurOnePass.draw(0, 0); // la segunda parte que dibuja
     glitchBlurY.end();
     fboGlitchBlurTwoPass.end();
-    
     //ofSetColor(ofColor::white);
     fboGlitchBlurTwoPass.draw(0, 0);
     
@@ -810,6 +816,10 @@ void ofApp::drawScene(){
     ofEnableArbTex();
     ofRectangle rect;
     
+    if(glitchON == 0){
+    ofBackgroundGradient(ofColor(255, 113, 206),ofColor(1, 205, 254) , OF_GRADIENT_LINEAR);
+    }
+    
     if(depth == 0){
         ofEnableDepthTest();
     }
@@ -828,16 +838,6 @@ void ofApp::drawScene(){
     if(feedbackON == 1){
         screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     }
-    
-    // syphon
-    
-#if (defined(__APPLE__) && defined(__MACH__))
-    
-    if(syphonON == 1){
-        client.draw(0, 0);
-    };
-    
-#endif
     
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);
@@ -910,9 +910,15 @@ void ofApp::drawScene(){
     
     //if(multiModelON == 1){
     for(int i = 0; i < LIM; i++){
+        
+        ofTexture *texture2 = tempPlayer.getTexture();
+        ofShader *shader2 = tempPlayer.getShader();
+        
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
+        
         ofPushMatrix();
+        
         ofRotateX(multiModelRotX[i]);
         ofRotateY(multiModelRotY[i]);
         ofRotateZ( multiModelRotZ[i]+180);
@@ -921,13 +927,34 @@ void ofApp::drawScene(){
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
         multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
+        
         if(textureON == 1){
             texturas[i].bind();
         }
+        
+        if(videoTex == 1){
+            
+            if (shader2){
+                shader2->begin();
+            }
+            texture2->bind();
+        }
+        
         multiModel[i].drawFaces();
+        
         if(textureON == 1){
             texturas[i].unbind();
         }
+        
+        if(videoTex == 1){
+            
+            texture2 -> unbind();
+            
+            if (shader2){
+                shader2->end();
+            }
+        }
+        
         ofPopMatrix();
     }
     //}
@@ -981,15 +1008,9 @@ void ofApp::drawScene(){
         //pointLight2.draw();
         //pointLight3.draw();
         
-        if(onScreen == 1){
-            text = wrapString(clientTyping, 400);
-            rect = font.getStringBoundingBox(text, 0, 0);
-            font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
-        }
-        
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 0);
-        ofScale(0.5, 0.5);
+        ofTranslate(0, 0, 200);
+        ofScale(1, 1);
         ofRotateX(textRotX);
         ofRotateY(textRotY);
         ofRotateZ(textRotZ);
@@ -997,8 +1018,17 @@ void ofApp::drawScene(){
         //text = wrapString(texto, 500);
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
-        if(onScreen == 0){
-            font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
+        if(outOnScreen == 0){
+            
+            //clientTyping = "";
+            ofRectangle rectOut;
+            textOut = wrapString(texto, 400);
+            rectOut = font.getStringBoundingBox(textOut, 0, 0);
+            ofSetLineWidth(2);
+            font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
+            float distancia;
+            distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
+            camera.setDistance(distancia);
         }
         
         if(namesON == 1){
@@ -1012,7 +1042,7 @@ void ofApp::drawScene(){
         
         if(autoOrbit == 1){
             //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
-            camera.orbit(ofGetLastFrameTime()*orbitX, ofGetLastFrameTime()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0));
+            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
         }
         
         // lo siguiente ya no es necesario
@@ -1066,7 +1096,6 @@ void ofApp::drawScene(){
      
      */
     
-    if(textON == 1 && fixText == 1){
         ofDisableDepthTest();
         ofSetRectMode(OF_RECTMODE_CENTER);
         ofTranslate(0, 0, 0);
@@ -1083,7 +1112,6 @@ void ofApp::drawScene(){
         ofTranslate(0, 0, distancia);
         font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5))+200);
         ofPopMatrix();
-    };
     
     if(feedbackON == 1){
         screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
@@ -1153,43 +1181,36 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "lightmode"){
-            
             if(textAnalisis[1] == "vaporwave"){
                 colorLight1 = ofColor(255, 113, 206);
                 colorLight2 = ofColor( 1, 205, 254 );
                 colorLight3 = ofColor(185, 103, 255);
             }
-            
             if(textAnalisis[1] == "vaporwave2"){
                 colorLight1 = ofColor(255, 251, 150);
                 colorLight2 = ofColor(185, 103, 255 );
                 colorLight3 = ofColor(5, 255, 161);
             }
-            
             if(textAnalisis[1] == "risky"){
                 colorLight1 = ofColor(203, 4, 165);
                 colorLight2 = ofColor(144, 85, 62 );
                 colorLight3 = ofColor(38, 240, 241);
             }
-            
             if(textAnalisis[1] == "risky2"){
                 colorLight1 = ofColor(69, 23, 108);
                 colorLight2 = ofColor(54, 207, 198);
                 colorLight3 = ofColor(207, 53, 131);
             }
-            
             if(textAnalisis[1] == "white"){
                 colorLight1 = ofColor(255, 255, 255);
                 colorLight2 = ofColor(255, 255, 255);
                 colorLight3 = ofColor(255, 255, 255);
             }
-            
             if(textAnalisis[1] == "rgb"){
                 colorLight1 = ofColor(255, 255, 0);
                 colorLight2 = ofColor(0, 255, 255);
                 colorLight3 = ofColor(255, 0, 255);
             }
-            
         }
         
         if (textAnalisis[0] == "model"){
@@ -1317,6 +1338,7 @@ void ofApp::keyPressed(int key){
         
         if (textAnalisis[0] == "texmode"){
             textureON = ofToInt(textAnalisis[1]);
+            videoTex = 0;
         }
         
         if (textAnalisis[0] == "mtex"){
@@ -1328,11 +1350,33 @@ void ofApp::keyPressed(int key){
             ofLoadImage(texturas[ofToInt(textAnalisis[1])], temp);
         }
         
+        if (textAnalisis[0] == "vtex"){
+            string temp = "videos/" + textAnalisis[1];
+            videoTex = 1;
+            textureON = 0;
+            tempPlayer.setPixelFormat(OF_PIXELS_RGBA);
+            tempPlayer.setLoopState(OF_LOOP_NORMAL);
+            tempPlayer.load(temp);
+            tempPlayer.play();
+        }
+        
         if(textAnalisis[0] == "orbit"){
             autoOrbit = ofToInt(textAnalisis[1]);
             orbitX = ofToFloat(textAnalisis[2]);
             orbitY = ofToInt(textAnalisis[3]);
         }
+        
+        /*
+        if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
+            int n = m.getArgAsInt(0);
+            multiMsg = 1;
+            noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+            noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+            msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+            msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+            msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+            textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
+        }*/
         
         if (textAnalisis[0] == "glitch"){
             if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
