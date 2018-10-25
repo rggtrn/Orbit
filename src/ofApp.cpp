@@ -26,6 +26,7 @@ void ofApp::setup(){
     depth = 0;
     ofSetLineWidth(4);
     videoTex = 0;
+    colorBackground = 0;
     
     // domemmaster
     
@@ -676,8 +677,8 @@ void ofApp::draw(){
     ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
 
-    if(glitchON == 1){
-    ofBackgroundGradient(ofColor(255, 113, 206),ofColor(1, 205, 254) , OF_GRADIENT_LINEAR);
+    if(glitchON == 1 && colorBackground ==1){
+    ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
     
     myGlitch.generateFx();
@@ -719,7 +720,7 @@ void ofApp::drawBlur(){
     fboBlurOnePass.begin();
     shaderBlurX.begin();
     
-    //ofSetColor(255, 255, 255, 0);
+    ofSetColor(255, 255, 255, 0);
     
     shaderBlurX.setUniform1f("blurAmnt", blur);
     fbo.draw(0, 0);
@@ -728,7 +729,8 @@ void ofApp::drawBlur(){
     
     fboBlurTwoPass.begin();
     shaderBlurY.begin();
-    
+
+    ofSetColor(255, 255, 255, 0);
 
     shaderBlurY.setUniform1f("blurAmnt", blur);
     fboBlurOnePass.draw(0, 0);
@@ -747,13 +749,13 @@ void ofApp::drawGlitchBlur(){
     fboGlitchBlurOnePass.begin();
     glitchBlurX.begin();
     
-    /*ofClear(0);
+    //ofClear(0);
     if(clearGB == 0){
         ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
-    }*/
+    }
     
     glitchBlurX.setUniform1f("blurAmnt", glitchBlur);
     
@@ -767,13 +769,13 @@ void ofApp::drawGlitchBlur(){
     fboGlitchBlurTwoPass.begin();
     glitchBlurY.begin();
     
-    /*ofClear(0);
+    //ofClear(0);
     if(clearGB == 0){
         ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
-    }*/
+    }
     
     glitchBlurY.setUniform1f("blurAmnt", glitchBlur*lago);
     fboGlitchBlurOnePass.draw(0, 0); // la segunda parte que dibuja
@@ -816,8 +818,8 @@ void ofApp::drawScene(){
     ofEnableArbTex();
     ofRectangle rect;
     
-    if(glitchON == 0){
-    ofBackgroundGradient(ofColor(255, 113, 206),ofColor(1, 205, 254) , OF_GRADIENT_LINEAR);
+    if(glitchON == 0 && colorBackground == 1){
+    ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
     
     if(depth == 0){
@@ -890,10 +892,10 @@ void ofApp::drawScene(){
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
         ofPushMatrix();
-        ofRotateX(90);
-        ofRotateY(180);
+        ofRotateX(0); // 90 cuando es el almacen
+        ofRotateY(0); // 180 cuando es el almacen
         //ofRotateZ(0+ofGetElapsedTimef()); // 180 cuando es el otro
-        ofRotateZ(0);
+        ofRotateZ(180);
         ofScale(modelScale, modelScale, modelScale);
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
@@ -1179,6 +1181,10 @@ void ofApp::keyPressed(int key){
         if (textAnalisis[0] == "light"){
             lightON = ofToInt(textAnalisis[1]);
         }
+
+	if (textAnalisis[0] == "cbackground"){
+	  colorBackground = ofToInt(textAnalisis[1]);
+	}
         
         if (textAnalisis[0] == "lightmode"){
             if(textAnalisis[1] == "vaporwave"){

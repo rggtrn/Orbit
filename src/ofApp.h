@@ -55,6 +55,7 @@ public:
     int retroON;
     int domeON;
     int domeDistance;
+    int colorBackground;
     
     //ofBoxPrimitive caja;
     ofIcoSpherePrimitive icoSphere;

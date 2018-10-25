@@ -35,3 +35,5 @@ gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
 gclear | limpia la ventana si hubo barridos 
 texmode | encendido/apagado (1 ó 0) // enciende o apaga el modo de cargar texturas para objetos 3d
 mtex | pista (entero) | nombreDelArchvoYExtensión // carga una textura en una pista específica
+cbackground | encendido/apagado (1 ó 0) // encender o apagar el fondo colorido
+
