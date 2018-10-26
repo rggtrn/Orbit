@@ -18,7 +18,7 @@ void ofApp::setup(){
     lago = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
     ofHideCursor();
     tempo = 1;
     intOnScreen = 1;
@@ -103,7 +103,8 @@ void ofApp::setup(){
     titleFont.load("fonts/DejaVuSansMono.ttf", 20);
     font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-    
+    fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+
     textON = 1;
     textOut = "";
     text = "";
@@ -306,7 +307,7 @@ void ofApp::update(){
         ofxOscMessage m;
         reciever.getNextMessage(&m);
         
-        if (m.getAddress() == "/load"  &&  m.getNumArgs() ==2){
+        if (m.getAddress() == "/vload"  &&  m.getNumArgs() ==2){
             string temp = "videos/" + m.getArgAsString(1) + ".mov";
             int n = m.getArgAsInt(0);
             videoLC[n].setPixelFormat(OF_PIXELS_RGBA);
@@ -325,7 +326,7 @@ void ofApp::update(){
             //vScaleY[n] = (ofGetHeight()*1.0)/vH[m.getArgAsInt(0)];
         }
         
-        if (m.getAddress() == "/free"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/vfree"  &&  m.getNumArgs() == 1){
             videoLC[m.getArgAsInt(0)].close();
             vX[m.getArgAsInt(0)] = 0;
             vY[m.getArgAsInt(0)] = 0;
@@ -335,13 +336,17 @@ void ofApp::update(){
             vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
         }
         
-        if (m.getAddress() == "/speed" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/vspeed" && m.getNumArgs() == 2){
             int n = m.getArgAsInt(0);
             videoLC[n].setSpeed(m.getArgAsFloat(1)*tempo);
         }
         
-        if (m.getAddress() == "/lightON" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/light" && m.getNumArgs() == 1){
             lightON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/cbackground" && m.getNumArgs() == 1){
+            colorBackground = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/modelON" && m.getNumArgs() == 1){
@@ -352,11 +357,11 @@ void ofApp::update(){
             tempo = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/opacity" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/vop" && m.getNumArgs() == 2){
             vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
         }
         
-        if (m.getAddress() == "/pos" && m.getNumArgs() == 4){ /// posZ
+        if (m.getAddress() == "/vpos" && m.getNumArgs() == 4){ /// posZ
             vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             vY[m.getArgAsInt(0)] = m.getArgAsInt(2);
             vZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
@@ -367,23 +372,39 @@ void ofApp::update(){
             
         }
         
-        if (m.getAddress() == "/size" && m.getNumArgs() == 3){
+        if (m.getAddress() == "/vscale" && m.getNumArgs() == 3){
             //vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
             //vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2)/vH[m.getArgAsInt(0)];
             vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vScaleY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
         }
         
-        if (m.getAddress() == "/feedback" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/fbxy" && m.getNumArgs() == 2){
             retroX = m.getArgAsFloat(0);
             retroY = m.getArgAsFloat(1);
         }
         
-        if (m.getAddress() == "/feedbackX" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/fbx" && m.getNumArgs() == 1){
             retroX = m.getArgAsFloat(0);
         }
         
-        if (m.getAddress() == "/feedbackY" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/texoff"){
+            textureON = 0;
+            videoTex = 0;
+        }
+        
+        if (m.getAddress() == "/itex" && m.getNumArgs() == 2){
+            string temp = "img/" + m.getArgAsString(1);
+            ofDisableArbTex();
+            texturas[m.getArgAsInt(0)].generateMipmap();
+            texturas[m.getArgAsInt(0)].setTextureWrap(GL_REPEAT, GL_REPEAT);
+            texturas[m.getArgAsInt(0)].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+            ofLoadImage(texturas[m.getArgAsInt(0)], temp);
+            videoTex = 0;
+            textureON = 1;
+        }
+        
+        if (m.getAddress() == "/fby" && m.getNumArgs() == 1){
             retroY = m.getArgAsFloat(0);
         }
         
@@ -391,33 +412,33 @@ void ofApp::update(){
             lago = m.getArgAsFloat(0)+0.1;
         }
         
-        if (m.getAddress() == "/multiModel" && m.getNumArgs() == 3){ /// modificar sintaxis
+        if (m.getAddress() == "/mload" && m.getNumArgs() == 3){ /// modificar sintaxis
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             multiModel[m.getArgAsInt(1)].loadModel(temp);
             multiModelON = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/multiModelFree" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/mfree" && m.getNumArgs() == 1){
             multiModel[m.getArgAsInt(0)].clear();
         }
         
-        if (m.getAddress() == "/modelFree" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/scenefree" && m.getNumArgs() == 1){
             model3D.clear();
             modelON = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/multiModelPos" && m.getNumArgs() == 4){
+        if (m.getAddress() == "/mpos" && m.getNumArgs() == 4){
             multiModelX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             multiModelY[m.getArgAsInt(0)] = m.getArgAsInt(2);
             multiModelZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
         }
         
-        if (m.getAddress() == "/multiModelScale" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/mscale" && m.getNumArgs() == 2){
             multiModelScale[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             
         }
         
-        if (m.getAddress() == "/scenarioload" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             if(m.getArgAsInt(1) == 0){
                 model3D.clear();
@@ -427,7 +448,7 @@ void ofApp::update(){
             }
         }
         
-        if (m.getAddress() == "/multiModelRot" && m.getNumArgs() == 4){
+        if (m.getAddress() == "/mrot" && m.getNumArgs() == 4){
             multiModelRotX[m.getArgAsInt(0)] = m.getArgAsInt(1);
             multiModelRotY[m.getArgAsInt(0)] = m.getArgAsInt(2);
             multiModelRotZ[m.getArgAsInt(0)] = m.getArgAsInt(3);
@@ -438,12 +459,12 @@ void ofApp::update(){
             blur = m.getArgAsFloat(1);
         }
         
-        if (m.getAddress() == "/glitchblur" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/gblur" && m.getNumArgs() == 2){
             glitchBlurON = m.getArgAsInt(0);
             glitchBlur = m.getArgAsFloat(1);
         }
         
-        if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
+        if (m.getAddress() == "/vrot" && m.getNumArgs() == 4){
             vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
             vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
@@ -466,12 +487,24 @@ void ofApp::update(){
             texto = m.getArgAsString(0);
         }
         
-        if (m.getAddress() == "/message"  &&  m.getNumArgs() == 1){
-            texto = m.getArgAsString(0);
+        if (m.getAddress() == "/clear"){
+            clearGB = 1;
         }
         
-        if (m.getAddress() == "/modelScale"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/scenescale"  &&  m.getNumArgs() == 1){
             modelScale = m.getArgAsFloat(0);
+        }
+        
+        /// hace falta poder asignarlos independientemente
+        
+        if (m.getAddress() == "/vtex"  &&  m.getNumArgs() == 1){
+            string temp = "videos/" + m.getArgAsString(0);
+            videoTex = 1;
+            textureON = 0;
+            tempPlayer.setPixelFormat(OF_PIXELS_RGBA);
+            tempPlayer.setLoopState(OF_LOOP_NORMAL);
+            tempPlayer.load(temp);
+            tempPlayer.play();
         }
         
         if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
@@ -485,7 +518,7 @@ void ofApp::update(){
             textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
         }
         
-        if (m.getAddress() == "/domeON"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/dome"  &&  m.getNumArgs() == 1){
             domeON = m.getArgAsInt(0);
             lightON = 0;
         }
@@ -494,7 +527,7 @@ void ofApp::update(){
             intOnScreen = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/icosON"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/icos"  &&  m.getNumArgs() == 1){
             icoOutON = m.getArgAsInt(0);
             icoIntON = m.getArgAsInt(0);
         }
@@ -509,11 +542,11 @@ void ofApp::update(){
             domeDistance = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/namesON"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/histnames"  &&  m.getNumArgs() == 1){
             namesON = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/timeElapsedON"  &&  m.getNumArgs() == 1){
+        if (m.getAddress() == "/timeelapsed"  &&  m.getNumArgs() == 1){
             timeElapsedON = m.getArgAsInt(0);
         }
         
@@ -527,22 +560,18 @@ void ofApp::update(){
             fixText = m.getArgAsInt(1);
         }
         
-        if (m.getAddress() == "/autoOrbit" && m.getNumArgs() == 3){
+        if (m.getAddress() == "/orbit" && m.getNumArgs() == 3){
             autoOrbit = m.getArgAsInt(0);
             orbitX = m.getArgAsInt(1);
             orbitY = m.getArgAsInt(2);
         }
         
-        if (m.getAddress() == "/canonGeneratorON" && m.getNumArgs() == 1){
-            canonGenerator = m.getArgAsInt(0);
-        }
-        
-        if (m.getAddress() == "/feedbackON" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/fb" && m.getNumArgs() == 1){
             feedbackON = m.getArgAsInt(0);
             depth = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/glitchColor" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/cglitch" && m.getNumArgs() == 2){
             
             if(m.getArgAsInt(1) == 0 && m.getArgAsInt(0) == 0){
                 highcontrast = false;
@@ -645,23 +674,7 @@ void ofApp::update(){
         
     }
     
-    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
-    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
-    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
-    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
-    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
-    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
-    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
-    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
-    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
-    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
-    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
+
     
     drawScene();
     
@@ -681,18 +694,33 @@ void ofApp::draw(){
     ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
     
+    myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
+    myGlitch.setFx(OFXPOSTGLITCH_GLOW, glow);
+    myGlitch.setFx(OFXPOSTGLITCH_SHAKER, shaker);
+    myGlitch.setFx(OFXPOSTGLITCH_CUTSLIDER, cutslider);
+    myGlitch.setFx(OFXPOSTGLITCH_TWIST, twist);
+    myGlitch.setFx(OFXPOSTGLITCH_OUTLINE, outline);
+    myGlitch.setFx(OFXPOSTGLITCH_NOISE, noise);
+    myGlitch.setFx(OFXPOSTGLITCH_SLITSCAN, slitscan);
+    myGlitch.setFx(OFXPOSTGLITCH_SWELL, swell);
+    myGlitch.setFx(OFXPOSTGLITCH_INVERT, invert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_HIGHCONTRAST, highcontrast);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUERAISE, blueraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDRAISE, redraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENRAISE, greenraise);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_BLUEINVERT, blueinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_REDINVERT, redinvert);
+    myGlitch.setFx(OFXPOSTGLITCH_CR_GREENINVERT, greeninvert);
+    
     myGlitch.generateFx();
     
     if(domeON == 0){
-        
         if(blurON == 1){
             drawBlur();
         }
-        
         if(glitchBlurON == 1){
             drawGlitchBlur();
         }
-        
         if(blurON == 0 && glitchBlurON == 0){
             fbo.draw(0, 0);
         }
@@ -720,7 +748,12 @@ void ofApp::drawBlur(){
     fboBlurOnePass.begin();
     shaderBlurX.begin();
     
-    ofSetColor(255, 255, 255, 0);
+    if(clearGB == 0){
+        ofSetColor(255, 255, 255, 0);
+    }
+    if(clearGB == 1){
+        ofClear(0);
+    }
     
     shaderBlurX.setUniform1f("blurAmnt", blur);
     fbo.draw(0, 0);
@@ -730,8 +763,13 @@ void ofApp::drawBlur(){
     fboBlurTwoPass.begin();
     shaderBlurY.begin();
 
-    ofSetColor(255, 255, 255, 0);
-
+    if(clearGB == 0){
+        ofSetColor(255, 255, 255, 0);
+    }
+    if(clearGB == 1){
+        ofClear(0);
+    }
+    
     shaderBlurY.setUniform1f("blurAmnt", blur);
     fboBlurOnePass.draw(0, 0);
     shaderBlurY.end();
@@ -791,6 +829,7 @@ void ofApp::drawGlitchBlur(){
 void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
+    ofDisableAlphaBlending();
     ofScale(0.125/2, 0.125/2);
     ofTranslate(0, 0, 0);
     ofRotateX(180);
@@ -802,8 +841,10 @@ void ofApp::drawFbo(){
     if(blurON == 1){
         drawBlur();
     }
-    
-    if(blurON == 0){
+    if(glitchBlurON == 1){
+        drawGlitchBlur();
+    }
+    if(blurON == 0 && glitchBlurON == 0){
         fbo.draw(0, 0);
     }
     
@@ -1011,7 +1052,7 @@ void ofApp::drawScene(){
         //pointLight3.draw();
         
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 200);
+        ofTranslate(0, 0, -200);
         ofScale(1, 1);
         ofRotateX(textRotX);
         ofRotateY(textRotY);
@@ -1027,10 +1068,10 @@ void ofApp::drawScene(){
             textOut = wrapString(texto, 400);
             rectOut = font.getStringBoundingBox(textOut, 0, 0);
             ofSetLineWidth(2);
-            font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
             float distancia;
             distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
             camera.setDistance(distancia);
+            font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
         }
         
         if(namesON == 1){
@@ -1097,7 +1138,7 @@ void ofApp::drawScene(){
      font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
      
      */
-    
+        ofDisableLighting();
         ofDisableDepthTest();
         ofSetRectMode(OF_RECTMODE_CENTER);
         ofTranslate(0, 0, 0);
@@ -1110,9 +1151,9 @@ void ofApp::drawScene(){
         rect = font.getStringBoundingBox(text, 0, 0);
         ofTranslate(0, 0, -200);
         float distancia;
-        distancia = ofMap(rect.height, 0, 500, 700, 200);
+        distancia = ofMap(rect.height, 0, 500, 600, 200);
         ofTranslate(0, 0, distancia);
-        font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5))+200);
+        font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5)));
         ofPopMatrix();
     
     if(feedbackON == 1){
@@ -1219,10 +1260,6 @@ void ofApp::keyPressed(int key){
             }
         }
         
-        if (textAnalisis[0] == "model"){
-            modelON = ofToInt(textAnalisis[1]);
-        }
-        
         if (textAnalisis[0] == "tempo"){
             tempo = ofToFloat(textAnalisis[1]);
         }
@@ -1237,7 +1274,7 @@ void ofApp::keyPressed(int key){
             vZ[ofToInt(textAnalisis[1])] = ofToInt(textAnalisis[4]);
         }
         
-        if (textAnalisis[0] == "vsize"){
+        if (textAnalisis[0] == "vscale"){
             vScaleX[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[2]);
             vScaleY[ofToInt(textAnalisis[1])] = ofToFloat(textAnalisis[3]);
         }
@@ -1251,7 +1288,7 @@ void ofApp::keyPressed(int key){
             retroX = ofToFloat(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "gclear"){
+        if (textAnalisis[0] == "clear"){
             clearGB = 1;
         }
         
@@ -1325,7 +1362,7 @@ void ofApp::keyPressed(int key){
         
         if (textAnalisis[0] == "dome"){
             domeON = ofToInt(textAnalisis[1]);
-            lightON = 0;
+            //lightON = 0;
         }
         
         if (textAnalisis[0] == "icos"){ // patrones de movimiento
@@ -1342,18 +1379,20 @@ void ofApp::keyPressed(int key){
             depth = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "texmode"){
-            textureON = ofToInt(textAnalisis[1]);
+        if (textAnalisis[0] == "texoff"){
+            textureON = 0;
             videoTex = 0;
         }
         
-        if (textAnalisis[0] == "mtex"){
+        if (textAnalisis[0] == "itex"){
             string temp = "img/" + textAnalisis[2];
             ofDisableArbTex();
             texturas[ofToInt(textAnalisis[1])].generateMipmap();
             texturas[ofToInt(textAnalisis[1])].setTextureWrap(GL_REPEAT, GL_REPEAT);
             texturas[ofToInt(textAnalisis[1])].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
             ofLoadImage(texturas[ofToInt(textAnalisis[1])], temp);
+            videoTex = 0;
+            textureON = 1;
         }
         
         if (textAnalisis[0] == "vtex"){

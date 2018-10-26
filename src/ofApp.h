@@ -179,6 +179,7 @@ public:
     int modelON;
     ofPlanePrimitive planeMatrix;
 
+    ofxCenteredTrueTypeFont fontOut;
     ofxCenteredTrueTypeFont font;
     ofxCenteredTrueTypeFont font2;
     
