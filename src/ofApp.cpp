@@ -349,10 +349,17 @@ void ofApp::update(){
             colorBackground = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/modelON" && m.getNumArgs() == 1){
-            modelON = m.getArgAsInt(0);
+        if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
+	  string temp = "3d/" + m.getArgAsString(1) + ".obj";
+	  model3D.loadModel(temp);
+	  modelON = m.getArgAsInt(0);
         }
-        
+
+	if (m.getAddress() == "/sceneclear"){
+            model3D.clear();
+        }
+
+	
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
             tempo = m.getArgAsInt(0);
         }
@@ -388,7 +395,7 @@ void ofApp::update(){
             retroX = m.getArgAsFloat(0);
         }
         
-        if (m.getAddress() == "/texoff"){
+        if (m.getAddress() == "/texclear"){
             textureON = 0;
             videoTex = 0;
         }
@@ -415,17 +422,19 @@ void ofApp::update(){
         if (m.getAddress() == "/mload" && m.getNumArgs() == 3){ /// modificar sintaxis
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             multiModel[m.getArgAsInt(1)].loadModel(temp);
-            multiModelON = m.getArgAsInt(0);
+            // multiModelON = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/mfree" && m.getNumArgs() == 1){
             multiModel[m.getArgAsInt(0)].clear();
         }
-        
+
+	/*
         if (m.getAddress() == "/scenefree" && m.getNumArgs() == 1){
             model3D.clear();
             modelON = m.getArgAsInt(0);
         }
+	*/
         
         if (m.getAddress() == "/mpos" && m.getNumArgs() == 4){
             multiModelX[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -437,7 +446,8 @@ void ofApp::update(){
             multiModelScale[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             
         }
-        
+
+	/*
         if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
             string temp = "3d/" + m.getArgAsString(2) + ".obj";
             if(m.getArgAsInt(1) == 0){
@@ -447,6 +457,7 @@ void ofApp::update(){
                 model3D.loadModel(temp);
             }
         }
+	*/
         
         if (m.getAddress() == "/mrot" && m.getNumArgs() == 4){
             multiModelRotX[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -469,12 +480,13 @@ void ofApp::update(){
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
             vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
         }
-        
+
+	/* // sirve de algo? 
         if (m.getAddress() == "/textRot" && m.getNumArgs() == 3){
             textRotX = m.getArgAsFloat(0);
             textRotY = m.getArgAsFloat(1);
             textRotZ = m.getArgAsFloat(2);
-        }
+	    }*/
         
         /// faltan los mensajes en el modo on screen
         
@@ -507,7 +519,7 @@ void ofApp::update(){
             tempPlayer.play();
         }
         
-        if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
+        if (m.getAddress() == "/multimsg"  &&  m.getNumArgs() == 7){
             int n = m.getArgAsInt(0);
             multiMsg = 1;
             noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
