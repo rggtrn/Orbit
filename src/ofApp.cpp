@@ -1,8 +1,6 @@
 
 #include "ofApp.h"
 
-// faltan un buen de cosas: una matrix audioreactiva
-
 void ofApp::setup(){
     
     // iniciales
@@ -18,13 +16,13 @@ void ofApp::setup(){
     lago = 1;
     
     ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
     intOnScreen = 1;
     outOnScreen = 0;
     depth = 0;
-    ofSetLineWidth(4);
+    //ofSetLineWidth(4);
     videoTex = 0;
     colorBackground = 0;
     
@@ -95,6 +93,60 @@ void ofApp::setup(){
     
     ofEnableArbTex();
     
+    // mecho
+    
+    //image.loadImage("img/algorave16.png");
+    //image.resize(100, 100);
+    mesh.setMode(OF_PRIMITIVE_POINTS);
+    glPointSize(2);
+    ofSetLineWidth(0.5);
+    intensityThreshold = 100;
+    //int numVerts = mesh.getNumVertices();
+    meshVecX = 0;
+    meshVecY = 0;
+    meshVecZ = 0;
+    
+    float connectionDistance = 30;
+    int numVerts = mesh.getNumVertices();
+    for (int a=0; a<numVerts; ++a) {
+        ofVec3f verta = mesh.getVertex(a);
+        for (int b=a+1; b<numVerts; ++b) {
+            ofVec3f vertb = mesh.getVertex(b);
+            float distance = verta.distance(vertb);
+            if (distance <= connectionDistance) {
+                mesh.addIndex(a);
+                mesh.addIndex(b);
+            }
+        }
+    }
+     
+    /*
+    
+    // We need to calculate our center point for the mesh
+    // ofMesh has a method called getCentroid() that will
+    // find the average location over all of our vertices
+    meshCentroid = mesh.getCentroid();
+    
+    // Now that we know our centroid, we need to know the polar coordinates (distance and angle)
+    // of each vertex relative to that center point.
+    // We've found the distance between points before, but what about the angle?
+    // This is where atan2 comes in.  atan2(y, x) takes an x and y value and returns the angle relative
+    //     to the origin (0,0).  If we want the angle between two points (x1, y1) and (x2, y2) then we
+    //     just need to use atan2(y2-y1, x2-x1).
+    for (int i=0; i<numVerts; ++i) {
+        ofVec3f vert = mesh.getVertex(i);
+        float distance = vert.distance(meshCentroid);
+        float angle = atan2(vert.y-meshCentroid.y, vert.x-meshCentroid.x);
+        distances.push_back(distance);
+        angles.push_back(angle);
+    }
+    
+    // These variables will allow us to toggle orbiting on and off
+    orbiting = false;
+    startOrbitTime = 0.0;
+    meshCopy = mesh;
+    
+     */
     // texto
     
     //titleFont.load("fonts/CloisterBlack.ttf", 20);
@@ -119,12 +171,15 @@ void ofApp::setup(){
     uno = "";
     dos = "";
     tres = "";
+    mechON=0;
     
     // glitch
     
     plane.set(ofGetWidth(), ofGetHeight());
     //fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
-    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA8, 8);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA16F_ARB, 8); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora
+    //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
     myGlitch.setup(&fbo);
     ofxglitch = 0;
     fbox = 0;
@@ -220,14 +275,13 @@ void ofApp::setup(){
         texturas[i].enableMipmap();
         texturas[i].setTextureWrap(GL_REPEAT, GL_REPEAT);
         texturas[i].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-        
     }
     
     // retro alimentación
     
     retroON = 1;
     position = 0;
-    screenImage.allocate(960*2, 560*2, GL_RGBA);
+    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB, 2);
     retroX = 40;
     retroY = 40;
     feedback = 0;
@@ -267,6 +321,64 @@ void ofApp::setup(){
 }
 
 void ofApp::update(){
+    
+    /*
+    if (orbiting) {
+        int numVerts = mesh.getNumVertices();
+        for (int i=0; i<numVerts; ++i) {
+            ofVec3f vert = mesh.getVertex(i);
+            float distance = distances[i];
+            float angle = angles[i];
+            float elapsedTime = ofGetElapsedTimef() - startOrbitTime;
+            
+            // Lets adjust the speed of the orbits such that things that are closer to
+            // the center rotate faster than things that are more distant
+            float speed = ofMap(distance, 0, 200, 0.5, 0.25, true);
+            
+            // To find the angular rotation of our vertex, we use the current time and
+            // the starting angular rotation
+            float rotatedAngle = elapsedTime * speed + angle;
+            
+            // Remember that our distances are calculated relative to the centroid of the mesh, so
+            // we need to shift everything back to screen coordinates by adding the x and y of the centroid
+            vert.x = distance * cos(rotatedAngle) + meshCentroid.x;
+            vert.y = distance * sin(rotatedAngle) + meshCentroid.y;
+            
+            mesh.setVertex(i, vert);
+        }
+    }
+    
+    orbiting = true;             // This inverts the boolean
+    //startOrbitTime = ofGetElapsedTimef();
+    //mesh = meshCopy;            // This restores the mesh to its original values
+    
+     */
+    
+    if(mechON == 1){
+        int numVerts = mesh.getNumVertices();
+        for (int i=0; i<numVerts; ++i) {
+            ofVec3f vert = mesh.getVertex(i);
+            
+            float time = ofGetElapsedTimef();
+            float timeScale = 1;
+            float displacementScale = 20;
+            ofVec3f timeOffsets = offsets[i];
+            
+            // A typical design pattern for using Perlin noise uses a couple parameters:
+            // ofSignedNoise(time*timeScale+timeOffset)*displacementScale
+            //     ofSignedNoise(time) gives us noise values that change smoothly over time
+            //     ofSignedNoise(time*timeScale) allows us to control the smoothness of our noise (smaller timeScale, smoother values)
+            //     ofSignedNoise(time+timeOffset) allows us to use the same Perlin noise function to control multiple things and have them look as if they are moving independently
+            //     ofSignedNoise(time)*displacementScale allows us to change the bounds of the noise from [-1, 1] to whatever we want
+            // Combine all of those parameters together, and you've got some nice control over your noise
+            
+            vert.x += (ofSignedNoise(time*timeScale+timeOffsets.x)) * meshVecX;
+            vert.y += (ofSignedNoise(time*timeScale+timeOffsets.y)) * meshVecX;
+            vert.z += (ofSignedNoise(time*timeScale+timeOffsets.z)) * meshVecY;
+            
+            mesh.setVertex(i, vert);
+        }
+    }
     
     /// luces
     
@@ -358,7 +470,6 @@ void ofApp::update(){
 	if (m.getAddress() == "/sceneclear"){
             model3D.clear();
         }
-
 	
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
             tempo = m.getArgAsInt(0);
@@ -376,7 +487,6 @@ void ofApp::update(){
              if(canonGenerator == 1){
              videoLC[m.getArgAsInt(0)].play();
              }             */
-            
         }
         
         if (m.getAddress() == "/vscale" && m.getNumArgs() == 3){
@@ -750,6 +860,7 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
+// pendiente: fboTrails
 
 void ofApp::drawBlur(){
     
@@ -801,7 +912,7 @@ void ofApp::drawGlitchBlur(){
     
     //ofClear(0);
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 0);
+        ofSetColor(255, 255, 255, 50);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -821,7 +932,7 @@ void ofApp::drawGlitchBlur(){
     
     //ofClear(0);
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 0);
+        ofSetColor(255, 255, 255, 50);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -894,16 +1005,20 @@ void ofApp::drawScene(){
         screenImage.draw(0+retroX, 0+retroY, ofGetWidth()-80, ofGetHeight()-80);
     }
     
+    ofEnableDepthTest();
+
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);
-    
+    ofEnableSmoothing();
+    ofEnableAntiAliasing();
     if(autoOrbit == 1){
-        camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 200, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
+        camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
     }
     
     // videos
     
     for(int i = 0; i < LIM; i++){
+        ofEnableAlphaBlending();
         ofPushMatrix();
         ofRotateX(vRotX[i]);
         ofRotateY(vRotY[i]);
@@ -915,7 +1030,24 @@ void ofApp::drawScene(){
         ofPopMatrix();
     }
     
-    /// luces
+    if(mechON == 1){
+        
+        ofEnableLighting();
+        
+        ofSetRectMode(OF_RECTMODE_CENTER);
+        ofTranslate(0, 0, 0);
+        //ofRotateX(-90);
+        ofRotateY(0);
+        ofRotateZ(0);
+        ofScale(1, 1, 1);
+        //mesh.setPosition(0, 0, 0);
+        ofPushMatrix();
+        ofTranslate(-200, -200, -200);
+        mesh.draw();
+        ofPopMatrix();
+    }
+
+    // luces y material
     
     if(lightON == 1){
         ofEnableLighting();
@@ -936,7 +1068,7 @@ void ofApp::drawScene(){
     
     text = wrapString(texto, 400);
     rect = font.getStringBoundingBox(text, 0, 0);
-    ofSetLineWidth(2);
+    ofSetLineWidth(0.5);
     
     // Escenario
     
@@ -965,7 +1097,7 @@ void ofApp::drawScene(){
     
     //if(multiModelON == 1){
     for(int i = 0; i < LIM; i++){
-        
+
         ofTexture *texture2 = tempPlayer.getTexture();
         ofShader *shader2 = tempPlayer.getShader();
         
@@ -1041,9 +1173,7 @@ void ofApp::drawScene(){
     // estrellas puntos
     
     if(stars == 1){
-        
         for (int i = 0;i < 500;i++){
-            
             ofPushMatrix();
             ofRotateZ(ofGetElapsedTimef()+10);
             
@@ -1054,9 +1184,8 @@ void ofApp::drawScene(){
             ofCircle(0, 0, (ofNoise(i/3.4)-0.1)*2);
             ofPopMatrix();
         }
-        
     }
-    
+
     if(textON == 1 && fixText == 0){
         
         //pointLight.draw();
@@ -1074,12 +1203,11 @@ void ofApp::drawScene(){
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
         if(outOnScreen == 0){
-            
             //clientTyping = "";
             ofRectangle rectOut;
             textOut = wrapString(texto, 400);
             rectOut = font.getStringBoundingBox(textOut, 0, 0);
-            ofSetLineWidth(2);
+            //ofSetLineWidth(2);
             float distancia;
             distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
             camera.setDistance(distancia);
@@ -1117,7 +1245,6 @@ void ofApp::drawScene(){
     };
          
     if(multiMsg == 1){
-        
         for(int i = 0; i < LIM; i++){
             // aquí había push matrix
             ofPushMatrix();
@@ -1132,7 +1259,6 @@ void ofApp::drawScene(){
             fontOrb[i].drawString(textOrbPrima[i], noiseX[i] + (rect.width*0.5),  noiseY[i] + (rect.height*0.5));
             ofPopMatrix();
         }
-        
     }
     
     ofPopMatrix();
@@ -1346,12 +1472,12 @@ void ofApp::keyPressed(int key){
         
         if (textAnalisis[0] == "blur"){
             blurON = ofToInt(textAnalisis[1]);
-            blur = ofToInt(textAnalisis[2]);
+            blur = ofToFloat(textAnalisis[2]);
         }
         
         if (textAnalisis[0] == "gblur"){
             glitchBlurON = ofToInt(textAnalisis[1]);
-            glitchBlur = ofToInt(textAnalisis[2]);
+            glitchBlur = ofToFloat(textAnalisis[2]);
             if(ofToInt(textAnalisis[1]) == 1){
                 clearGB = 0;
             }
@@ -1389,6 +1515,61 @@ void ofApp::keyPressed(int key){
         if (textAnalisis[0] == "fb" ){
             feedbackON = ofToInt(textAnalisis[1]);
             depth = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "meshmode" ){
+            if(textAnalisis[1] == "points"){
+            mesh.setMode(OF_PRIMITIVE_POINTS);
+            }
+            if(textAnalisis[1] == "lines"){
+            mesh.setMode(OF_PRIMITIVE_LINES);
+            }
+            if(textAnalisis[1] == "triangles"){
+            mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+            }
+        }
+        
+        if (textAnalisis[0] == "pointsize"){
+            glPointSize(ofToFloat(textAnalisis[1]));
+        }
+        
+        if (textAnalisis[0] == "linewidth"){
+            ofSetLineWidth(ofToFloat(textAnalisis[1]));
+        }
+        
+        if (textAnalisis[0] == "meshdisplacement"){
+            meshVecX = ofToFloat(textAnalisis[1]);
+            meshVecY = ofToFloat(textAnalisis[2]);
+            meshVecZ = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "meshclear" ){
+            mechON = 0;
+            mesh.clear();
+        }
+        
+        if (textAnalisis[0] == "mesh" ){
+            mechON = 1;
+            image.loadImage("img/"+ textAnalisis[2]);
+            image.update();
+            image.resize(100, 100);
+            intensityThreshold = ofToFloat(textAnalisis[1]);
+            int w = image.getWidth();
+            int h = image.getHeight();
+            for (int x=0; x<w; ++x) {
+                for (int y=0; y<h; ++y) {
+                    ofColor c = image.getColor(x, y);
+                    float intensity = c.getLightness();
+                    if (intensity >= intensityThreshold) {
+                        float saturation = c.getSaturation();
+                        float z = ofMap(saturation, 0, 255, -100, 100);
+                        ofVec3f pos(x * 4, y * 4, z);
+                        mesh.addVertex(pos);
+                        mesh.addColor(c);
+                        offsets.push_back(ofVec3f(ofRandom(0,10000), ofRandom(0,10000), ofRandom(0,10000)));
+                    }
+                }
+            }
         }
         
         if (textAnalisis[0] == "texoff"){

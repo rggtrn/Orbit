@@ -36,4 +36,9 @@ gclear | limpia la ventana si hubo barridos
 texmode | encendido/apagado (1 ó 0) // enciende o apaga el modo de cargar texturas para objetos 3d
 mtex | pista (entero) | nombreDelArchvoYExtensión // carga una textura en una pista específica
 cbackground | encendido/apagado (1 ó 0) // encender o apagar el fondo colorido
-
+mesh | intensityTreshold (float) | archivo en png // invoca un mesh a partir de una imagen
+meshclear // limpia imagen y mesh
+pointsize | flotante // determina el tamaño de los puntos que componen el mesh
+linewidth | flotante // determina el ancho de las lineas que componen el mesh
+meshmode | points o lines o triangles // determina el modo de dibujo del mesh
+meshdisplacement | displacementX | displacementY | displacementZ // modifica los vertices del mesh en distintos ejes. 

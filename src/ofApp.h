@@ -231,6 +231,25 @@ public:
     ofTexture *textur;
     ofShader *shad;
     ofxHapPlayer tempPlayer;
+    ofImage image;
+    int mechON;
+    ofMesh mesh;
+    vector<ofVec3f> offsets;
+    
+    // para la rotación
+    
+    ofMesh meshCopy;
+    bool orbiting;
+    float startOrbitTime;
+    
+    // These variables will let us store the polar coordinates of each vertex
+    vector<float> distances;
+    vector<float> angles;
+    ofVec3f meshCentroid;
+    float intensityThreshold;
+    float meshVecX;
+    float meshVecY;
+    float meshVecZ;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];
