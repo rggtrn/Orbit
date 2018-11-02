@@ -61,8 +61,7 @@ public:
     ofIcoSpherePrimitive icoSphere;
     ofIcoSpherePrimitive icoSphere2;
     ofIcoSpherePrimitive icoSphere3;
-
-
+    
     int winSizeW;
     int winSizeH;
     
@@ -196,8 +195,8 @@ public:
     ofFbo fboBlurOnePass;
     ofFbo fboBlurTwoPass;
     
-     
      */
+    
     ofxCenteredTrueTypeFont fontOrb [LIM];
     ofRectangle rectOrb [LIM];
     
@@ -235,6 +234,8 @@ public:
     int mechON;
     ofMesh mesh;
     vector<ofVec3f> offsets;
+    float meshconnect;
+    float timeScale;
     
     // para la rotación
     
@@ -250,6 +251,13 @@ public:
     float meshVecX;
     float meshVecY;
     float meshVecZ;
+    float meshPosX;
+    float meshPosY;
+    float meshPosZ;
+    float meshRotX;
+    float meshRotY;
+    float meshRotZ;
+    float meshscale;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];

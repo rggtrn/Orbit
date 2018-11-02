@@ -1,8 +1,8 @@
 
 En Orbit hay tres tipos de instrucciones de entrada: acción, número (flotante, entero o booleano para encendido y apagado) y sucesión de caracteres. Ej:
 
-loadv 1 samplehap
-opacityv 1 244
+vload 1 samplehap
+vopa 1 244
 
 El primer elemento es la acción cargar, el segundo es un número que representa la pista en la que se reproduce el video y el último es el nombre del archivo que se carga sin extensión.
 
@@ -42,3 +42,6 @@ pointsize | flotante // determina el tamaño de los puntos que componen el mesh
 linewidth | flotante // determina el ancho de las lineas que componen el mesh
 meshmode | points o lines o triangles // determina el modo de dibujo del mesh
 meshdisplacement | displacementX | displacementY | displacementZ // modifica los vertices del mesh en distintos ejes. 
+meshpos | posX | posY | posZ // posición del mesh en el espacio
+meshrot | rotX | rotY | rotZ // rotación del mesh 
+meshscale | scale // escala del mesh

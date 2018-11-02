@@ -11,7 +11,7 @@ void ofApp::setup(){
     ofSetWindowTitle("Orbit");
     
     winSizeW = 1360;
-    winSizeH = 768;
+    winSizeH = 750;
     lcneON = 1;
     lago = 1;
     
@@ -28,7 +28,7 @@ void ofApp::setup(){
     
     // domemmaster
     
-    domeDistance=20;
+    domeDistance=5;
     domemaster.setup();
     domemaster.setCameraPosition(0, 0, domeDistance);
     domeON = 0;
@@ -56,21 +56,16 @@ void ofApp::setup(){
     }
 #endif
     
-    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight());
-    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight());
-    
+    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     blur = 0;
     blurON = 0;
-    
     glitchBlurX.load("Shaders/glitchBlurX");
     glitchBlurY.load("Shaders/glitchBlurY");
-    
-    fboGlitchBlurOnePass.allocate(ofGetWidth(), ofGetHeight());
-    fboGlitchBlurTwoPass.allocate(ofGetWidth(), ofGetHeight());
-    
+    fboGlitchBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fboGlitchBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     glitchBlur = 0;
     glitchBlurON = 0;
-    
     clearGB = 0;
     
     // 3d
@@ -79,46 +74,31 @@ void ofApp::setup(){
     model3D.setPosition(100, 0, 0);
     modelON = 0;
     multiModelON = 0;
-    
     ofDisableArbTex();
-    //asteroid.enableMipmap();
-    //ofDisableArbTex();
-    //ofLoadImage(asteroid,"img/stone.jpg");
-    //asteroid.generateMipmap();
-    //asteroid.setTextureWrap(GL_REPEAT, GL_REPEAT);
-    //asteroid.setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
-    
     modelScale = 10;
     textureON = 0;
-    
     ofEnableArbTex();
     
     // mecho
     
     //image.loadImage("img/algorave16.png");
     //image.resize(100, 100);
-    mesh.setMode(OF_PRIMITIVE_POINTS);
+    //mesh.setMode(OF_PRIMITIVE_POINTS);
     glPointSize(2);
     ofSetLineWidth(0.5);
     intensityThreshold = 100;
-    //int numVerts = mesh.getNumVertices();
+    timeScale = 1;
+    int numVerts = mesh.getNumVertices();
     meshVecX = 0;
     meshVecY = 0;
     meshVecZ = 0;
-    
-    float connectionDistance = 30;
-    int numVerts = mesh.getNumVertices();
-    for (int a=0; a<numVerts; ++a) {
-        ofVec3f verta = mesh.getVertex(a);
-        for (int b=a+1; b<numVerts; ++b) {
-            ofVec3f vertb = mesh.getVertex(b);
-            float distance = verta.distance(vertb);
-            if (distance <= connectionDistance) {
-                mesh.addIndex(a);
-                mesh.addIndex(b);
-            }
-        }
-    }
+    meshPosX = 0;
+    meshPosY = 0;
+    meshPosZ = 0;
+    meshRotX = 0;
+    meshRotY = 0;
+    meshRotZ = 0;
+    meshscale = 1;
      
     /*
     
@@ -176,8 +156,7 @@ void ofApp::setup(){
     // glitch
     
     plane.set(ofGetWidth(), ofGetHeight());
-    //fbo.allocate(plane.getWidth()/2, plane.getHeight()/2, GL_RGBA);
-    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA8, 8);
+    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA );
     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA16F_ARB, 8); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora
     //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
     myGlitch.setup(&fbo);
@@ -358,10 +337,7 @@ void ofApp::update(){
         int numVerts = mesh.getNumVertices();
         for (int i=0; i<numVerts; ++i) {
             ofVec3f vert = mesh.getVertex(i);
-            
             float time = ofGetElapsedTimef();
-            float timeScale = 1;
-            float displacementScale = 20;
             ofVec3f timeOffsets = offsets[i];
             
             // A typical design pattern for using Perlin noise uses a couple parameters:
@@ -374,7 +350,7 @@ void ofApp::update(){
             
             vert.x += (ofSignedNoise(time*timeScale+timeOffsets.x)) * meshVecX;
             vert.y += (ofSignedNoise(time*timeScale+timeOffsets.y)) * meshVecX;
-            vert.z += (ofSignedNoise(time*timeScale+timeOffsets.z)) * meshVecY;
+            vert.z += (ofSignedNoise(time*timeScale+timeOffsets.z)) * meshVecZ;
             
             mesh.setVertex(i, vert);
         }
@@ -473,6 +449,12 @@ void ofApp::update(){
 	
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
             tempo = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/meshdisplacement" && m.getNumArgs() == 3){
+            meshVecX = m.getArgAsFloat(0);
+            meshVecY = m.getArgAsFloat(0);
+            meshVecZ = m.getArgAsFloat(0);
         }
         
         if (m.getAddress() == "/vop" && m.getNumArgs() == 2){
@@ -791,13 +773,9 @@ void ofApp::update(){
             if(m.getArgAsInt(1) == 10){
                 invert = m.getArgAsBool(0);
             }
-            
         }
-        
     }
-    
 
-    
     drawScene();
     
     //fbo.draw(0, 0);
@@ -809,6 +787,7 @@ void ofApp::draw(){
     // Glitch
     
     //ofBackground(0, 0, 0);
+    ofSetColor(255, 255, 255);
     ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
 
@@ -847,7 +826,7 @@ void ofApp::draw(){
             fbo.draw(0, 0);
         }
     }
-    
+
     if(domeON == 1){
         for (int i=0; i<domemaster.renderCount; i++){
             domemaster.begin(i);
@@ -871,8 +850,9 @@ void ofApp::drawBlur(){
     fboBlurOnePass.begin();
     shaderBlurX.begin();
     
+    
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 0);
+        ofSetColor(255,255,255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -887,7 +867,7 @@ void ofApp::drawBlur(){
     shaderBlurY.begin();
 
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 0);
+        ofSetColor(255,255,255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -912,7 +892,7 @@ void ofApp::drawGlitchBlur(){
     
     //ofClear(0);
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 50);
+        ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -932,7 +912,7 @@ void ofApp::drawGlitchBlur(){
     
     //ofClear(0);
     if(clearGB == 0){
-        ofSetColor(255, 255, 255, 50);
+        ofSetColor(255, 255, 255, 0);
     }
     if(clearGB == 1){
         ofClear(0);
@@ -953,7 +933,7 @@ void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofDisableAlphaBlending();
-    ofScale(0.125/2, 0.125/2);
+    ofScale(0.125/4, 0.125/4);
     ofTranslate(0, 0, 0);
     ofRotateX(180);
     
@@ -978,7 +958,9 @@ void ofApp::drawFbo(){
 void ofApp::drawScene(){
     
     fbo.begin();
+    
     ofClear(0);
+    
     ofEnableArbTex();
     ofRectangle rect;
     
@@ -1031,18 +1013,15 @@ void ofApp::drawScene(){
     }
     
     if(mechON == 1){
-        
         ofEnableLighting();
-        
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 0);
-        //ofRotateX(-90);
-        ofRotateY(0);
-        ofRotateZ(0);
-        ofScale(1, 1, 1);
+        ofRotateX(meshRotX);
+        ofRotateY(meshRotY);
+        ofRotateZ(meshRotZ);
+        ofScale(meshscale, meshscale, meshscale);
         //mesh.setPosition(0, 0, 0);
         ofPushMatrix();
-        ofTranslate(-200, -200, -200);
+        ofTranslate(-200+meshPosX, -200+meshPosY, -200+meshPosZ);
         mesh.draw();
         ofPopMatrix();
     }
@@ -1120,7 +1099,6 @@ void ofApp::drawScene(){
         }
         
         if(videoTex == 1){
-            
             if (shader2){
                 shader2->begin();
             }
@@ -1134,9 +1112,7 @@ void ofApp::drawScene(){
         }
         
         if(videoTex == 1){
-            
             texture2 -> unbind();
-            
             if (shader2){
                 shader2->end();
             }
@@ -1157,8 +1133,7 @@ void ofApp::drawScene(){
         icoSphere.drawWireframe();
         ofPushMatrix();
     }
-    
-    /*
+
      if(icoOutON == 1){
      ofPopMatrix();
      ofRotateZ(0);
@@ -1168,7 +1143,6 @@ void ofApp::drawScene(){
      icoSphere.drawWireframe();
      ofPushMatrix();
      }
-     */
     
     // estrellas puntos
     
@@ -1289,7 +1263,7 @@ void ofApp::drawScene(){
         rect = font.getStringBoundingBox(text, 0, 0);
         ofTranslate(0, 0, -200);
         float distancia;
-        distancia = ofMap(rect.height, 0, 500, 600, 200);
+        distancia = ofMap(rect.height, 0, 500, 400, 200);
         ofTranslate(0, 0, distancia);
         font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5)));
         ofPopMatrix();
@@ -1537,6 +1511,10 @@ void ofApp::keyPressed(int key){
             ofSetLineWidth(ofToFloat(textAnalisis[1]));
         }
         
+        if (textAnalisis[0] == "timescale"){
+            timeScale = ofToFloat(textAnalisis[1]);
+        }
+        
         if (textAnalisis[0] == "meshdisplacement"){
             meshVecX = ofToFloat(textAnalisis[1]);
             meshVecY = ofToFloat(textAnalisis[2]);
@@ -1548,7 +1526,29 @@ void ofApp::keyPressed(int key){
             mesh.clear();
         }
         
+        if (textAnalisis[0] == "meshclear" ){
+            mechON = 0;
+            mesh.clear();
+        }
+        
+        if (textAnalisis[0] == "meshscale" ){
+            meshscale = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "meshpos" ){
+            meshPosX = ofToFloat(textAnalisis[1]);
+            meshPosY = ofToFloat(textAnalisis[2]);
+            meshPosZ = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "meshrot" ){
+            meshRotX = ofToFloat(textAnalisis[1]);
+            meshRotY = ofToFloat(textAnalisis[2]);
+            meshRotZ = ofToFloat(textAnalisis[3]);
+        }
+        
         if (textAnalisis[0] == "mesh" ){
+            mesh.clear();
             mechON = 1;
             image.loadImage("img/"+ textAnalisis[2]);
             image.update();
@@ -1566,7 +1566,23 @@ void ofApp::keyPressed(int key){
                         ofVec3f pos(x * 4, y * 4, z);
                         mesh.addVertex(pos);
                         mesh.addColor(c);
-                        offsets.push_back(ofVec3f(ofRandom(0,10000), ofRandom(0,10000), ofRandom(0,10000)));
+                        offsets.push_back(ofVec3f(ofRandom(0, 100000), ofRandom(0,100000), ofRandom(0,100000)));
+                    }
+                }
+            }
+            
+            float connectionDistance = 4;
+            connectionDistance = ofToInt(textAnalisis[3]);
+            
+            int numVerts = mesh.getNumVertices();
+            for (int a=0; a<numVerts; ++a) {
+                ofVec3f verta = mesh.getVertex(a);
+                for (int b=a+1; b<numVerts; ++b) {
+                    ofVec3f vertb = mesh.getVertex(b);
+                    float distance = verta.distance(vertb);
+                    if (distance <= connectionDistance) {
+                        mesh.addIndex(a);
+                        mesh.addIndex(b);
                     }
                 }
             }
@@ -1669,11 +1685,9 @@ void ofApp::keyPressed(int key){
             if(ofToInt(textAnalisis[2]) == 10){
                 invert = ofToBool(textAnalisis[1]);
             }
-            
         }
         
         if (textAnalisis[0] == "cglitch"){
-            
             if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
                 highcontrast = false;
                 blueraise = false;
