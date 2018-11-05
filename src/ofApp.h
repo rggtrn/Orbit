@@ -2,9 +2,6 @@
 #pragma once
 
 #include "ofMain.h"
-#if (defined(__APPLE__) && defined(__MACH__))
-#include "ofxSyphon.h"
-#endif
 #include "ofxHapPlayer.h"
 #include "ofxOsc.h"
 #include "ofxPostGlitch.h"
@@ -14,6 +11,7 @@
 #include "ofxDomemaster.h"
 
 #define LIM 10
+#define LIM2 3
 
 class ofApp : public ofBaseApp{
     
@@ -35,6 +33,9 @@ public:
     void gotMessage(ofMessage msg);
     void drawScene();
     void drawFbo();
+    void drawBlur();
+    void textControl();
+    void drawGlitchBlur();
     
     ofxHapPlayer videoLC[LIM];
     ofxDomemaster domemaster;
@@ -44,10 +45,6 @@ public:
     ofTexture screenImage;
     bool feedback;
     
-#if (defined(__APPLE__) && defined(__MACH__))
-    ofxSyphonClient client;
-    bool syphonON;
-#endif
     ofxXmlSettings XML;
     ofxOscReceiver reciever;
     ofxOscSender sender;
@@ -57,6 +54,13 @@ public:
     int retroY;
     int retroON;
     int domeON;
+    int domeDistance;
+    int colorBackground;
+    
+    //ofBoxPrimitive caja;
+    ofIcoSpherePrimitive icoSphere;
+    ofIcoSpherePrimitive icoSphere2;
+    ofIcoSpherePrimitive icoSphere3;
     
     int winSizeW;
     int winSizeH;
@@ -79,13 +83,47 @@ public:
     int canonGenerator;
     ofPath path[LIM];
     
-    int feedbackON;         
+    int feedbackON;
+    float glitchBlur;
+    int glitchBlurON;
+    float lago;
+    float modelScale;
 
     ofShader shaderFish;
+    
     ofFbo fbo;
-    ofPlanePrimitive plane;    
+    int clearGB;
+    
+    ofPlanePrimitive plane;
     ofxPostGlitch myGlitch;
     
+    int icoIntON;
+    int icoOutON;
+
+    //
+    string clientTyping;
+    ofTrueTypeFont titleFont; // font for some info in the title line
+    //
+    
+    ofColor colorLight1;
+    ofColor colorLight2;
+    ofColor colorLight3;
+    
+    ofShader shaderBlurX;
+    ofShader shaderBlurY;
+    
+    ofShader glitchBlurX;
+    ofShader glitchBlurY;
+    
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+    
+    ofFbo fboGlitchBlurOnePass;
+    ofFbo fboGlitchBlurTwoPass;
+    
+    float blur;
+    int blurON;
+
     float fbox;
     float fboy;
     float fboz;
@@ -122,29 +160,127 @@ public:
     bool blueinvert;
     bool redinvert;
     bool greeninvert;
+    float intOnScreen;
+    float outOnScreen;
     
     float textRotX;
     float textRotY;
     float textRotZ;
     int ofxglitch;
     float tempo;
+    float depth;
         
-    ofLight light;
+    ofLight pointLight;
+    ofLight pointLight2;
+    ofLight pointLight3;
+    ofMaterial material;
+    ofColor lightColor;
+    int modelON;
+    ofPlanePrimitive planeMatrix;
+
+    ofxCenteredTrueTypeFont fontOut;
     ofxCenteredTrueTypeFont font;
     ofxCenteredTrueTypeFont font2;
-
-    string texto; 
+    
+    string texto;
+    string textOut;
     string nombre;
     string text;
-    float fontScale;
     
-    ofxAssimpModelLoader models3D[LIM];
-    bool model3DOn[LIM];
+    /*
+    
+    ofShader shaderBlurX;
+    ofShader shaderBlurY;
+    
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+    
+     */
+    
+    ofxCenteredTrueTypeFont fontOrb [LIM];
+    ofRectangle rectOrb [LIM];
+    
+    string textOrb[LIM];
+    string textOrbPrima[LIM];
+    float noiseX[LIM];
+    float noiseY[LIM];
+    float msgRotX[LIM];
+    float msgRotY[LIM];
+    float msgRotZ[LIM];
+    
+    string cero;
+    string uno;
+    string dos;
+    string tres;
+    string prueba;
+    
+    float radius;
+    ofVec3f center;
+    
+    int glitchON; 
+    
+    ofxOscSender clientSender; // client sender object
+    string clientDestination; // IP address we're sending to
+    int clientSendPort; // port we're sending to
+
+    float lcneON;
+    float multiMsg;
+    float stars;
+    float videoTex;
+    ofTexture *textur;
+    ofShader *shad;
+    ofxHapPlayer tempPlayer;
+    ofImage image;
+    int mechON;
+    ofMesh mesh;
+    vector<ofVec3f> offsets;
+    float meshconnect;
+    float timeScale;
+    
+    // para la rotación
+    
+    ofMesh meshCopy;
+    bool orbiting;
+    float startOrbitTime;
+    
+    // These variables will let us store the polar coordinates of each vertex
+    vector<float> distances;
+    vector<float> angles;
+    ofVec3f meshCentroid;
+    float intensityThreshold;
+    float meshVecX;
+    float meshVecY;
+    float meshVecZ;
+    float meshPosX;
+    float meshPosY;
+    float meshPosZ;
+    float meshRotX;
+    float meshRotY;
+    float meshRotZ;
+    float meshscale;
+    
+    //ofTexture asteroid;
+    ofTexture texturas[LIM];
+
+    int multiModelON;
+    int multiModelX[LIM];
+    int multiModelY[LIM];
+    int multiModelZ[LIM];
+    int multiModelRotX[LIM];
+    int multiModelRotY[LIM];
+    int multiModelRotZ[LIM];
+    float multiModelScale[LIM];
+    
+    ofxAssimpModelLoader multiModel[LIM];
+    ofxAssimpModelLoader model3D;
     int textON;
     int fontSize;
+    int textureON;
     
-    ofLight pointLight;
-    
+    int clR[LIM2];
+    int clG[LIM2];
+    int clB[LIM2];
+        
     ofEasyCam camera;
     
     string wrapString(string text, int width) {

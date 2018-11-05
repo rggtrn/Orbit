@@ -1,0 +1,46 @@
+
+En Orbit hay tres tipos de instrucciones de entrada: acción, número (flotante, entero o booleano para encendido y apagado) y sucesión de caracteres. Ej:
+
+vload 1 samplehap
+vop 1 244
+
+El primer elemento es la acción cargar, el segundo es un número que representa la pista en la que se reproduce el video y el último es el nombre del archivo que se carga sin extensión.
+
+A continuación, una lista con los métodos para controlar Orbit desde la ventana.
+
+vload | pista(entero) | nombreDelArchivo(sin extensión) // carga un video
+vfree  | pista(entero) // libera un video
+vspeed | pista(entero) | velocidad(flotante) // ajusta la velocidad de un video. El valor puede ser negativo
+vop | pista(entero) | entero(0 a 255) // define el valor de opacidad en los videos cargados
+vpos | pista(entero) | posX(entero) | posY(entero) | posZ(entero) // determina la posición de un video 
+vscale | pista(entero) | sizeX(entero) | sizeY(entero) // determina el tamaño de un video
+vrot | pista(entero) | rotX(entero) | rotY(entero) | rotZ(entero) // modifica la rotación de un video
+fb | encendido/apagado (1 ó 0) // enciende o apaga la retroalimentación 
+fbxy | feedback X (entero) | feeback Y (entero) // determina los valores en X y Y de la retroalimentación
+light | encendido/apagado(1 ó 0) // Enciende o apaga las luces
+tempo | tempoGlobal(flotante) // Define el tempo global de Orbit
+mload | pista(entero) | nombreDelArchivo(sin extensión) // carga un modelo 3d
+mfree | pista(entero) // libera un modelo 3d
+mpos | pista(entero) | posX(entero) | posY(entero) | posZ(entero) // posiciona un modelo 3d 
+mscale | pista(entero) | escala (flotante donde 1 es normal) // cambia la escala del modelo seleccionado
+blur | encendido/apgado(1 ó 0) | valor(flotante) // aplica un efecto blur 
+txtrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de un texto
+dome | encendido/apagado(1 ó 0) | enciende una distorsión tipo fisheye
+icos | encendido/apagado(1 ó 0) | dibuja icosaedros
+stars | encendido/apagado(1 ó 0) | enciende o apaga las estrellas
+orbit | encendido/apagado(1 ó 0) | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
+glitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 10) // enciende o apaga glitches
+cglitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 6) // enciende o apaga distorsiones de color
+gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
+gclear | limpia la ventana si hubo barridos 
+mtex | pista (entero) | nombreDelArchvoYExtensión // carga una textura en una pista específica
+cbackground | encendido/apagado (1 ó 0) // encender o apagar el fondo colorido
+mesh | intensityTreshold (float) | archivo en png // invoca un mesh a partir de una imagen
+meshclear // limpia imagen y mesh
+pointsize | flotante // determina el tamaño de los puntos que componen el mesh
+linewidth | flotante // determina el ancho de las lineas que componen el mesh
+meshmode | points o lines o triangles // determina el modo de dibujo del mesh
+meshdisplacement | displacementX | displacementY | displacementZ // modifica los vertices del mesh en distintos ejes. 
+meshpos | posX | posY | posZ // posición del mesh en el espacio
+meshrot | rotX | rotY | rotZ // rotación del mesh 
+meshscale | scale // escala del mesh

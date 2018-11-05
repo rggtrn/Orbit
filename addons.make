@@ -4,5 +4,4 @@ ofxDomemaster
 ofxHapPlayer
 ofxOsc
 ofxPostGlitch
-ofxSyphon
 ofxXmlSettings
