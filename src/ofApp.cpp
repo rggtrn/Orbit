@@ -195,9 +195,6 @@ void ofApp::setup(){
     icoIntON = 0;
     icoOutON = 0;
     stars = 0;
-    planeMatrix.set(3000, 3000);   ///dimensions for width and height in pixels
-    planeMatrix.setPosition(0, 0, 0); /// position in x y z
-    planeMatrix.setResolution(32, 32);
     
     // OSC
     
@@ -260,7 +257,7 @@ void ofApp::setup(){
     
     retroON = 1;
     position = 0;
-    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB, 2);
+    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB,8);
     retroX = 40;
     retroY = 40;
     feedback = 0;
@@ -453,8 +450,8 @@ void ofApp::update(){
         
         if (m.getAddress() == "/meshdisplacement" && m.getNumArgs() == 3){
             meshVecX = m.getArgAsFloat(0);
-            meshVecY = m.getArgAsFloat(0);
-            meshVecZ = m.getArgAsFloat(0);
+            meshVecY = m.getArgAsFloat(1);
+            meshVecZ = m.getArgAsFloat(2);
         }
         
         if (m.getAddress() == "/vop" && m.getNumArgs() == 2){
@@ -515,9 +512,9 @@ void ofApp::update(){
             glPointSize(m.getArgAsFloat(0));
         }
         
-        if (m.getAddress() == "/mload" && m.getNumArgs() == 3){ /// modificar sintaxis
-            string temp = "3d/" + m.getArgAsString(2) + ".obj";
-            multiModel[m.getArgAsInt(1)].loadModel(temp);
+        if (m.getAddress() == "/mload" && m.getNumArgs() == 2){ /// modificar sintaxis
+            string temp = "3d/" + m.getArgAsString(1) + ".obj";
+            multiModel[m.getArgAsInt(0)].loadModel(temp);
             // multiModelON = m.getArgAsInt(0);
         }
         
@@ -678,6 +675,39 @@ void ofApp::update(){
             feedbackON = m.getArgAsInt(0);
             depth = m.getArgAsInt(0);
         }
+        
+        if (m.getAddress() == "/lightmode" && m.getNumArgs() == 1){
+            if(m.getArgAsString(0) == "vaporwave"){
+                colorLight1 = ofColor(255, 113, 206);
+                colorLight2 = ofColor( 1, 205, 254 );
+                colorLight3 = ofColor(185, 103, 255);
+            }
+            if(m.getArgAsString(0) == "vaporwave2"){
+                colorLight1 = ofColor(255, 251, 150);
+                colorLight2 = ofColor(185, 103, 255 );
+                colorLight3 = ofColor(5, 255, 161);
+            }
+            if(m.getArgAsString(0) == "risky"){
+                colorLight1 = ofColor(203, 4, 165);
+                colorLight2 = ofColor(144, 85, 62 );
+                colorLight3 = ofColor(38, 240, 241);
+            }
+            if(m.getArgAsString(0) == "risky2"){
+                colorLight1 = ofColor(69, 23, 108);
+                colorLight2 = ofColor(54, 207, 198);
+                colorLight3 = ofColor(207, 53, 131);
+            }
+            if(m.getArgAsString(0) == "white"){
+                colorLight1 = ofColor(255, 255, 255);
+                colorLight2 = ofColor(255, 255, 255);
+                colorLight3 = ofColor(255, 255, 255);
+            }
+            if(m.getArgAsString(0) == "rgb"){
+                colorLight1 = ofColor(255, 255, 0);
+                colorLight2 = ofColor(0, 255, 255);
+                colorLight3 = ofColor(255, 0, 255);
+            }
+        }
 
 	if (m.getAddress() == "/mesh" && m.getNumArgs() == 3){
             mesh.clear();
@@ -740,7 +770,7 @@ void ofApp::update(){
 	  meshRotZ = m.getArgAsFloat(2);
 	}
 
-        if (m.getAddress() == "meshmode" && m.getNumArgs() == 1){
+        if (m.getAddress() == "/meshmode" && m.getNumArgs() == 1){
             if(m.getArgAsString(0) == "points"){
             mesh.setMode(OF_PRIMITIVE_POINTS);
             }
@@ -1070,9 +1100,9 @@ void ofApp::drawScene(){
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofEnableSmoothing();
     ofEnableAntiAliasing();
-    if(autoOrbit == 1){
-        camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
-    }
+    //if(autoOrbit == 1){
+    //   camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
+    //}
     
     // videos
     
@@ -1083,7 +1113,7 @@ void ofApp::drawScene(){
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
-        ofScale(vScaleX[i],vScaleY[i]);
+        ofScale(vScaleX[i],vScaleY[i], 0);
         ofTranslate((vX[i]),vY[i], vZ[i]-200);
         videoLC[i].draw(0, 0);
         ofPopMatrix();
@@ -1092,12 +1122,12 @@ void ofApp::drawScene(){
     if(mechON == 1){
         ofEnableLighting();
         ofSetRectMode(OF_RECTMODE_CENTER);
+        ofPushMatrix();
         ofRotateX(meshRotX);
         ofRotateY(meshRotY);
         ofRotateZ(meshRotZ);
         ofScale(meshscale, meshscale, meshscale);
         //mesh.setPosition(0, 0, 0);
-        ofPushMatrix();
         ofTranslate(-200+meshPosX, -200+meshPosY, -200+meshPosZ);
         mesh.draw();
         ofPopMatrix();
@@ -1244,8 +1274,8 @@ void ofApp::drawScene(){
         //pointLight3.draw();
         
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, -200);
-        ofScale(1, 1);
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1, 1);
         ofRotateX(textRotX);
         ofRotateY(textRotY);
         ofRotateZ(textRotZ);
@@ -1254,14 +1284,16 @@ void ofApp::drawScene(){
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
         if(outOnScreen == 0){
+            ofScale(1, 1, 1);
+            ofTranslate(0, 0, 0);
             //clientTyping = "";
             ofRectangle rectOut;
             textOut = wrapString(texto, 400);
             rectOut = font.getStringBoundingBox(textOut, 0, 0);
             //ofSetLineWidth(2);
-            float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
-            camera.setDistance(distancia);
+            float distancia4;
+            distancia4 = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
+            camera.setDistance(distancia4);
             font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
         }
         
@@ -1275,8 +1307,9 @@ void ofApp::drawScene(){
         }
         
         if(autoOrbit == 1){
-            //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
-            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+            ofScale(1, 1, 1);
+            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
+            //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
         }
         
         // lo siguiente ya no es necesario
@@ -1300,7 +1333,7 @@ void ofApp::drawScene(){
             // aquí había push matrix
             ofPushMatrix();
             ofTranslate(0, 0, 0);
-            ofScale(1, 1);
+            ofScale(1, 1, 1);
             ofRotateX(msgRotX[i]);
             ofRotateY(msgRotY[i]);
             ofRotateZ(msgRotZ[i]);
@@ -1331,7 +1364,7 @@ void ofApp::drawScene(){
         ofDisableDepthTest();
         ofSetRectMode(OF_RECTMODE_CENTER);
         ofTranslate(0, 0, 0);
-        ofScale(0.5, 0.5);
+        ofScale(0.5, 0.5, 0.5);
         ofRotateX(textRotX);
         ofRotateY(textRotY);
         ofRotateZ(textRotZ);
@@ -1616,6 +1649,29 @@ void ofApp::keyPressed(int key){
             meshPosX = ofToFloat(textAnalisis[1]);
             meshPosY = ofToFloat(textAnalisis[2]);
             meshPosZ = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "font"){
+            if(textAnalisis[1] == "dejavu"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+                font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                }
+            }
+            if(textAnalisis[1] == "malandrone"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/CloisterBlack.ttf", 20);
+                font2.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                fontOut.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                fontOrb[i].load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                }
+            }
         }
         
         if (textAnalisis[0] == "meshrot" ){
