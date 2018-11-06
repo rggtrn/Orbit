@@ -484,6 +484,29 @@ void ofApp::update(){
             retroX = m.getArgAsFloat(0);
         }
         
+        if (m.getAddress() == "/font" && m.getNumArgs() == 1){
+            if(m.getArgAsString(0) == "dejavu"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+                font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                }
+            }
+            if(m.getArgAsString(0) == "malandrone"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/CloisterBlack.ttf", 20);
+                font2.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                fontOut.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                }
+            }
+        }
+        
         if (m.getAddress() == "/texclear"){
             textureON = 0;
             videoTex = 0;
