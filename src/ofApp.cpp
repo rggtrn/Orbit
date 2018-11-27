@@ -1,3 +1,17 @@
+/*
+ 
+ Notas para el commit: quite el 1 o 0 del orbit. lookat en vez de posición fija
+ 
+ Sugerencias basadas en la idea de ofhawc. Realmente es necesario que el texto de entrada este centrado y se ajuste dependiendo de los espacios y longitud de los caracteres?
+ Visualizador de actividad alrrededor de la pantalla.
+ asignación de vectores dependiendo de la posición de los objetos. Asignar la posición de los objetos a nodos.
+ cambios de cámara basado en los objetos en pantalla.
+ centro y esfera con reticula para dimensionar espacio
+ tamaño y dispersión de estrellas.
+ Posición del punto de observación (posteriormente cambiar a objetos específicos
+ distancia de la cámara como valor
+ 
+ */
 
 #include "ofApp.h"
 
@@ -35,7 +49,7 @@ void ofApp::setup(){
     
     // camara
     
-    //camera.setDistance(250);
+    camera.setDistance(250);
     autoOrbit = 0;
     orbitX = 0;
     orbitY = 0;
@@ -56,8 +70,8 @@ void ofApp::setup(){
     }
 #endif
     
-    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
     blur = 0;
     blurON = 0;
     glitchBlurX.load("Shaders/glitchBlurX");
@@ -78,6 +92,7 @@ void ofApp::setup(){
     modelScale = 10;
     textureON = 0;
     ofEnableArbTex();
+    centroSph.setRadius(20);
     
     // mecho
     
@@ -688,10 +703,10 @@ void ofApp::update(){
             fixText = m.getArgAsInt(1);
         }
         
-        if (m.getAddress() == "/orbit" && m.getNumArgs() == 3){
-            autoOrbit = m.getArgAsInt(0);
-            orbitX = m.getArgAsInt(1);
-            orbitY = m.getArgAsInt(2);
+        if (m.getAddress() == "/orbit" && m.getNumArgs() == 2){
+            //autoOrbit = m.getArgAsInt(0);
+            orbitX = m.getArgAsInt(0);
+            orbitY = m.getArgAsInt(1);
         }
         
         if (m.getAddress() == "/fb" && m.getNumArgs() == 1){
@@ -920,6 +935,9 @@ void ofApp::draw(){
     ofSetColor(255, 255, 255);
     ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
+    
+    ofVec3f centro = ofVec3f(0, 0, 0);
+    camera.lookAt(centro);
 
     if(glitchON == 1 && colorBackground ==1){
     ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
@@ -1124,9 +1142,9 @@ void ofApp::drawScene(){
     ofEnableSmoothing();
     ofEnableAntiAliasing();
     //if(autoOrbit == 1){
-    //   camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
+       camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0)); /// hace falta investigar como funciona esto
     //}
-    
+
     // videos
     
     for(int i = 0; i < LIM; i++){
@@ -1204,6 +1222,9 @@ void ofApp::drawScene(){
     
     // multimodelos
     
+    material.begin();
+
+    
     //if(multiModelON == 1){
     for(int i = 0; i < LIM; i++){
 
@@ -1252,6 +1273,11 @@ void ofApp::drawScene(){
     }
     //}
     
+    // centro
+    
+    centroSph.setPosition(0, 0, 0);
+    centroSph.draw();
+    
     // ICOS
     
     if(icoIntON == 1){
@@ -1277,18 +1303,20 @@ void ofApp::drawScene(){
     // estrellas puntos
     
     if(stars == 1){
-        for (int i = 0;i < 500;i++){
+        for (int i = 0;i < 1000;i++){
             ofPushMatrix();
-            ofRotateZ(ofGetElapsedTimef()+10);
+            //ofRotateZ(ofGetElapsedTimef()+10);
             
-            ofTranslate((ofNoise(i/2.4)-0.5)*5000,
-                        (ofNoise(i/5.6)-0.5)*5000,
-                        (ofNoise(i/8.2)-0.5)*5000);
+            ofTranslate((ofNoise(i/2.4)-0.5)*2000,
+                        (ofNoise(i/5.6)-0.5)*2000,
+                        (ofNoise(i/8.2)-0.5)*2000);
             
-            ofCircle(0, 0, (ofNoise(i/3.4)-0.1)*2);
+            ofSphere(0, 0, (ofNoise(i/3.4)-0.1)*2);
             ofPopMatrix();
         }
     }
+    
+    material.end();
 
     if(textON == 1 && fixText == 0){
         
@@ -1316,7 +1344,7 @@ void ofApp::drawScene(){
             //ofSetLineWidth(2);
             float distancia4;
             distancia4 = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
-            camera.setDistance(distancia4);
+            //camera.setDistance(distancia4);
             font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
         }
         
@@ -1329,11 +1357,10 @@ void ofApp::drawScene(){
             font2.drawString(nombre, distancia2 * (-1), distancia);
         }
         
-        if(autoOrbit == 1){
-            ofScale(1, 1, 1);
-            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
+        //if(autoOrbit == 1){
+
             //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
-        }
+        //}
         
         // lo siguiente ya no es necesario
         
@@ -1771,9 +1798,9 @@ void ofApp::keyPressed(int key){
         }
         
         if(textAnalisis[0] == "orbit"){
-            autoOrbit = ofToInt(textAnalisis[1]);
-            orbitX = ofToFloat(textAnalisis[2]);
-            orbitY = ofToInt(textAnalisis[3]);
+            //autoOrbit = ofToInt(textAnalisis[1]);
+            orbitX = ofToFloat(textAnalisis[1]);
+            orbitY = ofToInt(textAnalisis[2]);
         }
         
         /*

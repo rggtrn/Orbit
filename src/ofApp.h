@@ -258,6 +258,8 @@ public:
     float meshRotY;
     float meshRotZ;
     float meshscale;
+    ofSpherePrimitive centroSph;
+    ofSpherePrimitive reticulaSph;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];
