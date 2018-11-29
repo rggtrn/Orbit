@@ -260,6 +260,19 @@ public:
     float meshscale;
     ofSpherePrimitive centroSph;
     ofSpherePrimitive reticulaSph;
+    int centroSphON;
+    int reticulaSphON;
+    float camdistance;
+    ofVec3f centro;
+    ofVec3f posOrbit;
+
+    ofTexture asteroid;
+    
+    int numstars;
+    int sizestars;
+    int dispstarsX;
+    int dispstarsY;
+    int dispstarsZ;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];

@@ -28,7 +28,11 @@ txtrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de u
 dome | encendido/apagado(1 ó 0) | enciende una distorsión tipo fisheye
 icos | encendido/apagado(1 ó 0) | dibuja icosaedros
 stars | encendido/apagado(1 ó 0) | enciende o apaga las estrellas
-orbit | encendido/apagado(1 ó 0) | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
+numstars | número entero // número de estrellas
+sizestars | número entero no muy grande // tamaño promedio de las estrellas
+dispstars | dipspersión en X | dispersión en Y | dispersión en z // dispersión promedio de las estrellas
+dispstarsxyz | dispersión proporcional en X, Y y Z // dispersión promedio de las estrellas en la misma magnitud
+orbit | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
 glitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 10) // enciende o apaga glitches
 cglitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 6) // enciende o apaga distorsiones de color
 gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
@@ -44,3 +48,8 @@ meshdisplacement | displacementX | displacementY | displacementZ // modifica los
 meshpos | posX | posY | posZ // posición del mesh en el espacio
 meshrot | rotX | rotY | rotZ // rotación del mesh 
 meshscale | scale // escala del mesh
+spherein | 1 ó 0 // activa una esfera sólida en la coordenada 0, 0, 0
+sphinr | flotante // radio de la esfera sólida
+sphoutr | flotante // radio de la esfera reticulada
+sphereout | 1 ó 0 // activa una esfera reticulada 
+camdistance | flotante // distancia de la cámara con respecto al punto observado 
