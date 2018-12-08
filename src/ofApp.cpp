@@ -19,11 +19,11 @@ void ofApp::setup(){
     ofSetWindowTitle("Orbit");
     
     winSizeW = 1360;
-    winSizeH = 750;
+    winSizeH = 768;
     lcneON = 1;
     lago = 1;
     
-    ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
+    //ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
     ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
@@ -36,7 +36,7 @@ void ofApp::setup(){
     
     // domemmaster
     
-    domeDistance=5;
+    domeDistance=4 ;
     domemaster.setup();
     domemaster.setCameraPosition(0, 0, domeDistance);
     domeON = 0;
@@ -51,7 +51,8 @@ void ofApp::setup(){
     distanceLockON = 1;
     centro = ofVec3f(0, 0, 0);
     posOrbit = ofVec3f(0, 0, 0);
-    
+    //camera.lookAt(centro);
+
     // Shaders
     
 #ifdef TARGET_OPENGLES
@@ -179,8 +180,8 @@ void ofApp::setup(){
     
     // glitch
     
-     fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB );
-    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA32F_ARB); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora antes era una combinación loca pero ahora no pongo sin alphas parece que funciona todo
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB );
+    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora antes era una combinación loca pero ahora no pongo sin alphas parece que funciona todo
     //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
     myGlitch.setup(&fbo);
     ofxglitch = 0;
@@ -313,7 +314,8 @@ void ofApp::setup(){
     ofSetSmoothLighting(true);
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
-    material.setShininess( 20 );
+    materialON = 1;
+    material.setShininess( 120 );
     // the light highlight of the material //
     //material.setSpecularColor(ofColor(255, 255, 255, 255));
     material.setSpecularColor(ofColor(255, 255, 255, 255));
@@ -481,9 +483,28 @@ void ofApp::update(){
             meshVecZ = m.getArgAsFloat(2);
         }
         
-        if (m.getAddress() == "/vop" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/vop" && m.getNumArgs() == 1){
             vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
         }
+        
+        if (m.getAddress() == "/sphout" && m.getNumArgs() == 1){
+            reticulaSphON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/sphin" && m.getNumArgs() == 1){
+            centroSphON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/sphoutr" && m.getNumArgs() == 1){
+            reticulaSph.setRadius(m.getArgAsFloat(0));
+        }
+        
+        if (m.getAddress() == "/sphinr" && m.getNumArgs() == 1){
+            centroSph.setRadius(m.getArgAsFloat(0));
+        }
+        
+
+        
         
         if (m.getAddress() == "/vpos" && m.getNumArgs() == 4){ /// posZ
             vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -669,16 +690,13 @@ void ofApp::update(){
             clearGB = m.getArgAsInt(0);
         }
         
-        if (m.getAddress() == "/spherein" &&  m.getNumArgs() == 1){
-            centroSphON = m.getArgAsInt(0);
-        }
-        
-        if (m.getAddress() == "/sphereout" &&  m.getNumArgs() == 1){
-            reticulaSphON = m.getArgAsInt(0);
+        if (m.getAddress() == "/lookat" &&  m.getNumArgs() == 1){
+            centro = ofVec3f( m.getArgAsInt(0),  m.getArgAsInt(1),  m.getArgAsInt(2));
         }
         
         if (m.getAddress() == "/camdistance" &&  m.getNumArgs() == 1){
-            camera.setDistance(m.getArgAsFloat(0));
+            camdistance = m.getArgAsFloat(0);
+            camera.setDistance(camdistance);
         }
         
         if (m.getAddress() == "/scenescale"  &&  m.getNumArgs() == 1){
@@ -927,7 +945,7 @@ void ofApp::update(){
             }
             
             if(m.getArgAsInt(1) == 1){
-                convergence = m.getArgAsBool(0);
+                convergence = m.getArgAsInt(0);
             }
             
             if(m.getArgAsInt(1) == 2){
@@ -970,6 +988,10 @@ void ofApp::update(){
 
     drawScene();
     
+    if(blurON == 1){
+        drawBlur();
+    }
+    
     //fbo.draw(0, 0);
     
 }
@@ -984,7 +1006,7 @@ void ofApp::draw(){
     ofSetRectMode(OF_RECTMODE_CORNER);
 
     camera.lookAt(centro);
-
+    
     if(glitchON == 1 && colorBackground ==1){
     ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
@@ -1071,8 +1093,8 @@ void ofApp::drawBlur(){
     fboBlurOnePass.draw(0, 0);
     shaderBlurY.end();
     fboBlurTwoPass.end();
-    
     fboBlurTwoPass.draw(0, 0);
+
     
 }
  
@@ -1127,7 +1149,7 @@ void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofDisableAlphaBlending();
-    ofScale(0.125/4, 0.125/4);
+    ofScale(0.125/8, 0.125/8);
     ofTranslate(0, 0, 0);
     ofRotateX(180);
     
@@ -1136,8 +1158,9 @@ void ofApp::drawFbo(){
     //fbo.getTexture().unbind();
     
     if(blurON == 1){
-        drawBlur();
+        fboBlurTwoPass.draw(0, 0);
     }
+    
     if(glitchBlurON == 1){
         drawGlitchBlur();
     }
@@ -1188,7 +1211,7 @@ void ofApp::drawScene(){
     ofEnableSmoothing();
     ofEnableAntiAliasing();
     //if(autoOrbit == 1){
-       camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), posOrbit); // hace falta investigar como funciona esto
+       camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), posOrbit); // hace falta investigar como funciona esto hace falta cambiar el camera get distance para que coincida con lo que envía el osc
     //}
 
     // videos
@@ -1230,7 +1253,9 @@ void ofApp::drawScene(){
         pointLight.enable();
         pointLight2.enable();
         pointLight3.enable();
+        if(materialON == 1){
         material.begin();
+        }
     }
     
     if(lightON == 0){
@@ -1267,9 +1292,6 @@ void ofApp::drawScene(){
     }
     
     // multimodelos
-    
-    material.begin();
-
     
     //if(multiModelON == 1){
     for(int i = 0; i < LIM; i++){
@@ -1372,7 +1394,9 @@ void ofApp::drawScene(){
         }
     }
     
+    if(materialON == 1){
     material.end();
+    }
 
     if(textON == 1 && fixText == 0){
         //pointLight.draw();
@@ -1548,35 +1572,39 @@ void ofApp::keyPressed(int key){
             lightON = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "spherein"){
+        if (textAnalisis[0] == "material"){
+            materialON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "sphin"){
             centroSphON = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "sphereout"){
+        if (textAnalisis[0] == "sphout"){
             reticulaSphON = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "numstars"){
+        if (textAnalisis[0] == "starsnum"){
             numstars = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "sizestars"){
+        if (textAnalisis[0] == "starssize"){
             sizestars = ofToInt(textAnalisis[1]);
         }
         
-        if (textAnalisis[0] == "dispstarsxyz"){
+        if (textAnalisis[0] == "starsdispxyz"){
             dispstarsX = ofToInt(textAnalisis[1]);
             dispstarsY = ofToInt(textAnalisis[2]);
             dispstarsZ = ofToInt(textAnalisis[3]);
         }
         
-        if (textAnalisis[0] == "dispstars"){
+        if (textAnalisis[0] == "starsdisp"){
             dispstarsX = ofToInt(textAnalisis[1]);
             dispstarsY = ofToInt(textAnalisis[1]);
             dispstarsZ = ofToInt(textAnalisis[1]);
         }
 
-	if (textAnalisis[0] == "cbackground"){
+	if (textAnalisis[0] == "backc"){
 	  colorBackground = ofToInt(textAnalisis[1]);
 	}
         
@@ -1790,7 +1818,8 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "camdistance" ){
-            camera.setDistance(ofToFloat(textAnalisis[1]));
+            camdistance = ofToFloat(textAnalisis[0]);
+            camera.setDistance(camdistance);
         }
         
         if (textAnalisis[0] == "meshpos" ){

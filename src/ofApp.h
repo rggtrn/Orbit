@@ -269,10 +269,10 @@ public:
     ofTexture asteroid;
     
     int numstars;
-    int sizestars;
-    int dispstarsX;
-    int dispstarsY;
-    int dispstarsZ;
+    float sizestars;
+    float dispstarsX;
+    float dispstarsY;
+    float dispstarsZ;
     
     //ofTexture asteroid;
     ofTexture texturas[LIM];
@@ -291,6 +291,7 @@ public:
     int textON;
     int fontSize;
     int textureON;
+    int materialON;
     
     int clR[LIM2];
     int clG[LIM2];
