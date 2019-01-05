@@ -187,6 +187,12 @@ public:
     string nombre;
     string text;
     
+    string letras3dString;
+    ofTrueTypeFont ttf;
+
+    int typeSolid;
+    int typeWire; 
+    
     /*
     
     ofShader shaderBlurX;
@@ -215,7 +221,8 @@ public:
     string prueba;
     
     float radius;
-    ofVec3f center;
+    ofVec3f center2;
+    ofVec2f center;
     
     int glitchON; 
     
@@ -242,6 +249,19 @@ public:
     ofMesh meshCopy;
     bool orbiting;
     float startOrbitTime;
+    
+    // letras 3d
+    
+    bool bResample;
+    float resampleSpacing;
+    float letterThickness;
+    ofVboMesh letras3d;
+    
+    ofPath resamplePath(ofPath path, float spacing);
+    ofMesh createMeshFromPath(ofPath path, float offSet);
+    void colorFaces(ofMesh & mesh);
+    
+    int type3d;
     
     // These variables will let us store the polar coordinates of each vertex
     vector<float> distances;

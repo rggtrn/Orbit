@@ -157,6 +157,14 @@ OSCdef(\camdistance, {|msg|
 ~camdistanceSend = {SendReply.kr(Impulse.kr(~tempo.kr*30), '/camdistanceDef', ~camdistanceSeq.kr)};
 OSCdef(\camdistance).free;
 
+OSCdef(\starsnum, {|msg|
+	var data = msg[3];
+	Orb.starsnum( data)
+}, '/starsnumDef');
+~starsnumSeq = {Lag.kr(Demand.kr(Impulse.kr(~tempo*0.5), 0, Drand([600, 100, 10, 200, 1000], inf)), 1)};
+~starsnumSend = {SendReply.kr(Impulse.kr(~tempo.kr*30), '/starsnumDef', ~starsnumSeq.kr)};
+OSCdef(\camdistance).free;
+
 )
 
 
