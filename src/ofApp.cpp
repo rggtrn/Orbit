@@ -1,22 +1,29 @@
+/*
+ 
+type typetext typefont hace falta ponerlos como mensajes osc
+falta investigar sobre los shaders
+ */
 
 #include "ofApp.h"
 
 void ofApp::setup(){
     
     // iniciales
+    ofEnableAntiAliasing();
+    ofEnableSmoothing();
     
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
     //ofSetVerticalSync(true);
     ofSetWindowTitle("Orbit");
     
-    winSizeW = 1360;
-    winSizeH = 750;
+    winSizeW = 1300;
+    winSizeH = 700;
     lcneON = 1;
     lago = 1;
     
-    ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(30);
+    //ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
+    ofSetFrameRate(60);
     ofHideCursor();
     tempo = 1;
     intOnScreen = 1;
@@ -28,18 +35,36 @@ void ofApp::setup(){
     
     // domemmaster
     
-    domeDistance=5;
+    domeDistance=4 ;
     domemaster.setup();
     domemaster.setCameraPosition(0, 0, domeDistance);
     domeON = 0;
     
+    // letras 3d
+    
+    bResample = true;
+    resampleSpacing = 5.0;
+    letterThickness = 20.0;
+    
+    // to extract points, loadFont must be called with makeContours set to true
+    ttf.loadFont(OF_TTF_SANS, 300, true, false, true);
+    letras3dString = "ORBIT";
+    typeSolid=1;
+    typeWire= 0;
+    
+    type3d = 0;
+    
     // camara
     
-    //camera.setDistance(250);
+    camdistance = 250;
+    camera.setDistance(camdistance);
     autoOrbit = 0;
     orbitX = 0;
     orbitY = 0;
     distanceLockON = 1;
+    centro = ofVec3f(0, 0, 0);
+    posOrbit = ofVec3f(0, 0, 0);
+    //camera.lookAt(centro);
     
     // Shaders
     
@@ -56,8 +81,8 @@ void ofApp::setup(){
     }
 #endif
     
-    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
-    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
     blur = 0;
     blurON = 0;
     glitchBlurX.load("Shaders/glitchBlurX");
@@ -71,12 +96,25 @@ void ofApp::setup(){
     // 3d
     
     model3D.loadModel("3d/nave.obj");
-    model3D.setPosition(100, 0, 0);
+    model3D.setPosition(0, 0, 0);
     modelON = 0;
     multiModelON = 0;
     ofDisableArbTex();
-    modelScale = 10;
+    modelScale = 4;
     textureON = 0;
+    ofEnableArbTex();
+    centroSph.setRadius(20);
+    reticulaSph.setRadius(400);
+    centroSphON = 0;
+    reticulaSphON = 0;
+    
+    ofDisableArbTex();
+    asteroid.enableMipmap();
+    //ofDisableArbTex();
+    ofLoadImage(asteroid,"img/stone.jpg");
+    asteroid.generateMipmap();
+    asteroid.setTextureWrap(GL_REPEAT, GL_REPEAT);
+    asteroid.setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
     ofEnableArbTex();
     
     // mecho
@@ -99,33 +137,33 @@ void ofApp::setup(){
     meshRotY = 0;
     meshRotZ = 0;
     meshscale = 1;
-     
+    
     /*
-    
-    // We need to calculate our center point for the mesh
-    // ofMesh has a method called getCentroid() that will
-    // find the average location over all of our vertices
-    meshCentroid = mesh.getCentroid();
-    
-    // Now that we know our centroid, we need to know the polar coordinates (distance and angle)
-    // of each vertex relative to that center point.
-    // We've found the distance between points before, but what about the angle?
-    // This is where atan2 comes in.  atan2(y, x) takes an x and y value and returns the angle relative
-    //     to the origin (0,0).  If we want the angle between two points (x1, y1) and (x2, y2) then we
-    //     just need to use atan2(y2-y1, x2-x1).
-    for (int i=0; i<numVerts; ++i) {
-        ofVec3f vert = mesh.getVertex(i);
-        float distance = vert.distance(meshCentroid);
-        float angle = atan2(vert.y-meshCentroid.y, vert.x-meshCentroid.x);
-        distances.push_back(distance);
-        angles.push_back(angle);
-    }
-    
-    // These variables will allow us to toggle orbiting on and off
-    orbiting = false;
-    startOrbitTime = 0.0;
-    meshCopy = mesh;
-    
+     
+     // We need to calculate our center point for the mesh
+     // ofMesh has a method called getCentroid() that will
+     // find the average location over all of our vertices
+     meshCentroid = mesh.getCentroid();
+     
+     // Now that we know our centroid, we need to know the polar coordinates (distance and angle)
+     // of each vertex relative to that center point.
+     // We've found the distance between points before, but what about the angle?
+     // This is where atan2 comes in.  atan2(y, x) takes an x and y value and returns the angle relative
+     //     to the origin (0,0).  If we want the angle between two points (x1, y1) and (x2, y2) then we
+     //     just need to use atan2(y2-y1, x2-x1).
+     for (int i=0; i<numVerts; ++i) {
+     ofVec3f vert = mesh.getVertex(i);
+     float distance = vert.distance(meshCentroid);
+     float angle = atan2(vert.y-meshCentroid.y, vert.x-meshCentroid.x);
+     distances.push_back(distance);
+     angles.push_back(angle);
+     }
+     
+     // These variables will allow us to toggle orbiting on and off
+     orbiting = false;
+     startOrbitTime = 0.0;
+     meshCopy = mesh;
+     
      */
     // texto
     
@@ -136,7 +174,7 @@ void ofApp::setup(){
     font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
     fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
-
+    
     textON = 1;
     textOut = "";
     text = "";
@@ -155,9 +193,8 @@ void ofApp::setup(){
     
     // glitch
     
-    plane.set(ofGetWidth(), ofGetHeight());
-    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA );
-    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA16F_ARB, 8); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB);
+    //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora antes era una combinación loca pero ahora no pongo sin alphas parece que funciona todo
     //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
     myGlitch.setup(&fbo);
     ofxglitch = 0;
@@ -195,9 +232,11 @@ void ofApp::setup(){
     icoIntON = 0;
     icoOutON = 0;
     stars = 0;
-    planeMatrix.set(3000, 3000);   ///dimensions for width and height in pixels
-    planeMatrix.setPosition(0, 0, 0); /// position in x y z
-    planeMatrix.setResolution(32, 32);
+    numstars = 100;
+    sizestars = 1;
+    dispstarsX = 1000;
+    dispstarsY = 1000;
+    dispstarsZ = 1000;
     
     // OSC
     
@@ -215,7 +254,6 @@ void ofApp::setup(){
     for(int i = 0; i < LIM; i++){
         
         // videos
-        
         vX[i] = 0;
         vY[i] = 0;
         vZ[i] = 0;
@@ -246,7 +284,7 @@ void ofApp::setup(){
         
         multiModelX[i] = 0;
         multiModelY[i] = 0;
-        multiModelZ[i] = -200;
+        multiModelZ[i] = 0;
         multiModelRotX[i] = 0;
         multiModelRotY[i] = 0;
         multiModelRotZ[i] = 0;
@@ -260,7 +298,7 @@ void ofApp::setup(){
     
     retroON = 1;
     position = 0;
-    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB, 2);
+    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB, 8);
     retroX = 40;
     retroY = 40;
     feedback = 0;
@@ -277,60 +315,64 @@ void ofApp::setup(){
         clG[i] = 255;
         clB[i] = 255;
     }
-
+    
     colorLight1 = ofColor(clR[0], clG[0], clB[0]);
     colorLight2 = ofColor(clR[1], clG[1], clB[1]);
     colorLight3 = ofColor(clR[2], clG[2], clB[2]);
+    
     
     //colorLight1 = ofColor(255, 113, 206);
     //colorLight2 = ofColor( 1, 205, 254 );
     //colorLight3 = ofColor(185, 103, 255);
     
     ofSetSmoothLighting(true);
+    ofSetGlobalAmbientColor(ofColor(128));
+
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
-    material.setShininess( 120 );
+    materialON = 1;
+    material.setShininess( 20 );
     // the light highlight of the material //
     //material.setSpecularColor(ofColor(255, 255, 255, 255));
     material.setSpecularColor(ofColor(255, 255, 255, 255));
     
     radius        = 180.f;
-    center.set(ofGetWidth()*.5, ofGetHeight()*.5, 0);
-
+    center2.set(ofGetWidth()*.5, ofGetHeight()*.5, 0);
+    
 }
 
 void ofApp::update(){
     
     /*
-    if (orbiting) {
-        int numVerts = mesh.getNumVertices();
-        for (int i=0; i<numVerts; ++i) {
-            ofVec3f vert = mesh.getVertex(i);
-            float distance = distances[i];
-            float angle = angles[i];
-            float elapsedTime = ofGetElapsedTimef() - startOrbitTime;
-            
-            // Lets adjust the speed of the orbits such that things that are closer to
-            // the center rotate faster than things that are more distant
-            float speed = ofMap(distance, 0, 200, 0.5, 0.25, true);
-            
-            // To find the angular rotation of our vertex, we use the current time and
-            // the starting angular rotation
-            float rotatedAngle = elapsedTime * speed + angle;
-            
-            // Remember that our distances are calculated relative to the centroid of the mesh, so
-            // we need to shift everything back to screen coordinates by adding the x and y of the centroid
-            vert.x = distance * cos(rotatedAngle) + meshCentroid.x;
-            vert.y = distance * sin(rotatedAngle) + meshCentroid.y;
-            
-            mesh.setVertex(i, vert);
-        }
-    }
-    
-    orbiting = true;             // This inverts the boolean
-    //startOrbitTime = ofGetElapsedTimef();
-    //mesh = meshCopy;            // This restores the mesh to its original values
-    
+     if (orbiting) {
+     int numVerts = mesh.getNumVertices();
+     for (int i=0; i<numVerts; ++i) {
+     ofVec3f vert = mesh.getVertex(i);
+     float distance = distances[i];
+     float angle = angles[i];
+     float elapsedTime = ofGetElapsedTimef() - startOrbitTime;
+     
+     // Lets adjust the speed of the orbits such that things that are closer to
+     // the center rotate faster than things that are more distant
+     float speed = ofMap(distance, 0, 200, 0.5, 0.25, true);
+     
+     // To find the angular rotation of our vertex, we use the current time and
+     // the starting angular rotation
+     float rotatedAngle = elapsedTime * speed + angle;
+     
+     // Remember that our distances are calculated relative to the centroid of the mesh, so
+     // we need to shift everything back to screen coordinates by adding the x and y of the centroid
+     vert.x = distance * cos(rotatedAngle) + meshCentroid.x;
+     vert.y = distance * sin(rotatedAngle) + meshCentroid.y;
+     
+     mesh.setVertex(i, vert);
+     }
+     }
+     
+     orbiting = true;             // This inverts the boolean
+     //startOrbitTime = ofGetElapsedTimef();
+     //mesh = meshCopy;            // This restores the mesh to its original values
+     
      */
     
     if(mechON == 1){
@@ -356,6 +398,18 @@ void ofApp::update(){
         }
     }
     
+    //pointLight.setPosition(ofGetWidth()/2, ofGetHeight()/2, 500);
+    
+    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
+    pointLight2.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.15)*(ofGetWidth()*.3),
+                            ofGetHeight()*.5 + sin(ofGetElapsedTimef()*.7)*(ofGetHeight()), -300);
+    
+    pointLight3.setPosition(
+                            cos(ofGetElapsedTimef()*1.5) * ofGetWidth()*.5,
+                            sin(ofGetElapsedTimef()*1.5f) * ofGetWidth()*.5,
+                            cos(ofGetElapsedTimef()*.2) * ofGetWidth()
+                            );
+    
     /// luces
     
     pointLight.setDiffuseColor( colorLight1 );
@@ -364,18 +418,6 @@ void ofApp::update(){
     pointLight2.setSpecularColor( colorLight2 );
     pointLight3.setDiffuseColor( colorLight3 );
     pointLight3.setSpecularColor( colorLight3 );
-    
-    //pointLight.setPosition(ofGetWidth()/2, ofGetHeight()/2, 500);
-    
-    pointLight.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.5)*(ofGetWidth()*.3), ofGetHeight()/2, 500);
-    
-    pointLight2.setPosition((ofGetWidth()*.5)+ cos(ofGetElapsedTimef()*.15)*(ofGetWidth()*.3),
-                            ofGetHeight()*.5 + sin(ofGetElapsedTimef()*.7)*(ofGetHeight()), 300);
-    
-    pointLight3.setPosition(
-                            cos(ofGetElapsedTimef()*1.5) * radius * 2 + center.x,
-                            sin(ofGetElapsedTimef()*1.5f) * radius * 2 + center.y,
-                            cos(ofGetElapsedTimef()*.2) * radius * 2 + center.z);
     
     //pointLight.setPosition(cos(ofGetElapsedTimef()*.6f) * radius * 2 + center.x,
     //                       sin(ofGetElapsedTimef()*.8f) * radius * 2 + center.y,
@@ -438,27 +480,43 @@ void ofApp::update(){
         }
         
         if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
-	  string temp = "3d/" + m.getArgAsString(1) + ".obj";
-	  model3D.loadModel(temp);
-	  modelON = m.getArgAsInt(0);
+            string temp = "3d/" + m.getArgAsString(1) + ".obj";
+            model3D.loadModel(temp);
+            modelON = m.getArgAsInt(0);
         }
-
-	if (m.getAddress() == "/sceneclear"){
+        
+        if (m.getAddress() == "/sceneclear"){
             model3D.clear();
         }
-	
+        
         if (m.getAddress() == "/tempo" && m.getNumArgs() == 1){
             tempo = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/meshdisplacement" && m.getNumArgs() == 3){
             meshVecX = m.getArgAsFloat(0);
-            meshVecY = m.getArgAsFloat(0);
-            meshVecZ = m.getArgAsFloat(0);
+            meshVecY = m.getArgAsFloat(1);
+            meshVecZ = m.getArgAsFloat(2);
         }
         
-        if (m.getAddress() == "/vop" && m.getNumArgs() == 2){
+        if (m.getAddress() == "/vop" && m.getNumArgs() == 1){
             vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
+        }
+        
+        if (m.getAddress() == "/sphout" && m.getNumArgs() == 1){
+            reticulaSphON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/sphin" && m.getNumArgs() == 1){
+            centroSphON = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/sphoutr" && m.getNumArgs() == 1){
+            reticulaSph.setRadius(m.getArgAsFloat(0));
+        }
+        
+        if (m.getAddress() == "/sphinr" && m.getNumArgs() == 1){
+            centroSph.setRadius(m.getArgAsFloat(0));
         }
         
         if (m.getAddress() == "/vpos" && m.getNumArgs() == 4){ /// posZ
@@ -487,6 +545,48 @@ void ofApp::update(){
             retroX = m.getArgAsFloat(0);
         }
         
+        if (m.getAddress() == "/numstars" && m.getNumArgs() == 1){
+            numstars = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/sizestars" && m.getNumArgs() == 1){
+            sizestars = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/dispstars" && m.getNumArgs() == 1){
+            dispstarsX = m.getArgAsFloat(0);
+            dispstarsY = m.getArgAsFloat(0);
+            dispstarsZ = m.getArgAsFloat(0);        }
+        
+        if (m.getAddress() == "/dispstarsxyz" && m.getNumArgs() == 3){
+            dispstarsX = m.getArgAsFloat(0);
+            dispstarsY = m.getArgAsFloat(1);
+            dispstarsZ = m.getArgAsFloat(2);
+        }
+        
+        if (m.getAddress() == "/font" && m.getNumArgs() == 1){
+            if(m.getArgAsString(0) == "dejavu"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+                font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                }
+            }
+            if(m.getArgAsString(0) == "malandrone"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/CloisterBlack.ttf", 20);
+                font2.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                fontOut.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                }
+            }
+        }
+        
         if (m.getAddress() == "/texclear"){
             textureON = 0;
             videoTex = 0;
@@ -510,27 +610,27 @@ void ofApp::update(){
         if (m.getAddress() == "/lago" && m.getNumArgs() == 1){
             lago = m.getArgAsFloat(0)+0.1;
         }
-
+        
         if (m.getAddress() == "/pointsize" && m.getNumArgs() == 1){
             glPointSize(m.getArgAsFloat(0));
         }
         
-        if (m.getAddress() == "/mload" && m.getNumArgs() == 3){ /// modificar sintaxis
-            string temp = "3d/" + m.getArgAsString(2) + ".obj";
-            multiModel[m.getArgAsInt(1)].loadModel(temp);
+        if (m.getAddress() == "/mload" && m.getNumArgs() == 2){ /// modificar sintaxis
+            string temp = "3d/" + m.getArgAsString(1) + ".obj";
+            multiModel[m.getArgAsInt(0)].loadModel(temp);
             // multiModelON = m.getArgAsInt(0);
         }
         
         if (m.getAddress() == "/mfree" && m.getNumArgs() == 1){
             multiModel[m.getArgAsInt(0)].clear();
         }
-
-	/*
-        if (m.getAddress() == "/scenefree" && m.getNumArgs() == 1){
-            model3D.clear();
-            modelON = m.getArgAsInt(0);
-        }
-	*/
+        
+        /*
+         if (m.getAddress() == "/scenefree" && m.getNumArgs() == 1){
+         model3D.clear();
+         modelON = m.getArgAsInt(0);
+         }
+         */
         
         if (m.getAddress() == "/mpos" && m.getNumArgs() == 4){
             multiModelX[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -542,18 +642,18 @@ void ofApp::update(){
             multiModelScale[m.getArgAsInt(0)] = m.getArgAsFloat(1);
             
         }
-
-	/*
-        if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
-            string temp = "3d/" + m.getArgAsString(2) + ".obj";
-            if(m.getArgAsInt(1) == 0){
-                model3D.clear();
-            }
-            if(m.getArgAsInt(1) == 1){
-                model3D.loadModel(temp);
-            }
-        }
-	*/
+        
+        /*
+         if (m.getAddress() == "/sceneload" && m.getNumArgs() == 2){
+         string temp = "3d/" + m.getArgAsString(2) + ".obj";
+         if(m.getArgAsInt(1) == 0){
+         model3D.clear();
+         }
+         if(m.getArgAsInt(1) == 1){
+         model3D.loadModel(temp);
+         }
+         }
+         */
         
         if (m.getAddress() == "/mrot" && m.getNumArgs() == 4){
             multiModelRotX[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -576,13 +676,13 @@ void ofApp::update(){
             vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
             vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
         }
-
-	/* // sirve de algo? 
-        if (m.getAddress() == "/textRot" && m.getNumArgs() == 3){
-            textRotX = m.getArgAsFloat(0);
-            textRotY = m.getArgAsFloat(1);
-            textRotZ = m.getArgAsFloat(2);
-	    }*/
+        
+        /* // sirve de algo?
+         if (m.getAddress() == "/textRot" && m.getNumArgs() == 3){
+         textRotX = m.getArgAsFloat(0);
+         textRotY = m.getArgAsFloat(1);
+         textRotZ = m.getArgAsFloat(2);
+         }*/
         
         /// faltan los mensajes en el modo on screen
         
@@ -595,8 +695,31 @@ void ofApp::update(){
             texto = m.getArgAsString(0);
         }
         
-        if (m.getAddress() == "/clear"){
-            clearGB = 1;
+        if (m.getAddress() == "/starsnum"  &&  m.getNumArgs() == 1){
+            numstars = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/starssize"  &&  m.getNumArgs() == 1){
+            sizestars = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/starsdisp"  &&  m.getNumArgs() == 1){
+            dispstarsX = m.getArgAsInt(0);
+            dispstarsY = m.getArgAsInt(0);
+            dispstarsZ = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/clear" &&  m.getNumArgs() == 1){
+            clearGB = m.getArgAsInt(0);
+        }
+        
+        if (m.getAddress() == "/lookat" &&  m.getNumArgs() == 3){
+            centro = ofVec3f( m.getArgAsInt(0),  m.getArgAsInt(1),  m.getArgAsInt(2));
+        }
+        
+        if (m.getAddress() == "/camdistance" &&  m.getNumArgs() == 1){
+            camdistance = m.getArgAsFloat(0);
+            camera.setDistance(camdistance);
         }
         
         if (m.getAddress() == "/scenescale"  &&  m.getNumArgs() == 1){
@@ -668,18 +791,51 @@ void ofApp::update(){
             fixText = m.getArgAsInt(1);
         }
         
-        if (m.getAddress() == "/orbit" && m.getNumArgs() == 3){
-            autoOrbit = m.getArgAsInt(0);
-            orbitX = m.getArgAsInt(1);
-            orbitY = m.getArgAsInt(2);
+        if (m.getAddress() == "/orbit" && m.getNumArgs() == 2){
+            //autoOrbit = m.getArgAsInt(0);
+            orbitX = m.getArgAsInt(0);
+            orbitY = m.getArgAsInt(1);
         }
         
         if (m.getAddress() == "/fb" && m.getNumArgs() == 1){
             feedbackON = m.getArgAsInt(0);
             depth = m.getArgAsInt(0);
         }
-
-	if (m.getAddress() == "/mesh" && m.getNumArgs() == 3){
+        
+        if (m.getAddress() == "/lightmode" && m.getNumArgs() == 1){
+            if(m.getArgAsString(0) == "vaporwave"){
+                colorLight1 = ofColor(255, 113, 206);
+                colorLight2 = ofColor( 1, 205, 254 );
+                colorLight3 = ofColor(185, 103, 255);
+            }
+            if(m.getArgAsString(0) == "vaporwave2"){
+                colorLight1 = ofColor(255, 251, 150);
+                colorLight2 = ofColor(185, 103, 255 );
+                colorLight3 = ofColor(5, 255, 161);
+            }
+            if(m.getArgAsString(0) == "risky"){
+                colorLight1 = ofColor(203, 4, 165);
+                colorLight2 = ofColor(144, 85, 62 );
+                colorLight3 = ofColor(38, 240, 241);
+            }
+            if(m.getArgAsString(0) == "risky2"){
+                colorLight1 = ofColor(69, 23, 108);
+                colorLight2 = ofColor(54, 207, 198);
+                colorLight3 = ofColor(207, 53, 131);
+            }
+            if(m.getArgAsString(0) == "white"){
+                colorLight1 = ofColor(255, 255, 255);
+                colorLight2 = ofColor(255, 255, 255);
+                colorLight3 = ofColor(255, 255, 255);
+            }
+            if(m.getArgAsString(0) == "rgb"){
+                colorLight1 = ofColor(255, 255, 0);
+                colorLight2 = ofColor(0, 255, 255);
+                colorLight3 = ofColor(255, 0, 255);
+            }
+        }
+        
+        if (m.getAddress() == "/mesh" && m.getNumArgs() == 3){
             mesh.clear();
             mechON = 1;
             image.loadImage("img/"+ m.getArgAsString(1));
@@ -719,36 +875,36 @@ void ofApp::update(){
                 }
             }
         }
-
-	if (m.getAddress() == "/meshscale"){
-	  meshscale = m.getArgAsFloat(0);
-	}
-
-	if (m.getAddress() == "/meshclear"){
-	  mesh.clear();
-	}
-
-	if (m.getAddress() == "/meshpos" && m.getNumArgs() == 3){
-	  meshPosX = m.getArgAsFloat(0);
-	  meshPosY = m.getArgAsFloat(1);
-	  meshPosZ = m.getArgAsFloat(2);
-	}
-
-	if (m.getAddress() == "/meshrot" && m.getNumArgs() == 3){
-	  meshRotX = m.getArgAsFloat(0);
-	  meshRotY = m.getArgAsFloat(1);
-	  meshRotZ = m.getArgAsFloat(2);
-	}
-
-        if (m.getAddress() == "meshmode" && m.getNumArgs() == 1){
+        
+        if (m.getAddress() == "/meshscale"){
+            meshscale = m.getArgAsFloat(0);
+        }
+        
+        if (m.getAddress() == "/meshclear"){
+            mesh.clear();
+        }
+        
+        if (m.getAddress() == "/meshpos" && m.getNumArgs() == 3){
+            meshPosX = m.getArgAsFloat(0);
+            meshPosY = m.getArgAsFloat(1);
+            meshPosZ = m.getArgAsFloat(2);
+        }
+        
+        if (m.getAddress() == "/meshrot" && m.getNumArgs() == 3){
+            meshRotX = m.getArgAsFloat(0);
+            meshRotY = m.getArgAsFloat(1);
+            meshRotZ = m.getArgAsFloat(2);
+        }
+        
+        if (m.getAddress() == "/meshmode" && m.getNumArgs() == 1){
             if(m.getArgAsString(0) == "points"){
-            mesh.setMode(OF_PRIMITIVE_POINTS);
+                mesh.setMode(OF_PRIMITIVE_POINTS);
             }
             if(m.getArgAsString(0) == "lines"){
-            mesh.setMode(OF_PRIMITIVE_LINES);
+                mesh.setMode(OF_PRIMITIVE_LINES);
             }
             if(m.getArgAsString(0) == "triangles"){
-            mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+                mesh.setMode(OF_PRIMITIVE_TRIANGLES);
             }
         }
         
@@ -812,7 +968,7 @@ void ofApp::update(){
             }
             
             if(m.getArgAsInt(1) == 1){
-                convergence = m.getArgAsBool(0);
+                convergence = m.getArgAsInt(0);
             }
             
             if(m.getArgAsInt(1) == 2){
@@ -852,8 +1008,12 @@ void ofApp::update(){
             }
         }
     }
-
+    
     drawScene();
+    
+    if(blurON == 1){
+        drawBlur();
+    }
     
     //fbo.draw(0, 0);
     
@@ -867,9 +1027,11 @@ void ofApp::draw(){
     ofSetColor(255, 255, 255);
     ofDisableAlphaBlending();
     ofSetRectMode(OF_RECTMODE_CORNER);
-
+    
+    camera.lookAt(centro);
+    
     if(glitchON == 1 && colorBackground ==1){
-    ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
+        ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
     
     myGlitch.setFx(OFXPOSTGLITCH_CONVERGENCE, convergence);
@@ -903,7 +1065,7 @@ void ofApp::draw(){
             fbo.draw(0, 0);
         }
     }
-
+    
     if(domeON == 1){
         for (int i=0; i<domemaster.renderCount; i++){
             domemaster.begin(i);
@@ -942,7 +1104,7 @@ void ofApp::drawBlur(){
     
     fboBlurTwoPass.begin();
     shaderBlurY.begin();
-
+    
     if(clearGB == 0){
         ofSetColor(255,255,255, 0);
     }
@@ -954,11 +1116,11 @@ void ofApp::drawBlur(){
     fboBlurOnePass.draw(0, 0);
     shaderBlurY.end();
     fboBlurTwoPass.end();
-    
     fboBlurTwoPass.draw(0, 0);
     
+    
 }
- 
+
 //--------------------------------------------------------------
 
 void ofApp::drawGlitchBlur(){
@@ -1010,7 +1172,7 @@ void ofApp::drawFbo(){
     
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofDisableAlphaBlending();
-    ofScale(0.125/4, 0.125/4);
+    ofScale(0.125/8, 0.125/8);
     ofTranslate(0, 0, 0);
     ofRotateX(180);
     
@@ -1019,8 +1181,9 @@ void ofApp::drawFbo(){
     //fbo.getTexture().unbind();
     
     if(blurON == 1){
-        drawBlur();
+        fboBlurTwoPass.draw(0, 0);
     }
+    
     if(glitchBlurON == 1){
         drawGlitchBlur();
     }
@@ -1042,7 +1205,7 @@ void ofApp::drawScene(){
     ofRectangle rect;
     
     if(glitchON == 0 && colorBackground == 1){
-    ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
+        ofBackgroundGradient(colorLight1, colorLight3 , OF_GRADIENT_LINEAR);
     }
     
     if(depth == 0){
@@ -1053,9 +1216,6 @@ void ofApp::drawScene(){
         ofDisableDepthTest();
     }
     
-    ofEnableSmoothing();
-    ofEnableAntiAliasing();
-    
     if(timeElapsedON==1){
         ofDrawBitmapString("timeElapsed: " + ofToString(ofGetElapsedTimef()), 30, 30);
     }
@@ -1065,14 +1225,14 @@ void ofApp::drawScene(){
     }
     
     ofEnableDepthTest();
-
+    
     camera.begin();
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofEnableSmoothing();
     ofEnableAntiAliasing();
-    if(autoOrbit == 1){
-        camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 400, ofVec3f(rect.x, rect.y, -200)); /// hace falta investigar como funciona esto
-    }
+    //if(autoOrbit == 1){
+    camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), posOrbit); // hace falta investigar como funciona esto hace falta cambiar el camera get distance para que coincida con lo que envía el osc
+    //}
     
     // videos
     
@@ -1083,7 +1243,7 @@ void ofApp::drawScene(){
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
-        ofScale(vScaleX[i],vScaleY[i]);
+        ofScale(vScaleX[i],vScaleY[i], 0);
         ofTranslate((vX[i]),vY[i], vZ[i]-200);
         videoLC[i].draw(0, 0);
         ofPopMatrix();
@@ -1092,17 +1252,17 @@ void ofApp::drawScene(){
     if(mechON == 1){
         ofEnableLighting();
         ofSetRectMode(OF_RECTMODE_CENTER);
+        ofPushMatrix();
         ofRotateX(meshRotX);
         ofRotateY(meshRotY);
         ofRotateZ(meshRotZ);
         ofScale(meshscale, meshscale, meshscale);
         //mesh.setPosition(0, 0, 0);
-        ofPushMatrix();
-        ofTranslate(-200+meshPosX, -200+meshPosY, -200+meshPosZ);
+        ofTranslate(-200+meshPosX, -200+meshPosY, meshPosZ);
         mesh.draw();
         ofPopMatrix();
     }
-
+    
     // luces y material
     
     if(lightON == 1){
@@ -1113,7 +1273,9 @@ void ofApp::drawScene(){
         pointLight.enable();
         pointLight2.enable();
         pointLight3.enable();
-        material.begin();
+        if(materialON == 1){
+            material.begin();
+        }
     }
     
     if(lightON == 0){
@@ -1141,11 +1303,11 @@ void ofApp::drawScene(){
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
-        //model3D.setPosition(-200, distancia, 0);
-        model3D.setPosition(-275, -200, -50);
-        //asteroid.bind();
+        model3D.setPosition(0, 50, 0);
+        //model3D.setPosition(-275, -200, -50);
+        asteroid.bind();
         model3D.drawFaces();
-        //asteroid.unbind();
+        asteroid.unbind();
         ofPopMatrix();
     }
     
@@ -1153,9 +1315,14 @@ void ofApp::drawScene(){
     
     //if(multiModelON == 1){
     for(int i = 0; i < LIM; i++){
-
-        ofTexture *texture2 = tempPlayer.getTexture();
-        ofShader *shader2 = tempPlayer.getShader();
+        
+        ofTexture *texture2;
+        ofShader *shader2;
+        
+        if(videoTex == 1){
+            ofTexture *texture2 = tempPlayer.getTexture();
+            ofShader *shader2 = tempPlayer.getShader();
+        }
         
         float distancia;
         distancia = ofMap(rect.height, 26, 1234, 20, 50);
@@ -1165,7 +1332,7 @@ void ofApp::drawScene(){
         ofRotateX(multiModelRotX[i]);
         ofRotateY(multiModelRotY[i]);
         ofRotateZ( multiModelRotZ[i]+180);
-        ofScale(multiModelScale[i] * 0.5,multiModelScale[i] * 0.5, multiModelScale[i] * 0.5); /// falta mscale
+        ofScale(multiModelScale[i] * 0.25,multiModelScale[i] * 0.25, multiModelScale[i] * 0.25); /// falta mscale
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
@@ -1199,6 +1366,43 @@ void ofApp::drawScene(){
     }
     //}
     
+    // centro
+    
+    if(centroSphON == 1){
+        centroSph.setPosition(0, 0, 0);
+        centroSph.draw();
+    }
+    
+    if(reticulaSphON == 1){
+        reticulaSph.setPosition(0, 0, 0);
+        reticulaSph.drawWireframe();
+    }
+    
+    // 3dtype
+    
+    if(type3d == 1){
+        
+        ofPushMatrix();
+        //ofTranslate(center.x, center.y-50);
+        //ofSetColor(255);
+        ofRotateX(180);
+        ofRotateY(0);
+        ofRotateZ(0);
+        ofScale(0.125, 0.125, 0.125);
+        if(typeWire == 1){
+        letras3d.enableColors();
+        ofSetColor(25, 75, 255, 255);
+        letras3d.drawWireframe();
+        }
+        if(typeSolid == 1){
+        //letras3d.enableColors();
+        letras3d.draw();
+        }
+        ofPopMatrix();
+        ofSetColor(255);
+
+    }
+    
     // ICOS
     
     if(icoIntON == 1){
@@ -1210,58 +1414,59 @@ void ofApp::drawScene(){
         icoSphere.drawWireframe();
         ofPushMatrix();
     }
-
-     if(icoOutON == 1){
-     ofPopMatrix();
-     ofRotateZ(0);
-     icoSphere.setRadius(rect.width*1);
-     icoSphere.setPosition(rect.x, rect.y+50, 0);
-     icoSphere.setResolution(1);
-     icoSphere.drawWireframe();
-     ofPushMatrix();
-     }
+    
+    if(icoOutON == 1){
+        ofPopMatrix();
+        ofRotateZ(0);
+        icoSphere.setRadius(rect.width*1);
+        icoSphere.setPosition(rect.x, rect.y+50, 0);
+        icoSphere.setResolution(1);
+        icoSphere.drawWireframe();
+        ofPushMatrix();
+    }
     
     // estrellas puntos
     
     if(stars == 1){
-        for (int i = 0;i < 500;i++){
+        for (int i = 0;i < numstars;i++){
             ofPushMatrix();
-            ofRotateZ(ofGetElapsedTimef()+10);
-            
-            ofTranslate((ofNoise(i/2.4)-0.5)*5000,
-                        (ofNoise(i/5.6)-0.5)*5000,
-                        (ofNoise(i/8.2)-0.5)*5000);
-            
-            ofCircle(0, 0, (ofNoise(i/3.4)-0.1)*2);
+            //ofRotateZ(ofGetElapsedTimef()+10);
+            ofTranslate((ofNoise(i/2.4)-0.5)*dispstarsX,
+                        (ofNoise(i/5.6)-0.5)*dispstarsY,
+                        (ofNoise(i/8.2)-0.5)*dispstarsZ);
+            ofSphere(0, 0, (ofNoise(i/3.4)-0.1)*sizestars);
             ofPopMatrix();
         }
     }
-
+    
+    if(materialON == 1){
+        material.end();
+    }
+    
     if(textON == 1 && fixText == 0){
-        
         //pointLight.draw();
         //pointLight2.draw();
         //pointLight3.draw();
-        
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, -200);
-        ofScale(1, 1);
+        ofTranslate(0, 0, 0);
+        ofScale(1, 1, 1);
         ofRotateX(textRotX);
         ofRotateY(textRotY);
         ofRotateZ(textRotZ);
-        
         //text = wrapString(texto, 500);
         //rect = font.getStringBoundingBox(text, 0, 0);
         //ofNoFill();
         if(outOnScreen == 0){
+            ofScale(0.25, 0.25, 0.25);
+            ofTranslate(0, 0, 0);
             //clientTyping = "";
             ofRectangle rectOut;
             textOut = wrapString(texto, 400);
             rectOut = font.getStringBoundingBox(textOut, 0, 0);
             //ofSetLineWidth(2);
-            float distancia;
-            distancia = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
-            camera.setDistance(distancia);
+            float distancia4;
+            distancia4 = ofMap(rect.height, 26, 1234, 500, 1234 * 1.25);
+            //camera.setDistance(distancia4);
             font.drawString(textOut, 0-(rectOut.width*0.5), 0+(rectOut.height*0.5));
         }
         
@@ -1274,33 +1479,33 @@ void ofApp::drawScene(){
             font2.drawString(nombre, distancia2 * (-1), distancia);
         }
         
-        if(autoOrbit == 1){
-            //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(rect.x, rect.y, 0));
-            camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
-        }
+        //if(autoOrbit == 1){
+        
+        //camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, 500, ofVec3f(rect.x, rect.y, 250));
+        //}
         
         // lo siguiente ya no es necesario
         
         /*
-        
-        if(distanceLockON == 0){
-            float distancia;
-            distancia = ofMap(rect.height, 25, 1234, 500, 700);
-            camera.setDistance(distancia);
-        }
-        
-        if(distanceLockON == 0){
-            camera.setDistance(100);
-        }    */
+         
+         if(distanceLockON == 0){
+         float distancia;
+         distancia = ofMap(rect.height, 25, 1234, 500, 700);
+         camera.setDistance(distancia);
+         }
+         
+         if(distanceLockON == 0){
+         camera.setDistance(100);
+         }    */
         
     };
-         
+    
     if(multiMsg == 1){
         for(int i = 0; i < LIM; i++){
             // aquí había push matrix
             ofPushMatrix();
             ofTranslate(0, 0, 0);
-            ofScale(1, 1);
+            ofScale(0.25, 0.25, 0.25);
             ofRotateX(msgRotX[i]);
             ofRotateY(msgRotY[i]);
             ofRotateZ(msgRotZ[i]);
@@ -1327,23 +1532,23 @@ void ofApp::drawScene(){
      font.drawString(text, 0-(rect.width*0.5), 0+(rect.height*0.5));
      
      */
-        ofDisableLighting();
-        ofDisableDepthTest();
-        ofSetRectMode(OF_RECTMODE_CENTER);
-        ofTranslate(0, 0, 0);
-        ofScale(0.5, 0.5);
-        ofRotateX(textRotX);
-        ofRotateY(textRotY);
-        ofRotateZ(textRotZ);
-        ofPushMatrix();
-        text = wrapString(clientTyping, 700);
-        rect = font.getStringBoundingBox(text, 0, 0);
-        ofTranslate(0, 0, -200);
-        float distancia;
-        distancia = ofMap(rect.height, 0, 500, 400, 200);
-        ofTranslate(0, 0, distancia);
-        font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5)));
-        ofPopMatrix();
+    ofDisableLighting();
+    ofDisableDepthTest();
+    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofTranslate(0, 0, 0);
+    ofScale(0.5, 0.5, 0.5);
+    ofRotateX(textRotX);
+    ofRotateY(textRotY);
+    ofRotateZ(textRotZ);
+    ofPushMatrix();
+    text = wrapString(clientTyping, 700);
+    rect = font.getStringBoundingBox(text, 0, 0);
+    ofTranslate(0, 0, -200);
+    float distancia;
+    distancia = ofMap(rect.height, 0, 500, 400, 200);
+    ofTranslate(0, 0, distancia);
+    font.drawString(text, ofGetWidth()-(rect.width*0.5), (ofGetHeight()-(rect.height*0.5)));
+    ofPopMatrix();
     
     if(feedbackON == 1){
         screenImage.loadScreenData(0,0, ofGetWidth(), ofGetHeight());
@@ -1411,10 +1616,42 @@ void ofApp::keyPressed(int key){
         if (textAnalisis[0] == "light"){
             lightON = ofToInt(textAnalisis[1]);
         }
-
-	if (textAnalisis[0] == "cbackground"){
-	  colorBackground = ofToInt(textAnalisis[1]);
-	}
+        
+        if (textAnalisis[0] == "material"){
+            materialON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "sphin"){
+            centroSphON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "sphout"){
+            reticulaSphON = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "starsnum"){
+            numstars = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "starssize"){
+            sizestars = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "starsdispxyz"){
+            dispstarsX = ofToInt(textAnalisis[1]);
+            dispstarsY = ofToInt(textAnalisis[2]);
+            dispstarsZ = ofToInt(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "starsdisp"){
+            dispstarsX = ofToInt(textAnalisis[1]);
+            dispstarsY = ofToInt(textAnalisis[1]);
+            dispstarsZ = ofToInt(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "backc"){
+            colorBackground = ofToInt(textAnalisis[1]);
+        }
         
         if (textAnalisis[0] == "lightmode"){
             if(textAnalisis[1] == "vaporwave"){
@@ -1499,7 +1736,17 @@ void ofApp::keyPressed(int key){
             model3D.clear();
         }
         
-        if (textAnalisis[0] == "sceneload"){ /// aquí hace falta escribir parámetros espcíficos para cada escenario. 
+        if (textAnalisis[0] == "posorbit"){
+            posOrbit = ofVec3f(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3]));
+        }
+        
+        if (textAnalisis[0] == "lookat"){
+            centro = ofVec3f(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3]));
+            //posOrbit = ofVec3f(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3]));
+            //amera.lookAt(centro);
+        }
+        
+        if (textAnalisis[0] == "sceneload"){ // aquí hace falta escribir parámetros espcíficos para cada escenario.
             string temp = "3d/" + textAnalisis[2] + ".obj";
             model3D.loadModel(temp);
             modelON = ofToInt(textAnalisis[1]);
@@ -1570,13 +1817,13 @@ void ofApp::keyPressed(int key){
         
         if (textAnalisis[0] == "meshmode" ){
             if(textAnalisis[1] == "points"){
-            mesh.setMode(OF_PRIMITIVE_POINTS);
+                mesh.setMode(OF_PRIMITIVE_POINTS);
             }
             if(textAnalisis[1] == "lines"){
-            mesh.setMode(OF_PRIMITIVE_LINES);
+                mesh.setMode(OF_PRIMITIVE_LINES);
             }
             if(textAnalisis[1] == "triangles"){
-            mesh.setMode(OF_PRIMITIVE_TRIANGLES);
+                mesh.setMode(OF_PRIMITIVE_TRIANGLES);
             }
         }
         
@@ -1586,6 +1833,14 @@ void ofApp::keyPressed(int key){
         
         if (textAnalisis[0] == "linewidth"){
             ofSetLineWidth(ofToFloat(textAnalisis[1]));
+        }
+        
+        if (textAnalisis[0] == "sphinr"){
+            centroSph.setRadius(ofToInt(textAnalisis[1]));
+        }
+        
+        if (textAnalisis[0] == "sphoutr"){
+            reticulaSph.setRadius(ofToInt(textAnalisis[1]));
         }
         
         if (textAnalisis[0] == "timescale"){
@@ -1603,19 +1858,42 @@ void ofApp::keyPressed(int key){
             mesh.clear();
         }
         
-        if (textAnalisis[0] == "meshclear" ){
-            mechON = 0;
-            mesh.clear();
-        }
-        
         if (textAnalisis[0] == "meshscale" ){
             meshscale = ofToFloat(textAnalisis[1]);
+        }
+        
+        if (textAnalisis[0] == "camdistance" ){
+            camdistance = ofToFloat(textAnalisis[0]);
+            camera.setDistance(camdistance);
         }
         
         if (textAnalisis[0] == "meshpos" ){
             meshPosX = ofToFloat(textAnalisis[1]);
             meshPosY = ofToFloat(textAnalisis[2]);
             meshPosZ = ofToFloat(textAnalisis[3]);
+        }
+        
+        if (textAnalisis[0] == "font"){
+            if(textAnalisis[1] == "dejavu"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/DejaVuSansMono.ttf", 20);
+                font2.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                font.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                fontOut.load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/DejaVuSansMono.ttf", 40, true, true, true);
+                }
+            }
+            if(textAnalisis[1] == "malandrone"){
+                //font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                titleFont.load("fonts/CloisterBlack.ttf", 20);
+                font2.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                font.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                fontOut.load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                for(int i = 0; i < LIM; i++){
+                    fontOrb[i].load("fonts/CloisterBlack.ttf", 40, true, true, true);
+                }
+            }
         }
         
         if (textAnalisis[0] == "meshrot" ){
@@ -1692,22 +1970,71 @@ void ofApp::keyPressed(int key){
         }
         
         if(textAnalisis[0] == "orbit"){
-            autoOrbit = ofToInt(textAnalisis[1]);
-            orbitX = ofToFloat(textAnalisis[2]);
-            orbitY = ofToInt(textAnalisis[3]);
+            //autoOrbit = ofToInt(textAnalisis[1]);
+            orbitX = ofToFloat(textAnalisis[1]);
+            orbitY = ofToInt(textAnalisis[2]);
+        }
+        
+        if(textAnalisis[0] == "type"){
+            type3d = ofToInt(textAnalisis[1]);
+            if(ofToInt(textAnalisis[1]) == 0){
+                letras3d.clear();
+            }
+        }
+        
+        if(textAnalisis[0] == "typefont"){
+            if(textAnalisis[1] == "dejavu"){
+                ttf.loadFont("fonts/DejaVuSansMono.ttf", 60, true, false, true);
+            }
+            if(textAnalisis[1] == "malandrone"){
+                ttf.loadFont("fonts/CloisterBlack.ttf", 60, true, false, true);
+            }
+        }
+        
+        if(textAnalisis[0] == "typedraw"){
+            if(textAnalisis[1] == "solid"){
+                typeSolid = 1;
+                typeWire = 0;
+            }
+            if(textAnalisis[1] == "wire"){
+                typeSolid = 0;
+                typeWire = 1;
+            }
+        
+        }
+        
+        if(textAnalisis[0] == "typetext"){
+            letras3d.clear();
+            letras3dString = ofToString(textAnalisis[1]);
+            ofStringReplace(letras3dString," ","_");
+            // Center string code from:
+            // https://github.com/armadillu/ofxCenteredTrueTypeFont/blob/master/src/ofxCenteredTrueTypeFont.h
+            ofRectangle r = ttf.getStringBoundingBox(letras3dString, 0, 0);
+            center = ofVec2f(floor(-r.x - r.width * 0.5f), floor(-r.y - r.height * 0.5f));
+            
+            vector <ofTTFCharacter> letters = ttf.getStringAsPoints(letras3dString);
+            
+            for(int i = 0; i < letters.size(); i++){
+                ofPath resampledPath = bResample ? resamplePath(letters[i], resampleSpacing) : letters[i];
+                ofMesh meshLetter = createMeshFromPath(resampledPath, letterThickness);
+                letras3d.append(meshLetter);
+            }
+            
+            colorFaces(letras3d); //
+
         }
         
         /*
-        if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
-            int n = m.getArgAsInt(0);
-            multiMsg = 1;
-            noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
-            noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
-            msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
-            msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
-            msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
-            textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
-        }*/
+         if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
+         int n = m.getArgAsInt(0);
+         multiMsg = 1;
+         noiseX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+         noiseY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
+         msgRotX[m.getArgAsInt(0)] = m.getArgAsFloat(3);
+         msgRotY[m.getArgAsInt(0)] = m.getArgAsFloat(4);
+         msgRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(5);
+         textOrb[m.getArgAsInt(0)] = m.getArgAsString(6);
+         }*/
         
         if (textAnalisis[0] == "glitch"){
             if(ofToInt(textAnalisis[1]) == 0 && ofToInt(textAnalisis[2]) == 0){
@@ -1808,6 +2135,73 @@ void ofApp::keyPressed(int key){
         
     }
     
+}
+
+//--------------------------------------------------------------
+ofPath ofApp::resamplePath(ofPath path, float spacing){
+    ofPath resampledPath;
+    vector <ofPolyline> polylines = path.getOutline();
+    for(int j = 0; j < polylines.size(); j++){
+        ofPolyline spacePoly = polylines[j].getResampledBySpacing(spacing);
+        resampledPath.moveTo(spacePoly[0]);
+        for(int k = 1; k < spacePoly.size(); k++){
+            resampledPath.lineTo(spacePoly[k]);
+        }
+        resampledPath.lineTo(spacePoly[0]);
+    }
+    return resampledPath;
+}
+
+//--------------------------------------------------------------
+ofMesh ofApp::createMeshFromPath(ofPath path, float thickness){
+    ofMesh mesh;
+    // get outline of original path (for sides)
+    vector <ofPolyline> outline = path.getOutline();
+    // add front to mesh
+    mesh.append(path.getTessellation());
+    // get number of vertices in original path
+    int numVerts = mesh.getNumVertices();
+    // define offset based on thickness
+    ofVec3f offset = ofVec3f(0, 0, -thickness);
+    // translate path
+    path.translate(offset);
+    // add back to mesh
+    mesh.append(path.getTessellation());
+    // add sides to mesh (via indices)
+    for(int j = 0; j < outline.size(); j++){
+        int outlineSize = outline[j].getVertices().size();
+        vector <int> outlineIndices;
+        for(int i = 1; i < outlineSize; i++){
+            ofVec3f & v = outline[j].getVertices()[i];
+            int originalIndex = -1;
+            for(int k = 0; k < numVerts; k++){
+                if(v.match(mesh.getVertices()[k])){
+                    originalIndex = k;
+                    break;
+                }
+            }
+            outlineIndices.push_back(originalIndex);
+        }
+        for(int i = 0; i < outlineIndices.size(); i++){
+            const int a = outlineIndices[i];
+            const int b = outlineIndices[(i + 1) % outlineIndices.size()];
+            const int c = outlineIndices[i] + numVerts;
+            const int d = outlineIndices[(i + 1) % outlineIndices.size()] + numVerts;
+            mesh.addTriangle(a, b, c);
+            mesh.addTriangle(c, b, d);
+        }
+    }
+    return mesh;
+}
+
+//--------------------------------------------------------------
+void ofApp::colorFaces(ofMesh & mesh){
+    for(int i = 0; i < mesh.getVertices().size(); i++){
+        const ofVec3f & v = mesh.getVertices()[i];
+        ofColor col;
+        col.setHsb(ofMap(v.x + v.y, -1000, 1000, 0, 255), 255, 255);
+        mesh.addColor(col);
+    }
 }
 
 //--------------------------------------------------------------

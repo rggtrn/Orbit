@@ -5,6 +5,8 @@ Text | Video | Sound | OpenFrameworks + SuperCollider
 
 Orbit es una exploración promovida desde PiranhaLab que se adscribe al paradigma de la programación al vuelo o live coding. Algunos antecedentes/desarrollos amigos que inspiran a Orbit son: CineVivo, Hydra y principalmente, Fluxus.
 
+Un proyecto paralelo intercambia funciones y estética con Orbit: [ofhawc](https://github.com/EmilioOcelotl/ofhawc)
+
 Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/PiranhaLib) y en general, por medio del protocolo OSC. También es posible controlar Orbit desde la ventana: basta teclear un poco sobre la ventana para introducir caracteres que pueden ser instrucciones. 
 
 ### Orbit en acción 

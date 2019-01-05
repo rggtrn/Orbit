@@ -28,13 +28,17 @@ txtrot | rotX(entero) | rotY(entero) |rotZ(entero) // modifica la rotación de u
 dome | encendido/apagado(1 ó 0) | enciende una distorsión tipo fisheye
 icos | encendido/apagado(1 ó 0) | dibuja icosaedros
 stars | encendido/apagado(1 ó 0) | enciende o apaga las estrellas
-orbit | encendido/apagado(1 ó 0) | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
+starsnum | número entero // número de estrellas
+starssize | número entero no muy grande // tamaño promedio de las estrellas
+starsdisp | dipspersión en X | dispersión en Y | dispersión en z // dispersión promedio de las estrellas
+starsdispxyz | dispersión proporcional en X, Y y Z // dispersión promedio de las estrellas en la misma magnitud
+orbit | orbitX(flotante) | orbitY(flotante) // inicia la orbitación de la cámara
 glitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 10) // enciende o apaga glitches
 cglitch | encendido/apagado (1 ó 0) | efecto(número del 1 al 6) // enciende o apaga distorsiones de color
 gblur | encendido/apagado (1 ó 0) | valor(flotante) // aplica un blur/glitch
 gclear | limpia la ventana si hubo barridos 
 mtex | pista (entero) | nombreDelArchvoYExtensión // carga una textura en una pista específica
-cbackground | encendido/apagado (1 ó 0) // encender o apagar el fondo colorido
+backc | encendido/apagado (1 ó 0) // encender o apagar el gradiente de color del fondo
 mesh | intensityTreshold (float) | archivo en png // invoca un mesh a partir de una imagen
 meshclear // limpia imagen y mesh
 pointsize | flotante // determina el tamaño de los puntos que componen el mesh
@@ -44,3 +48,14 @@ meshdisplacement | displacementX | displacementY | displacementZ // modifica los
 meshpos | posX | posY | posZ // posición del mesh en el espacio
 meshrot | rotX | rotY | rotZ // rotación del mesh 
 meshscale | scale // escala del mesh
+sphin | 1 ó 0 // activa una esfera sólida en la coordenada 0, 0, 0
+sphinr | flotante // radio de la esfera sólida
+sphoutr | flotante // radio de la esfera reticulada
+sphout | 1 ó 0 // activa una esfera reticulada 
+camdistance | flotante // distancia de la cámara con respecto al punto observado 
+lookat | vector de tres valores // cambia el punto de observación de la cámara
+posorbit | vector de tres valores // posición del punto de orbitación de la cámara
+material | 1 ó 0 // activa o desactiva el material en objetos 3d
+type | 1 ó 0 // activa o desactiva el texto 3d
+typetext | string // modifica los caracteres del texto 3d
+typefont | malandrone o dejavu // modifica la fuente del texto 3d
