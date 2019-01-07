@@ -261,8 +261,8 @@ void ofApp::setup(){
         vH[i] = 0;
         vSpeed[i] = 1;
         vOpacity[i] = 255;
-        vScaleX[i] = 1;
-        vScaleY[i] = 1;
+        vScaleX[i] = 1.0;
+        vScaleY[i] = 1.0;
         vRotX[i] = 0;
         vRotY[i] = 0;
         vRotZ[i] = 0;
@@ -326,7 +326,7 @@ void ofApp::setup(){
     //colorLight3 = ofColor(185, 103, 255);
     
     ofSetSmoothLighting(true);
-    ofSetGlobalAmbientColor(ofColor(128));
+    //ofSetGlobalAmbientColor(ofColor(128));
 
     
     // shininess is a value between 0 - 128, 128 being the most shiny //
@@ -447,8 +447,8 @@ void ofApp::update(){
             //model3DOn[n] = false;
             //vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
             //vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
-            vScaleX[n] = (ofGetWidth()*1.0)/960;
-            vScaleY[n] = (ofGetHeight()*1.0)/560;
+            vScaleX[n] = 1.0;
+            vScaleY[n] = 1.0;
             vRotX[n] = 0;
             vRotY[n] = 0;
             vRotZ[n] = 0;
@@ -593,7 +593,7 @@ void ofApp::update(){
         }
         
         if (m.getAddress() == "/itex" && m.getNumArgs() == 2){
-            string temp = "img/" + m.getArgAsString(1);
+            string temp = "img/" + m.getArgAsString(1)+ ".png";
             ofDisableArbTex();
             texturas[m.getArgAsInt(0)].generateMipmap();
             texturas[m.getArgAsInt(0)].setTextureWrap(GL_REPEAT, GL_REPEAT);
@@ -793,6 +793,12 @@ void ofApp::update(){
         
         if (m.getAddress() == "/orbit" && m.getNumArgs() == 2){
             //autoOrbit = m.getArgAsInt(0);
+            if(m.getArgAsInt(0) == 0 & m.getArgAsInt(1) == 0){
+                autoOrbit = 0;
+            }
+            else{
+                autoOrbit = 1;
+            }
             orbitX = m.getArgAsInt(0);
             orbitY = m.getArgAsInt(1);
         }
@@ -1230,9 +1236,9 @@ void ofApp::drawScene(){
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofEnableSmoothing();
     ofEnableAntiAliasing();
-    //if(autoOrbit == 1){
-    camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), posOrbit); // hace falta investigar como funciona esto hace falta cambiar el camera get distance para que coincida con lo que envía el osc
-    //}
+    if(autoOrbit == 1){
+    camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0)); // hace falta investigar como funciona esto hace falta cambiar el camera get distance para que coincida con lo que envía el osc
+    }
     
     // videos
     
@@ -1243,8 +1249,8 @@ void ofApp::drawScene(){
         ofRotateY(vRotY[i]);
         ofRotateZ(vRotZ[i]);
         ofSetColor(255,vOpacity[i]);
-        ofScale(vScaleX[i],vScaleY[i], 0);
-        ofTranslate((vX[i]),vY[i], vZ[i]-200);
+        ofScale(vScaleX[i] * 0.25,vScaleY[i] * 0.25, vScaleY[i] * 0.25);
+        ofTranslate((vX[i]),vY[i], vZ[i]);
         videoLC[i].draw(0, 0);
         ofPopMatrix();
     }
@@ -1336,7 +1342,7 @@ void ofApp::drawScene(){
         ofTranslate(0, 0, 0);
         //planeMatrix.setPosition(0, 0, 0); /// position in x y z
         //planeMatrix.drawWireframe();
-        multiModel[i].setPosition(multiModelX[i], multiModelY[i], multiModelZ[i]);
+        multiModel[i].setPosition(multiModelX[i] * -1, multiModelY[i] * -1, multiModelZ[i]);
         
         if(textureON == 1){
             texturas[i].bind();
@@ -1588,8 +1594,8 @@ void ofApp::keyPressed(int key){
             videoLC[ofToInt(textAnalisis[1])].setLoopState(OF_LOOP_NORMAL);
             videoLC[ofToInt(textAnalisis[1])].load(temp);
             videoLC[ofToInt(textAnalisis[1])].play();
-            vScaleX[ofToInt(textAnalisis[1])] = (ofGetWidth()*1.0)/960;
-            vScaleY[ofToInt(textAnalisis[1])] = (ofGetHeight()*1.0)/560;
+            vScaleX[ofToInt(textAnalisis[1])] = 1.0;
+            vScaleY[ofToInt(textAnalisis[1])] = 1.0;
             vRotX[ofToInt(textAnalisis[1])] = 0;
             vRotY[ofToInt(textAnalisis[1])] = 0;
             vRotZ[ofToInt(textAnalisis[1])] = 0;
@@ -1736,8 +1742,8 @@ void ofApp::keyPressed(int key){
             model3D.clear();
         }
         
-        if (textAnalisis[0] == "posorbit"){
-            posOrbit = ofVec3f(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3]));
+        if (textAnalisis[0] == "campos"){
+            camera.setPosition(ofPoint(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3])));
         }
         
         if (textAnalisis[0] == "lookat"){
@@ -1863,7 +1869,7 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "camdistance" ){
-            camdistance = ofToFloat(textAnalisis[0]);
+            camdistance = ofToFloat(textAnalisis[1]);
             camera.setDistance(camdistance);
         }
         
@@ -1949,7 +1955,7 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "itex"){
-            string temp = "img/" + textAnalisis[2];
+            string temp = "img/" + textAnalisis[2] + ".mov";
             ofDisableArbTex();
             texturas[ofToInt(textAnalisis[1])].generateMipmap();
             texturas[ofToInt(textAnalisis[1])].setTextureWrap(GL_REPEAT, GL_REPEAT);
@@ -1970,7 +1976,12 @@ void ofApp::keyPressed(int key){
         }
         
         if(textAnalisis[0] == "orbit"){
-            //autoOrbit = ofToInt(textAnalisis[1]);
+            if(ofToInt(textAnalisis[1]) == 0 & ofToInt(textAnalisis[2]) == 0){
+            autoOrbit = 0;
+            }
+            else{
+                autoOrbit = 1;
+            }
             orbitX = ofToFloat(textAnalisis[1]);
             orbitY = ofToInt(textAnalisis[2]);
         }

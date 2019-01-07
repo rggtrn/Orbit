@@ -59,3 +59,4 @@ material | 1 ó 0 // activa o desactiva el material en objetos 3d
 type | 1 ó 0 // activa o desactiva el texto 3d
 typetext | string // modifica los caracteres del texto 3d
 typefont | malandrone o dejavu // modifica la fuente del texto 3d
+campos | posX | posY | posZ // posición de la cámara en el espacio
