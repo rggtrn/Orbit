@@ -1,13 +1,17 @@
 
 # Orbit
 
-Text | Video | Sound | OpenFrameworks + SuperCollider
+OpenFrameworks + SuperCollider
 
-Orbit es una exploración promovida desde PiranhaLab que se adscribe al paradigma de la programación al vuelo o live coding. Algunos antecedentes/desarrollos amigos que inspiran a Orbit son: CineVivo, Hydra y principalmente, Fluxus.
+## Introducción
+
+Orbit es una exploración promovida desde PiranhaLab que se adscribe al paradigma de la programación al vuelo o live coding. Algunos antecedentes/desarrollos amigos que inspiran a Orbit son: CineVivo, Hydra y principalmente, Fluxus. Surge de la curiosidad por explorar audio y video simultáneamente. 
+
+Del encuentro entre Orbit y SuperCollider ha surgido la motivación de utilizar funciones inicialmente concebidas para audio, como control para ordenar y manipular objetos en un entorno tridimensional. La mayor parte de esto es trabajo pendiente. El performance colaborativo y la visualización de información en un ensamble en red es otra de los objetivos de Orbit. 
+
+Es posible controlar Orbit por medio de [PiranhaLib](https://github.com/rggtrn/PiranhaLib) y en general, por medio del protocolo OSC. También es posible controlar Orbit desde la ventana: basta teclear un poco sobre la ventana para introducir caracteres que pueden ser instrucciones.
 
 Un proyecto paralelo intercambia funciones y estética con Orbit: [ofhawc](https://github.com/EmilioOcelotl/ofhawc)
-
-Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/PiranhaLib) y en general, por medio del protocolo OSC. También es posible controlar Orbit desde la ventana: basta teclear un poco sobre la ventana para introducir caracteres que pueden ser instrucciones. 
 
 ### Orbit en acción 
 
@@ -17,7 +21,7 @@ Es posible controlar Orbit por medio de  [PiranhaLib](https://github.com/rggtrn/
 
 ## Instalación
 
-Orbit requiere una versión compilada de OF y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
+Orbit requiere una versión compilada de OF (se recomienda la versión v0.10.1)y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
 
 Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
@@ -57,4 +61,10 @@ La conversión de videos es posible con ffmpeg. En macOS es posible instalar FFm
 
 * Para instrucciones más detalladas en inglés: https://gist.github.com/dlublin/e4585b872dd136ae88b2aa51a6a89aac
 
-Nota: por el momento, el nombre de los archivos cargados (video o modelos) no debe contener caracteres en mayúsculas. 
+## Problemas y algunas soluciones
+
+En Linux y con versiones anteriores a v0.10.1, la cámara tiene un comportamiento extraño. En v0.10.1 esto no sucede. 
+
+El nombre de los archivos cargados (video o modelos) no debe contener caracteres en mayúsculas. 
+
+No hay acentos. 

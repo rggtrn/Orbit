@@ -11,6 +11,7 @@ void ofApp::setup(){
     // iniciales
     ofEnableAntiAliasing();
     ofEnableSmoothing();
+    ofSetVerticalSync(true);
     
     ofSetCircleResolution(50);
     ofBackground(0, 0, 0);
@@ -39,6 +40,8 @@ void ofApp::setup(){
     domemaster.setup();
     domemaster.setCameraPosition(0, 0, domeDistance);
     domeON = 0;
+
+    #if (defined(__APPLE__) && defined(__MACH__))
     
     // letras 3d
     
@@ -47,12 +50,14 @@ void ofApp::setup(){
     letterThickness = 20.0;
     
     // to extract points, loadFont must be called with makeContours set to true
+    vector <ofTTFCharacter> letters;
     ttf.loadFont(OF_TTF_SANS, 300, true, false, true);
     letras3dString = "ORBIT";
     typeSolid=1;
     typeWire= 0;
-    
     type3d = 0;
+
+    #endif
     
     // camara
     
@@ -1383,6 +1388,8 @@ void ofApp::drawScene(){
         reticulaSph.setPosition(0, 0, 0);
         reticulaSph.drawWireframe();
     }
+
+    #if (defined(__APPLE__) && defined(__MACH__))
     
     // 3dtype
     
@@ -1408,6 +1415,8 @@ void ofApp::drawScene(){
         ofSetColor(255);
 
     }
+
+    #endif
     
     // ICOS
     
@@ -1743,7 +1752,7 @@ void ofApp::keyPressed(int key){
         }
         
         if (textAnalisis[0] == "campos"){
-            camera.setPosition(ofPoint(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3])));
+            camera.setPosition(ofVec3f(ofToInt(textAnalisis[1]), ofToInt(textAnalisis[2]), ofToInt(textAnalisis[3])));
         }
         
         if (textAnalisis[0] == "lookat"){
@@ -1985,6 +1994,8 @@ void ofApp::keyPressed(int key){
             orbitX = ofToFloat(textAnalisis[1]);
             orbitY = ofToInt(textAnalisis[2]);
         }
+
+	#if (defined(__APPLE__) && defined(__MACH__))
         
         if(textAnalisis[0] == "type"){
             type3d = ofToInt(textAnalisis[1]);
@@ -2034,6 +2045,8 @@ void ofApp::keyPressed(int key){
             colorFaces(letras3d); //
 
         }
+
+	#endif
         
         /*
          if (m.getAddress() == "/multiMsg"  &&  m.getNumArgs() == 7){
@@ -2148,6 +2161,8 @@ void ofApp::keyPressed(int key){
     
 }
 
+#if (defined(__APPLE__) && defined(__MACH__))
+
 //--------------------------------------------------------------
 ofPath ofApp::resamplePath(ofPath path, float spacing){
     ofPath resampledPath;
@@ -2214,6 +2229,8 @@ void ofApp::colorFaces(ofMesh & mesh){
         mesh.addColor(col);
     }
 }
+
+#endif
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){

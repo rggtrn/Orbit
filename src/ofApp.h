@@ -192,7 +192,7 @@ public:
 
     int typeSolid;
     int typeWire; 
-    
+      
     /*
     
     ofShader shaderBlurX;
