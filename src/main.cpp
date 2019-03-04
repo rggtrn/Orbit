@@ -13,7 +13,19 @@ int main( ){
 
 //    window.setGlutDisplayString("rgba double samples>=4");
     //glutInitDisplayString( "rgba double samples>=4 ");
-    ofSetupOpenGL(1300,700,OF_WINDOW);
+    //ofSetupOpenGL(1300,700,OF_WINDOW);
+    //ofRunApp(new ofApp());
+    ofGLFWWindowSettings settings;
+    settings.decorated = false;
+    //settings.setSize(1280, 720);
+    
+    settings.width = 1280;
+    settings.height = 720;
+    settings.windowMode =  OF_WINDOW;
+    settings.windowMode =  OF_FULLSCREEN;
+    ofCreateWindow(settings);
+    
+    //ofSetupOpenGL(1280,720,OF_WINDOW);
     ofRunApp(new ofApp());
-     
+    
 }
