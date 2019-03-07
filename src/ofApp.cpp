@@ -24,7 +24,7 @@ void ofApp::setup(){
     lago = 1;
     
     //ofSetWindowShape(winSizeW, winSizeH); /// La resolución de la pantalla final
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     ofHideCursor();
     tempo = 1;
     intOnScreen = 1;
@@ -86,8 +86,8 @@ void ofApp::setup(){
     }
 #endif
     
-    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
-    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA, 8);
+    fboBlurOnePass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
+    fboBlurTwoPass.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     blur = 0;
     blurON = 0;
     glitchBlurX.load("Shaders/glitchBlurX");
@@ -198,7 +198,7 @@ void ofApp::setup(){
     
     // glitch
     
-    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB);
+    fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGBA);
     //fbo.allocate(ofGetWidth(), ofGetHeight(), GL_RGB32F_ARB); // esto era un resquicio. El alpha hace aliasing pero permite que haya blur ;( Antes estaba rgba16. 32 es demasiado para mi computadora antes era una combinación loca pero ahora no pongo sin alphas parece que funciona todo
     //fbo.getTextureReference().setTextureMinMagFilter(GL_NEAREST,GL_NEAREST);
     myGlitch.setup(&fbo);
@@ -303,7 +303,7 @@ void ofApp::setup(){
     
     retroON = 1;
     position = 0;
-    screenImage.allocate(960*2, 560*2, GL_RGBA16F_ARB, 8);
+    screenImage.allocate(960*2, 560*2, GL_RGBA);
     retroX = 40;
     retroY = 40;
     feedback = 0;

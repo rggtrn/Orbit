@@ -18,9 +18,14 @@ int main( ){
     ofGLFWWindowSettings settings;
     settings.decorated = false;
     //settings.setSize(1280, 720);
-    
+
+#if (defined(__APPLE__) && defined(__MACH__))
+
     settings.width = 1280;
     settings.height = 720;
+
+#endif
+
     settings.windowMode =  OF_WINDOW;
     settings.windowMode =  OF_FULLSCREEN;
     ofCreateWindow(settings);
