@@ -51,9 +51,7 @@ El primer ejemplo que correremos es el siguiente:
 
 
 
-
-video draw 1 samplehap.mov
-
+1 video draw samplehap.mov
 
 
 
@@ -63,15 +61,13 @@ La línea para limpiar el video es:
 
 
 
-
-video close 1 samplehap.mov
-
+1 video close samplehap.mov
 
 
 
 Entonces, la sintaxis de Orbit sigue una lógica parecida a:
 
-objeto + acción + pista + parámetros y archivos
+pista + objeto + acción + parámetros y archivos
 
 Las siguientes líneas describen el resto de parámetros para los videos
 
@@ -79,21 +75,17 @@ Orbit trata de seguir más o menos la misma sintaxis que los objetos existentes 
 
 
 
+1 video setSpeed 2
 
+1 video setOpacity 100
 
-video setSpeed 1 2
+1 video setPosition 200 200 200
 
-video setOpacity 1 100
+1 video setScale 2
 
-video setPosition 1 200 200 200
+1 video rotate 35 25 67
 
-video setScale 1 2 2
-
-video rotate 1 35 25 67
-
-video draw 2 samplehap // para agregar más videos
-
-
+2 video draw samplehap.mov // para agregar más videos
 
 
 
@@ -113,14 +105,11 @@ Una de las funcionalidades más interesantes y que dan nombre a este entorno es:
 
 
 
-
 cam orbit 124 24
 
 
 
-
 La cámara orbitará en torno a un punto definido (en este caso, el punto que se encuentra en las coordenadas 0, 0, 0.
-
 
 
 
@@ -129,7 +118,6 @@ cam setPosition 10 10 10
 cam lookAt 100 0 0
 
 cam setDistance 1000
-
 
 
 
@@ -147,9 +135,7 @@ Esta luz es blanca puede cambiar de color.
 
 
 
-
 mainLight color 100 255 255
-
 
 
 
@@ -159,10 +145,7 @@ El brillo de los materiales puede cambiar con:
 
 
 
-
 material setShininess 12
-
-
 
 
 
@@ -172,32 +155,195 @@ Más adelante aclararemos este punto.
 
 Hasta 4 luces pueden ser activadas en el entorno. Sus colores pueden personalizarse.
 
-Algunos aspectos del movimiento de las luces pueden cambiar. 
+Algunos aspectos del movimiento de las luces también pueden cambiar. 
+
+Con la indicación draw dibujamos la posición de la luz seleccionada
 
 
 
+1 light enable
 
+mainLight disable // para deshabilitar la luz principal 
 
+1 light color 255 25 255
+
+1 light draw
+
+1 light oscSpeed 2 4 8
+
+1 light oscAmp 1000 500 200
+
+1 light clear
 
 
 
 ------ Primitivos ------
 
+
+
+Es posible dibujar [[objetos primitivos nativos]] de OpenFrameworks. 
+
+Son afectados por las condiciones del entorno: luz y material.
+
+Los objetos que se pueden invocar son: box, sphere, cone, cylinder, ico y plane.
+
+
+
+draw box
+
+clear box
+
+// hace falta un scale y un setPosition
+
+
+
 ------ Modelos ------
 
 Para cargar modelos, Orbit utiliza [[ofxAssimpModelLoader]].
 
-Esta extensión es nativa de OF y permite cargar un gran número de formatos para objetos 3d.
+Esta extensión es nativa de OF y permite cargar un gran número de [[formatos]] para objetos 3d.
 
------- Shaders -------
+
+
+1 model load stone.obj
+
+1 model setPosition 100 45 23
+
+1 model rotate 180 90 45
+
+1 model scale 2
+
+1 model clear 1 
+
+
 
 ------ Otros efectos ------	
 
------- Videos como texturas ------
+Es posible activar [[retroalimentación]] y manipular su posición.
+
+
+
+feedback enable
+
+feedback setPosition 100 200
+
+
+
+Hay un conjunto de efectos que pueden implementarse en Orbit.
+
+Son parte de una librería que se llaman [[ofxPostGlitch]]
+
+
+
+glitch convergence true
+
+glitch glow true
+
+glitch convergence false
+
+
+
+La lista completa: convergence, glow, shaker, cutslider, twist, outline, noise, slitscan, swell, invert.
+
+
+
+Esta extensión también tiene remapeo de colores: 
+
+
+
+colorRemap highContrast true
+
+colorRemap blueRaise true
+
+colorRemap highContrast false
+
+
+
+Los botones de pánico que desactivan todos los efectos son;
+
+
+
+glitch all false
+
+colorRemap all false
+
+
+
+Anécdota: Un día tocamos en un lugar y nos encontramos con un grupo que utilizaba los mismos shaders que Orbit.
+
+A futuro: Escribir shaders propios. 
+
+
+
+------ Shaders -------
+
+Los shaders son una forma especial de manipular la imagen a través de la [[tarjeta de video]]
+
+Es posible que los shaders tengan funcionamiento por [[sí mismos]].
+
+También pueden afectar una imagen existente.
+
+OF puede invocar shaders y manipularlos con variables que se manipulan en el ciclo de dibujo o actualización.
+
+La extensión ofxGLEditor tiene un coloreado específico para la sintaxis de los shaders.
+
+Los shaders tienen su propio lenguaje: [[GLSL]]
+
+No nos metemos mucho en shaders: [[Hydra]] es un proyecto que los manipula eficientemente. 
+
+
+
+shader enable
+
+shader disable
+
+
+
+Para manipular dinámicamente el shader:
+
+ctrl + el número de un editor vacío
+
+ctrl + o y de ahí navegar hasta la carpeta shader
+
+abrir noise.vert
+
+Hay que tener especial cuidado a la hora de manipular shaders: todo puede estropearse.
+
+Nota: podemos reescribir el shader noise.vert y noise.frag 
 
 ------ Envío de mensajes OSC ------
 
+OpenSoundControl es un protocolo de comunicación entre dispositivos.
+
+Funciona en el contexto de redes. 
+
+Es posible enviar mensajes [[OSC]] desde Orbit.
+
+La sintaxis es la siguiente: 
+
+oscSender + dirección + puerto + tag + mensaje // los tags van antecedidos de /
+
+
+
+oscSender 127.0.0.1 57120 /hola "hola_mundo"
+
+
+
+Enviamos un mensajes OSC de manera [[local]] (la misma computadora donde esta corriendo Orbit) en el puerto que lee SuperCollider, con el tag /hola y el mensaje "hola_mundo. Podemos encontrar el código de SC que complementa este ejemplo en la carpeta sc. 
+
+
+
+Es posible enviar hasta 3 mensajes:
+
+oscSender + dirección + puerto + tag + mensaje1 + mensaje2 + mensaje3
+
 ------ Recepción de mensajes OSC -------
+
+
+
+------ Secuencias hacia y desde SC ------
+
+------ Videos como texturas ------
 
 ------ Modo domo ------
 

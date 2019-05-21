@@ -5,6 +5,7 @@
 #include "ofxHapPlayer.h"
 #include "ofxAssimpModelLoader.h"
 #include "ofxPostGlitch.h"
+#include "ofxOsc.h"
 
 #define LIM 10
 #define LIM2 3
@@ -159,5 +160,10 @@ public:
   ofShader shader;
   ofxEditorSyntax syntax;
   int shaderON;
-  ofFbo shaderFbo; 
+  ofFbo shaderFbo;
+  string shaderName;
+
+  ofxOscReceiver reciever;
+  ofxOscSender sender;
+
 };
