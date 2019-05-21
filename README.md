@@ -40,9 +40,9 @@ Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
 `$ git checkout libavformat-OF-0.9`
 
-Para el caso de Mac, es posible utilizar el repositorio original de [ofxGLEditor](https://github.com/Akira-Hayasaka/ofxGLEditor) 
+Para todos los casos, es necesario utilizar un [fork](https://github.com/bolkaaa/ofxGLEditor) de ofxGLEditor
 
-Para el caso de Linux, es necesario utilizar un [fork](https://github.com/bolkaaa/ofxGLEditor) de ofxGLEditor
+[ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch)
 
 ### Compilación
 
