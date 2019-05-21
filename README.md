@@ -1,27 +1,36 @@
-
 # Orbit
 
-OpenFrameworks + SuperCollider
+## Introducción 
 
-## Introducción
+Orbit es un proyecto construido en OpenFrameworks que busca ser una extensión visual para el performance audiovisual. Orbit adscribe al paradigma del live coding: través de Orbit es posible modificar aspectos visuales desde la misma pantalla. También puede recibir mensajes OSC por medio de una red. Surge de la curiosidad por explorar audio y video simultáneamente. 
 
-Orbit es una exploración promovida desde PiranhaLab que se adscribe al paradigma de la programación al vuelo o live coding. Algunos antecedentes/desarrollos amigos que inspiran a Orbit son: CineVivo, Hydra y principalmente, Fluxus. Surge de la curiosidad por explorar audio y video simultáneamente. 
+Actualmente es posible utilizar Orbit para enviar unos mensajes sencillos al motor de audio de SuperCollider. 
 
-Del encuentro entre Orbit y SuperCollider ha surgido la motivación de utilizar funciones inicialmente concebidas para audio, como control para ordenar y manipular objetos en un entorno tridimensional. La mayor parte de esto es trabajo pendiente. El performance colaborativo y la visualización de información en un ensamble en red es otra de los objetivos de Orbit. 
+Orbit se inspira en los siguientes proyectos: 
 
-Es posible controlar Orbit por medio de [PiranhaLib](https://github.com/rggtrn/PiranhaLib) y en general, por medio del protocolo OSC. También es posible controlar Orbit desde la ventana: basta teclear un poco sobre la ventana para introducir caracteres que pueden ser instrucciones.
+[Fluxus](http://www.pawfal.org/fluxus)
 
-Un proyecto paralelo intercambia funciones y estética con Orbit: [ofhawc](https://github.com/EmilioOcelotl/ofhawc)
+[Hydra](https://github.com/ojack/hydra) 
 
-### Orbit en acción 
+[Estuary](https://github.com/dktr0/estuary) 
 
-[RGGTRN - moombahcode++geom](https://vimeo.com/289901460)
+[CineVivo](https://github.com/essteban/CineVivo)
 
-[Marianne Teixido - fragmentos](https://vimeo.com/294708631)
+## Objetivos
+
+Además de funcionar como una herramienta para extender la interpretación audiovisual a través de la computadora, Orbit es un pretexto para la investigación y una invitación a la exploración del software como objeto de conocimiento. 
 
 ## Instalación
 
-Orbit requiere una versión compilada de OF (se recomienda la versión v0.10.1)y los siguientes addons: [ofxCenteredTrueTypeFont](https://github.com/armadillu/ofxCenteredTrueTypeFont), [ofxPostGlitch](https://github.com/maxillacult/ofxPostGlitch) y una rama específica de la extensión [ofxHapPlayer](https://github.com/bangnoise/ofxHapPlayer):
+Orbit ha sido probado en Linux y Mac con la versión 0.10.1 de OpenFrameworks. La cámara tiene comportamientos extraños en versiones anteriores y con el sistema operativo Linux. Hasta el momento no ha sido probado en Windows.
+
+Para compilar Orbit es necesario descargar OpenFrameworks de [github](https://github.com/openframeworks/openFrameworks) o de la [página oficial](https://openframeworks.cc/download/) dependiendo del Sistema Operativo.
+
+Es necesario compilar el archivo. Para el caso de Windows y Mac es necesario contruir el proyecto con Project Generator. 
+
+### Addons
+
+Para que la compilación de Orbit sea exitosa es necesario descargar los addons siguientes: 
 
 Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
@@ -31,23 +40,27 @@ Para instalar el códec Hap: https://github.com/Vidvox/hap-qt-codec/releases/
 
 `$ git checkout libavformat-OF-0.9`
 
-## Control en ventana
+Para el caso de Mac, es posible utilizar el repositorio original de [ofxGLEditor](https://github.com/Akira-Hayasaka/ofxGLEditor) 
 
-La sintáxis del control en ventana varía según la instrucción. En todos los casos, la instrucción empieza con una acción. Ej. load 1 samplehap (donde load es la instrucción para cargar un video, 1 es la pista en la que el video será cargado y samplehap es el nombre del archivo sin extensión).
+Para el caso de Linux, es necesario utilizar un [fork](https://github.com/bolkaaa/ofxGLEditor) de ofxGLEditor
 
-Una versión detallada de las instrucciones se puede encontrar en la carpeta /bin/data/Orbit.txt
+### Compilación
 
-## Control OSC
+Para linux es necesario entrar a la carpeta del proyecto y: 
 
-Es posible controlar los parámetros de Orbit con [PiranhaLib](https://github.com/rggtrn/PiranhaLib).
+`make`
 
-PirS.start("127.0.0.1", 5612) // Para iniciar en modo local
+`make RunRelease`
 
-PirV // acciones de video ej: PirV.load
+Para el caso de MacOS es necesario abrir el proyecto con XCode. 
+
+### Indicaciones
+
+Una vez compilado, es posible acceder a un archivo de instrucciones al teclear Ctrl + 2. 
 
 ## Videos en Hap
 
-La conversión de videos es posible con ffmpeg. En macOS es posible instalar FFmpeg con soporte para hap con [brew](https://brew.sh/index_es):
+Es posible transcodificar videos Hap con ffmpeg. En macOS es posible instalar ffmpeg con soporte para hap con [brew](https://brew.sh/index_es):
 
 `brew install ffmpeg --with-snappy`
 
@@ -61,10 +74,30 @@ La conversión de videos es posible con ffmpeg. En macOS es posible instalar FFm
 
 * Para instrucciones más detalladas en inglés: https://gist.github.com/dlublin/e4585b872dd136ae88b2aa51a6a89aac
 
-## Problemas y algunas soluciones
+### Recursos Externos y Bibliografía seleccionada
 
-En Linux y con versiones anteriores a v0.10.1, la cámara tiene un comportamiento extraño. En v0.10.1 esto no sucede. 
+[A free, shared visual playground in the browser: Olivia Jack talks Hydra](http://cdm.link/2019/02/hydra-olivia-jack/)
 
-El nombre de los archivos cargados (video o modelos) no debe contener caracteres en mayúsculas. 
+[Hydra](http://cdm.link/2019/02/hydra-olivia-jack/)
 
-No hay acentos. 
+[Estuary: Browser-based Collaborative Projectional Live Coding of Musical Patterns. David Ogborn, Jamie Beverley, Luis N. Del Angel, Eldad Tsabary y Alex McLean](https://iclc.livecodenetwork.org/2017/cameraReady/ICLC_2017_paper_78.pdf)
+
+[Estuary](http://intramuros.mcmaster.ca:8002/)
+
+[Bellacode: localized textual interfaces for live coding music. Luis N. Del Angel, Marianne Teixido, Emilio Ocelotl, Ivanka Cotrina y David Ogborn](https://iclc.livecodenetwork.org/2019/papers/paper111.pdf)
+
+[Fuck off Google, en A Nuestros Amigos. Comité Invisible](http://mexico.indymedia.org/IMG/pdf/a_nuestros_amigos_-_comite_invisible.pdf)
+
+[En Defensa de la Imagen Pobre. Hito Steyerl](https://monoskop.org/images/7/72/Steyerl_Hito_Los_condenados_de_la_pantalla.pdf#page=18)
+
+[Curso de OpenFrameworks (ES). Patricio González Vivo](https://github.com/patriciogonzalezvivo/cursoOF)
+
+[El libro de los Shaders (ES). Patricio González Vivo y Jen Lowe](https://thebookofshaders.com/?lan=es)
+
+[Curso de SuperCollider del Taller de Audio del Centro Multimedia (ES). Ernesto Romero y Ezequiel Netri](http://cmm.cenart.gob.mx/tallerdeaudio/cursos/cursocollider/textos/curso%20de%20supercollider%20principiantes.pdf)
+
+[ofBook](https://openframeworks.cc/ofBook/chapters/foreword.html)
+
+[OpenFrameworks](https://openframeworks.cc/)
+
+[SuperCollider](https://supercollider.github.io/)

@@ -1,0 +1,207 @@
+------ Orbit ------
+
+------ Texto como interfaz ------
+
+¿Por qué una interfaz de texto y no algún otro método de entrada o interfaz de usuario? 
+
+Consideramos el teclado como un método eficaz y que cualquier computadora tiene para enviar instrucciones.
+
+Nos adscribimos al enunciado de [[Toplap]]: ¡Muéstrenos sus pantallas!
+
+Cuando las instrucciones se vuelven complejas y diversas, tener un GUI para cada cosa puede volverse un caos. 
+
+Orbit utiliza [[ofxGLEditor]], un editor que compila y controla al mismo OpenFrameworks.
+
+Cuenta con las características de cualquier editor básico. Puedes escribir borrar, moverte a lo largo del documento.
+
+Notarás que el texto cambia de color dependiendo de algunos signos 1 2 3
+
+// Sirve para comentar una linea. El coloreado es verde y la computadora ignora este texto. 
+
+/*
+
+De esta manera podemos comentar varias líneas al mismo tiempo.
+Esto es de utilidad para comentar bloques de código. 
+
+*/
+
+ofxGLEditor cuenta con varias ventanas. Ctrl + 0 - 9 para desplazarte entre ellas.
+
+Recomendamos utilizar las ventanas vacías para escribir en ellas, así no perderás esta guía.  
+
+Actualmente, la manera más fácil de utilizar Orbit es en el [[Repl]] (ctrl + r).
+
+Sin embargo, es posible [[declarar]] enunciados desde los editores de texto. 
+
+
+------ Videos ------
+
+
+Optimización vs. estándar. En Orbit es posible utilizar videos codificados en [[h.264]] y en [[Hap]].
+
+También es posible utilizar otras cosas que revisaremos más adelante. 
+
+En ambos casos, el contendor debe ser .mov
+
+Una guía para transcodificar a Hap se puede encontrar en el [[README.md]] de este repositorio.
+
+Es importante señalar que el archivo debe ser invocado con extensión. 
+
+El primer ejemplo que correremos es el siguiente:
+
+
+
+
+video draw 1 samplehap.mov
+
+
+
+
+Para declarar esta línea debes situarte en el renglón de la línea y pulsar shift + e
+
+La línea para limpiar el video es:
+
+
+
+
+video close 1 samplehap.mov
+
+
+
+
+Entonces, la sintaxis de Orbit sigue una lógica parecida a:
+
+objeto + acción + pista + parámetros y archivos
+
+Las siguientes líneas describen el resto de parámetros para los videos
+
+Orbit trata de seguir más o menos la misma sintaxis que los objetos existentes en OF. 
+
+
+
+
+
+video setSpeed 1 2
+
+video setOpacity 1 100
+
+video setPosition 1 200 200 200
+
+video setScale 1 2 2
+
+video rotate 1 35 25 67
+
+video draw 2 samplehap // para agregar más videos
+
+
+
+
+
+Para el caso de la posición hay [[coordenadas en x y z]]
+
+La orientación en Orbit es central, a diferencia de lo que nativamente puede hacer OF y P.
+
+El origen está en el centro para facilitar algunas funciones de la cámara
+
+------ Cámara -------
+
+Una de las cosas que puede distinguir a Orbit de otros entornos es la cámara.
+
+[[ofEasyCam]] está más o menos basada en PeasyCam de Processing.
+
+Una de las funcionalidades más interesantes y que dan nombre a este entorno es:
+
+
+
+
+cam orbit 124 24
+
+
+
+
+La cámara orbitará en torno a un punto definido (en este caso, el punto que se encuentra en las coordenadas 0, 0, 0.
+
+
+
+
+cam setPosition 10 10 10
+
+cam lookAt 100 0 0
+
+cam setDistance 1000
+
+
+
+
+Es posible que la cámara enfoque objetos específicos del espacio pero nos hace falta investigar sobre ello. 
+
+Algunos parámetros de la cámara se pueden controlar también con el mouse. 
+
+------ Entorno -------
+
+Orbit aprovecha las posibilidades de la iluminación en OF.
+
+Cuenta con una [[luz]] por default que tiene la misma posición de la cámara.
+
+Esta luz es blanca puede cambiar de color.
+
+
+
+
+mainLight color 100 255 255
+
+
+
+
+Por otro lado, es posible asignar un [[material]] general a los objetos del entorno.
+
+El brillo de los materiales puede cambiar con:
+
+
+
+
+material setShininess 12
+
+
+
+
+
+Los videos cargados con hvideo y video, así como el editor, no reflejan luz.
+
+Más adelante aclararemos este punto.
+
+Hasta 4 luces pueden ser activadas en el entorno. Sus colores pueden personalizarse.
+
+Algunos aspectos del movimiento de las luces pueden cambiar. 
+
+
+
+
+
+
+
+
+------ Primitivos ------
+
+------ Modelos ------
+
+Para cargar modelos, Orbit utiliza [[ofxAssimpModelLoader]].
+
+Esta extensión es nativa de OF y permite cargar un gran número de formatos para objetos 3d.
+
+------ Shaders -------
+
+------ Otros efectos ------	
+
+------ Videos como texturas ------
+
+------ Envío de mensajes OSC ------
+
+------ Recepción de mensajes OSC -------
+
+------ Modo domo ------
+
+------ Arreglos de primitivos ------
+
+------ Arreglos de primitivos con imagénes y videos como Texturas ------
+

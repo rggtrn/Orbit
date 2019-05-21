@@ -9,7 +9,7 @@ void main (void)
 
     vec4 col = texture2DRect(image,texCoord);
     vec4 col_r = texture2DRect(image,texCoord + vec2(-35.0*rand,0));
-    vec4 col_l = texture2DRect(image,texCoord + vec2( 35.0*rand,0));
+    vec4 col_l = texture2DRect(image,texCoord + vec2(-35.0*rand,0));
     vec4 col_g = texture2DRect(image,texCoord + vec2( -7.5*rand,0));
     
 

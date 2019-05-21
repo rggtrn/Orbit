@@ -1,7 +1,4 @@
-ofxAssimpModelLoader
-ofxCenteredTrueTypeFont
-ofxDomemaster
+ofxGLEditor
 ofxHapPlayer
-ofxOsc
+ofxAssimpModelLoader
 ofxPostGlitch
-ofxXmlSettings

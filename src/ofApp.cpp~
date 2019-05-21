@@ -1,0 +1,639 @@
+#include "ofApp.h"
+
+//--------------------------------------------------------------
+void ofApp::setup() {
+
+  ofSetVerticalSync(true);
+  ofEnableSmoothing();
+  ofEnableAntiAliasing();
+  ofSetWindowTitle("Orbit");
+
+  ofSetFrameRate(30);
+  ofBackground(0);
+  
+  // let's see what's going on inside
+  ofSetLogLevel("ofxGLEditor", OF_LOG_VERBOSE);
+	
+  // setup the global editor font before you do anything!
+  ofxEditor::loadFont("fonts/PrintChar21.ttf", 24);
+  
+  // set a custom Repl banner & prompt (do this before setup())
+  ofxRepl::setReplBanner("Orbit Repl");
+  ofxRepl::setReplPrompt("prompt> ");
+  
+  // setup editor with event listener
+  editor.setup(this);
+  
+  // make some room for the bottom editor info text
+  editor.resize(ofGetWidth(), ofGetHeight()-ofxEditor::getCharHeight());
+
+  orbitSyntax.setLang("Orbit");
+  orbitSyntax.addFileExt("orbit"); // associate .lua with Lua
+  orbitSyntax.setSingleLineComment("//");
+  orbitSyntax.setMultiLineComment("/*", "*/");
+  orbitSyntax.setStringLiteral("[[", "]]");
+  orbitSyntax.setWord("function", ofxEditorSyntax::KEYWORD);
+  orbitSyntax.setWord("end", ofxEditorSyntax::KEYWORD);
+  orbitSyntax.setWord("print", ofxEditorSyntax::FUNCTION);
+  editor.getSettings().addSyntax(&orbitSyntax);
+
+  colorScheme.setStringColor(ofColor::yellow);
+  colorScheme.setNumberColor(ofColor::orangeRed);
+  colorScheme.setCommentColor(ofColor::lightGreen);
+  colorScheme.setKeywordColor(ofColor::fuchsia);
+  colorScheme.setTypenameColor(ofColor::red);
+  colorScheme.setFunctionColor(ofColor::green);
+  editor.setColorScheme(&colorScheme);
+  // editor.openFile("test.orbit");
+	  
+  // open & load a file into the current editor (1)
+  editor.openFile("hello.orbit", 1);
+  //ofLogNotice() << "number of lines: " << editor.getNumLines(1);
+  editor.openFile("intl.orbit", 2);
+  //ofLogNotice() << "number of lines: " << editor.getNumLines(2);
+  
+  // change multi editor settings, see ofxEditorSettings.h for details
+  editor.getSettings().setTextColor(ofColor::red); // main text color
+  //editor.getSettings().setCursorColor(ofColor::blue); // current pos curso
+//  editor.getSettings().setAlpha(0.1); // main text, cursor, & highlight alpha
+  
+	// other settings
+  editor.setLineWrapping(true);
+  editor.setLineNumbers(true);
+  editor.setAutoFocus(false);
+  
+  // move the cursor to a specific line
+  //editor.setCurrentLine(5);
+  //ofLogNotice() << "current line: " << editor.getCurrentLine();
+  orbitON = 0;
+  camera.setDistance(200); 
+
+  pointLight.setDiffuseColor( ofColor(255.f, 255.f, 255.f));
+
+  // specular color, the highlight/shininess color //
+  pointLight.setSpecularColor( ofColor(255.f, 255.f, 255.f));
+  
+  // shininess is a value between 0 - 128, 128 being the most shiny //
+  material.setShininess( 128 );
+
+  // colorHue = ofRandom(0, 250);
+
+  //lightColor.setBrightness( 180.f );
+  // lightColor.setSaturation( 150.f );
+
+  //materialColor = ofColor(255, 255, 255, 255); 
+  
+  //materialColor.setBrightness(255.f);
+  //materialColor.setSaturation(255);
+  pointLight.setPosition(camera.getPosition());
+  material.setSpecularColor(materialColor);
+  
+  for(int i = 0; i < LIM; i++){
+    vOpacity[i] = 255;
+
+    multiModelX[i] = 0;
+    multiModelY[i] = 0;
+    multiModelZ[i] = 0;
+    multiModelRotX[i] = 0;
+    multiModelRotY[i] = 0;
+    multiModelRotZ[i] = 0;
+    multiModelScale[i] = 1;
+    texturas[i].enableMipmap();
+    texturas[i].setTextureWrap(GL_REPEAT, GL_REPEAT);
+    texturas[i].setTextureMinMagFilter(GL_NEAREST, GL_NEAREST);
+  }
+
+  // multilight
+
+      lightON = 1;
+    
+      for(int i = 0; i < LIM2; i++){
+        clR[i] = 255;
+        clG[i] = 255;
+        clB[i] = 255;
+	colorLight2[i] = ofColor(clR[i], clG[i], clB[i]);
+	lightSpeedX[i] = 1;
+	lightSpeedY[i] = 1;
+	lightSpeedZ[i] = 1;
+	lightAmpX[i] = 200; 
+	lightAmpY[i] = 200; 
+	lightAmpZ[i] = 200; 
+    }
+    
+    ofSetSmoothLighting(true);
+
+    pointLight.enable(); 
+}
+
+//--------------------------------------------------------------
+void ofApp::update() { 
+
+  pointLight.setPosition(camera.getPosition());
+
+  for(int i = 0; i < LIM2; i++){
+    pointLight2[i].setPosition(sin(ofGetElapsedTimef()*lightSpeedX[i]) * lightAmpX[i], sin(ofGetElapsedTimef()*lightSpeedY[i]) * lightAmpY[i], sin(ofGetElapsedTimef()*lightSpeedZ[i]) * lightAmpZ[i]);
+  }
+  
+  for(int i = 0; i < LIM2; i++){
+    
+    pointLight2[i].setDiffuseColor( colorLight2[i] );
+    pointLight2[i].setSpecularColor( colorLight2[i] );
+
+  }
+  
+}
+  
+//--------------------------------------------------------------
+void ofApp::draw() {
+
+  editor.getSettings().setAlpha(0.75); // main text, cursor, & highlight alpha
+  camera.lookAt(centro);
+
+  ofSetRectMode(OF_RECTMODE_CENTER);
+
+  //  if(boxON == 1){
+  //  ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
+  
+  ofEnableDepthTest();
+  ofDisableArbTex(); 
+
+  camera.begin();
+
+  ofDisableLighting(); 
+  //pointLight.disable(); 
+  //if(videoON == 1){
+  for(int i = 0; i < LIM; i++){      
+     //ofEnableAlphaBlending();
+    ofPushMatrix(); 
+    ofRotateX(vRotX[i]);
+    ofRotateY(vRotY[i]);
+    ofRotateZ(vRotZ[i]);
+    ofSetColor(255,vOpacity[i]);
+    ofScale(vScaleX[i] * 0.25,vScaleY[i] * 0.25, vScaleZ[i] * 0.25);
+    ofTranslate((vX[i]),vY[i], vZ[i]);
+    videoLC[i].draw(0, 0);
+    ofPopMatrix();
+   }
+
+  ofEnableLighting();
+  
+  // pointLight.enable();
+  //pointLight.draw();
+  //pointLight2.draw();
+  //pointLight3.draw();
+
+  for(int i = 0; i < LIM2; i++){
+    if(drawLight[i] == 1){
+      pointLight2[i].draw(); 
+    }
+  }
+  
+  //for(int i = 0; i < LIM2; i++){
+  //   pointLight2[i].draw();
+   //  pointLight2[i].enable();
+  // }
+
+   material.begin();
+  
+   if(orbitON == 1){
+     camera.orbit(ofGetElapsedTimef()*orbitX, ofGetElapsedTimef()*orbitY, camera.getDistance(), ofVec3f(0, 0, 0));
+  }
+   
+   if(boxON == 1){
+     box.draw();
+   } 
+
+   if(planeON == 1){
+     plane.draw();
+   }
+
+   if(cylinderON== 1){
+     cylinder.draw();
+   }
+   
+  if(icoON== 1){
+    icoSphere.draw();
+  }
+  
+  if(sphereON== 1){
+    sphere.draw();
+  }
+
+  if(coneON== 1){
+    cone.draw();
+  }
+
+  // multimodelos
+    
+    for(int i = 0; i < LIM; i++){
+        
+      ofTexture *texture[i] = {0};
+      ofShader *shader[i] = {0};
+      
+      if(videoTex == 1){
+	// aqui van los videos como texturas
+        //texture[i] = tempPlayer[i].getTexture();
+	//shader[i] = tempPlayer[i].getShader();
+      }
+      
+      ofPushMatrix();
+      
+      ofRotateX(multiModelRotX[i]);
+      ofRotateY(multiModelRotY[i]);
+      ofRotateZ( multiModelRotZ[i]);
+      ofScale(multiModelScale[i] * 0.25,multiModelScale[i] * 0.25, multiModelScale[i] * 0.25);
+      ofTranslate(0, 0, 0);
+      multiModel[i].setPosition(multiModelX[i] * 1, multiModelY[i] * 1, multiModelZ[i]);
+        
+      if(textureON == 1){
+	texturas[i].bind();
+      }
+        
+      if(videoTex == 1){
+	if (shader[i]){
+	  shader[i]->begin();
+	}
+	texture[i]->bind();
+      }
+        
+      multiModel[i].drawFaces();
+        
+      if(textureON == 1){
+	texturas[i].unbind();
+      }
+        
+      if(videoTex == 1){
+	texture[i] -> unbind();
+	if (shader[i]){
+	  shader[i]->end();
+	}
+      }  
+      ofPopMatrix();
+    }
+
+    material.end(); 
+    camera.end();
+  //}
+  
+  ofSetRectMode(OF_RECTMODE_CORNER);
+  
+  //ofTranslate(0, 0);
+  ofDisableDepthTest();
+  ofDisableLighting(); 
+  
+  editor.draw();
+  
+  // draw current editor info using the same font as the editor
+  if(!editor.isHidden() && editor.getCurrentEditor() > 0) {
+    
+    int bottom = ofGetHeight()-ofxEditor::getCharHeight();
+    int right = ofGetWidth()-ofxEditor::getCharWidth()*7; // should be enough room
+    ofSetColor(ofColor::gray);
+    
+    // draw the current editor num
+    editor.drawString("Editor: "+ofToString(editor.getCurrentEditor()),
+		      0, bottom);
+    
+    // draw the current line & line pos
+    editor.drawString(ofToString(editor.getCurrentLine()+1)+","+
+		      ofToString(editor.getCurrentLinePos()),
+		      right, bottom);
+  }
+  
+}
+
+
+//--------------------------------------------------------------
+void ofApp::keyPressed(int key) {
+	
+	// note: when using CTRL as the modifier key, CTRL + key might be an ascii
+	// control char so check for both the char 'f' and 6, the ascii value for
+	// CTRL + f, see also: http://ascii-table.com/control-chars.php
+	bool modifier = ofGetKeyPressed(ofxEditor::getSuperAsModifier() ? OF_KEY_SUPER : OF_KEY_CONTROL);
+	if(modifier) {
+		switch(key) {
+			case 'f': case 6:
+				ofToggleFullscreen();
+				return;
+			case 'l': case 12:
+				editor.setLineWrapping(!editor.getLineWrapping());
+				return;
+			case 'n': case 14:
+				editor.setLineNumbers(!editor.getLineNumbers());
+				return;
+			case 'k': case 26:
+				editor.setAutoFocus(!editor.getAutoFocus());
+				return;
+		}
+	}
+	
+	// see ofxGLEditor.h for key commands
+	editor.keyPressed(key);
+}
+
+//--------------------------------------------------------------
+void ofApp::windowResized(int w, int h) {
+	// make some room for the bottom editor info text
+	editor.resize(w, h-ofxEditor::getCharHeight());
+}
+
+//--------------------------------------------------------------
+void ofApp::openFileEvent(int &whichEditor) {
+	// received an editor open via CTRL/Super + o
+	
+	ofLogNotice() << "received open event for editor " << whichEditor
+		<< " with filename " << editor.getEditorFilename(whichEditor);
+}
+
+//--------------------------------------------------------------
+void ofApp::saveFileEvent(int &whichEditor) {
+	// received an editor save via CTRL/Super + s or CTRL/Super + d
+	
+	ofLogNotice() << "received save event for editor " << whichEditor
+		<< " with filename " << editor.getEditorFilename(whichEditor);
+}
+
+//--------------------------------------------------------------
+void ofApp::executeScriptEvent(int &whichEditor) {
+
+  // received on editor CTRL/Super + e
+      
+  string txt = editor.getText(whichEditor);
+
+  lineas = ofSplitString(txt, "\n");
+      
+  texto = ofSplitString(lineas[editor.getCurrentLine()], " ");
+  
+  ofLogNotice() << "Orbit: " << lineas[editor.getCurrentLine()];
+  
+  if(texto[0] == "video" && texto[1] == "draw" && texto.size() == 4){ 
+    videoLC[ofToInt(texto[2])].close();
+    string temp = "videos/" + texto[3];
+    videoLC[ofToInt(texto[2])].setPixelFormat(OF_PIXELS_RGBA);
+    videoLC[ofToInt(texto[2])].setLoopState(OF_LOOP_NORMAL);
+    videoLC[ofToInt(texto[2])].load(temp);
+    if(texto[0] != "close"){
+      videoLC[ofToInt(texto[2])].play();
+    }
+    vScaleX[ofToInt(texto[2])] = 1.0;
+    vScaleY[ofToInt(texto[2])] = 1.0;
+    vRotX[ofToInt(texto[2])] = 0;
+    vRotY[ofToInt(texto[2])] = 0;
+    vRotZ[ofToInt(texto[2])] = 0;
+    vOpacity[ofToInt(texto[2])] = 255;
+    videoON = 1;
+    
+  }
+  
+  if(texto[0] == "video" && texto[1] == "close"){
+    videoLC[ofToInt(texto[2])].stop();
+    videoLC[ofToInt(texto[2])].close();
+    vX[ofToInt(texto[2])] = 0;
+    vY[ofToInt(texto[2])] = 0;
+    vSpeed[ofToInt(texto[2])] = 1;
+    vOpacity[ofToInt(texto[2])] = 255;
+    vX[ofToInt(texto[2])] = 0;
+    vY[ofToInt(texto[2])] = 0;
+    vZ[ofToInt(texto[2])] = 0;
+    vRotX[ofToInt(texto[2])] = 0;
+    vRotZ[ofToInt(texto[2])] = 0;
+    vRotX[ofToInt(texto[2])] = 0;
+    videoON = 0;
+  }
+  //      }
+  
+  if (texto[0] == "video" && texto[1] == "setSpeed"){
+    videoLC[ofToInt(texto[2])].setSpeed(ofToFloat(texto[3]));
+  }
+
+  if (texto[0] == "video" && texto[1] == "setOpacity"){
+    vOpacity[ofToInt(texto[2])] = ofToInt(texto[3]);
+  }
+        
+  if (texto[0] == "video" && texto[1] == "setPosition"){
+    vX[ofToInt(texto[2])] = ofToInt(texto[3]);
+    vY[ofToInt(texto[2])] = ofToInt(texto[4]);
+    vZ[ofToInt(texto[2])] = ofToInt(texto[5]);
+  }
+        
+  if (texto[0] == "video" && texto[1] == "scale" ){
+    vScaleX[ofToInt(texto[2])] = ofToFloat(texto[3]);
+    vScaleY[ofToInt(texto[2])] = ofToFloat(texto[4]);
+  }
+
+  if (texto[0] == "video" && texto[1] == "rotate"){
+    vRotX[ofToInt(texto[2])] = ofToFloat(texto[3]);
+    vRotY[ofToInt(texto[2])] = ofToFloat(texto[4]);
+    vRotZ[ofToInt(texto[2])] = ofToFloat(texto[5]);
+  }
+          
+  if(texto[1] == "draw" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxON = 1; 
+    } 
+    if(texto[0] == "plane"){ 
+      planeON = 1; 
+    }
+    if(texto[0] == "cylinder"){ 
+      cylinderON = 1; 
+    }	
+    if(texto[0] == "sphere"){ 
+      sphereON = 1; 
+    }
+    if(texto[0] == "ico"){ 
+      icoON = 1; 
+    }
+    if(texto[0] == "cone"){ 
+      icoON = 1; 
+    }  
+  }
+
+  if(texto[1] == "clear" && texto.size() == 2){
+    if(texto[0] == "box"){ 
+      boxON = 0; 
+    } 
+    if(texto[0] == "plane"){ 
+      planeON = 0; 
+    }
+    if(texto[0] == "cylinder"){ 
+      cylinderON = 0; 
+    }	
+    if(texto[0] == "sphere"){ 
+      sphereON = 0; 
+    }
+    if(texto[0] == "ico"){ 
+      icoON = 0; 
+    }
+    if(texto[0] == "cone"){ 
+      icoON = 0; 
+    }  
+  } 
+
+  if(texto[0] == "cam" && texto.size() == 4){
+    if(texto[1] == "orbit" && ofToInt(texto[2]) == 0 & ofToInt(texto[3]) == 0){
+      orbitON = 0;	
+    }
+    else{
+      orbitON = 1;
+    }
+    orbitX = ofToFloat(texto[2]);
+    orbitY = ofToFloat(texto[3]);
+  }
+  
+  if (texto[0] == "cam" && texto[1] == "setPosition"){
+    camera.setPosition(ofVec3f(ofToInt(texto[2]), ofToInt(texto[3]), ofToInt(texto[4])));
+  }
+        
+  if (texto[0] == "cam" && texto[1] == "lookAt" && texto.size() == 5){
+    centro = ofVec3f(ofToInt(texto[2]), ofToInt(texto[3]), ofToInt(texto[4]));
+  }
+          
+  if (texto[0] == "cam" && texto[1] == "setDistance" ){
+    camdistance = ofToFloat(texto[2]);
+    camera.setDistance(camdistance);
+  }
+
+  // modelos
+   
+  if (texto[0] == "model" && texto[1] == "load" && texto.size() == 4){
+    string temp = "3d/" + texto[3];
+    multiModel[ofToInt(texto[2])].loadModel(temp);
+    //multiModelON = ofToFloat(textAnalisis[2]);
+  }
+  
+  if (texto[0] == "model" && texto[1] == "clear"){
+    multiModel[ofToInt(texto[2])].clear();
+  }
+  
+  if (texto[0] == "model" && texto[1] == "setPosition"){
+    multiModelX[ofToInt(texto[2])] = ofToInt(texto[3]);
+    multiModelY[ofToInt(texto[2])] = ofToInt(texto[4]);
+    multiModelZ[ofToInt(texto[2])] = ofToInt(texto[5]);
+  }
+  
+  if (texto[0] == "model" && texto[1] == "rotate"){
+    multiModelRotX[ofToInt(texto[2])] = ofToInt(texto[3]);
+    multiModelRotY[ofToInt(texto[2])] = ofToInt(texto[4]);
+    multiModelRotZ[ofToInt(texto[2])] = ofToInt(texto[5]);
+  }
+  
+  if (texto[0] == "model" && texto[1] == "scale"){
+    multiModelScale[ofToInt(texto[2])] = ofToFloat(texto[3]);
+  }
+    
+  // if you have some scripting language (e.g. ofxLua)
+  // ofLogNotice() << "currentline " << currentLine;
+
+  if(texto[0] == "mainLight" && texto[1] == "color"){
+    pointLight.setDiffuseColor( ofColor(ofToFloat(texto[2]), ofToFloat(texto[3]), ofToFloat(texto[4])));
+  // specular color, the highlight/shininess color //
+  pointLight.setSpecularColor( ofColor(ofToFloat(texto[2]), ofToFloat(texto[3]), ofToFloat(texto[4])));
+  }
+
+  if(texto[0] == "mainLight" && texto[1] == "disable"){
+    pointLight.disable(); 
+  }
+
+  if(texto[0] == "mainLight" && texto[1] == "enable"){
+    pointLight.enable(); 
+  }
+
+  if(texto[0] == "material" && texto[1] == "setShininess"){
+    material.setShininess( ofToInt(texto[2]) );
+  }
+    
+  if(texto[0] == "light" && texto[1] == "enable"){
+    pointLight2[ofToInt(texto[2])].enable(); 
+  }
+
+  if(texto[0] == "light" && texto[1] == "disable"){
+    pointLight2[ofToInt(texto[2])].disable(); 
+  }
+
+  if(texto[0] == "light" && texto[1] == "draw"){
+    drawLight[ofToInt(texto[2])] = 1; 
+  }
+
+   if(texto[0] == "light" && texto[1] == "clear"){
+    drawLight[ofToInt(texto[2])] = 0; 
+  }
+
+  if(texto[0] == "light" && texto[1] == "color"){
+    colorLight2[ofToInt(texto[2])] = ofColor(ofToInt(texto[3]), ofToInt(texto[4]), ofToInt(texto[5]));
+  }
+
+  if(texto[0] == "light" && texto[1] == "oscSpeed"){
+    lightSpeedX[ofToInt(texto[2])] = ofToFloat(texto[3]);
+    lightSpeedY[ofToInt(texto[2])] = ofToFloat(texto[4]);
+    lightSpeedZ[ofToInt(texto[2])] = ofToFloat(texto[5]);  
+  }
+
+   if(texto[0] == "light" && texto[1] == "oscAmp"){
+    lightAmpX[ofToInt(texto[2])] = ofToFloat(texto[3]);
+    lightAmpY[ofToInt(texto[2])] = ofToFloat(texto[4]);
+    lightAmpZ[ofToInt(texto[2])] = ofToFloat(texto[5]);  
+  }
+
+}
+
+//--------------------------------------------------------------
+void ofApp::evalReplEvent(const string &text) {
+  ofLogNotice() << "repl: " << text;
+  
+  // make sure there is a response since this triggers printing the
+  // next conosle prompt
+  // string texto;
+  
+  editor.evalReplReturn(text); // print this, then prompt
+  //editor.evalReplReturn(); // empty response, just prints prompt
+  std::vector < std::string > texto = ofSplitString(text, " ");
+  
+  if(texto[0] == "video" && texto[1] == "draw" && texto.size() == 4){ 
+    videoLC[ofToInt(texto[2])].close();
+    string temp = "videos/" + texto[3] + ".mov";
+    videoLC[ofToInt(texto[2])].setPixelFormat(OF_PIXELS_RGBA);
+    videoLC[ofToInt(texto[2])].setLoopState(OF_LOOP_NORMAL);
+    videoLC[ofToInt(texto[2])].load(temp);
+    if(texto[0] != "close"){
+      videoLC[ofToInt(texto[2])].play();
+    }
+    vScaleX[ofToInt(texto[2])] = 1.0;
+    vScaleY[ofToInt(texto[2])] = 1.0;
+    vRotX[ofToInt(texto[2])] = 0;
+    vRotY[ofToInt(texto[2])] = 0;
+    vRotZ[ofToInt(texto[2])] = 0;
+    vOpacity[ofToInt(texto[2])] = 255;
+    videoON = 1;
+  }
+  if(texto[0] == "video" && texto[1] == "close" && texto[1] != "draw"){
+    videoLC[ofToInt(texto[2])].stop();
+    videoLC[ofToInt(texto[2])].close();
+    vX[ofToInt(texto[2])] = 0;
+    vY[ofToInt(texto[2])] = 0;
+    vSpeed[ofToInt(texto[2])] = 1;
+    vOpacity[ofToInt(texto[2])] = 255;
+    vX[ofToInt(texto[2])] = 0;
+    vY[ofToInt(texto[2])] = 0;
+    vZ[ofToInt(texto[2])] = 0;
+    vRotX[ofToInt(texto[2])] = 0;
+    vRotZ[ofToInt(texto[2])] = 0;
+    vRotX[ofToInt(texto[2])] = 0;
+    videoON = 0;
+  }
+
+  if (texto[0] == "video" && texto[1] == "setSpeed"){
+    videoLC[ofToInt(texto[2])].setSpeed(ofToFloat(texto[3]));
+  }
+  
+  if(texto[0] == "camera" && texto.size() == 4){
+    if(texto[1] == "orbit" && ofToInt(texto[2]) == 0 & ofToInt(texto[3]) == 0){
+      orbitON = 0;	
+    }
+    else{
+      orbitON = 1;
+    }
+    orbitX = ofToFloat(texto[2]);
+    orbitY = ofToFloat(texto[3]);
+  }
+  
+}
